@@ -1,0 +1,6 @@
+@use '~@proton/styles/scss/lib/config' as *;
+@use '~@proton/styles/scss/lib/rem' as *;
+
+.card-numbers {
+	font-size: rem(40);
+}

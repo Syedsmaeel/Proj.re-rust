@@ -1,0 +1,69 @@
+import { useCallback } from 'react';
+
+import throttle from 'lodash/throttle';
+import { c } from 'ttag';
+
+import { useUserSettings } from '@proton/account/userSettings/hooks';
+import { Button } from '@proton/atoms/Button/Button';
+import useNotifications from '@proton/components/hooks/useNotifications';
+import { IcSquares } from '@proton/icons/icons/IcSquares';
+import { textToClipboard } from '@proton/shared/lib/helpers/browser';
+import clsx from '@proton/utils/clsx';
+
+import { useReferralTelemetry } from '../hooks/useReferralTelemetry';
+import ReferralShareLinks from './inviteActions/ReferralShareLinks';
+import ReferralSignatureToggle from './inviteActions/ReferralSignatureToggle';
+
+const InviteShareLink = ({ className }: { className?: string }) => {
+    const [userSettings] = useUserSettings();
+    const { createNotification } = useNotifications();
+    const { sendCopyLinkPage } = useReferralTelemetry();
+
+    const referrerLink = userSettings.Referral?.Link || '';
+
+    const onCopyButtonClick = useCallback(
+        throttle(
+            () => {
+                sendCopyLinkPage();
+                textToClipboard(referrerLink);
+                createNotification({
+                    text: c('Info').t`Referral link copied to your clipboard`,
+                });
+            },
+            1500,
+            { leading: true, trailing: false }
+        ),
+        [referrerLink, sendCopyLinkPage]
+    );
+
+    return (
+        <div className={clsx('flex flex-column gap-4', className)}>
+            <h2 className="h3 text-bold">{c('Label').t`Share your referral link`}</h2>
+
+            <div className="flex gap-2 flex-column lg:flex-row bg-weak rounded-lg p-1">
+                <div className="flex-auto flex items-center p-2 user-select" title={referrerLink}>
+                    <span className="text-ellipsis">{referrerLink}</span>
+                </div>
+                <div className="flex lg:justify-end">
+                    <Button
+                        color="norm"
+                        onClick={onCopyButtonClick}
+                        title={c('Info').t`Copy your referral link`}
+                        disabled={!referrerLink}
+                        noDisabledStyles
+                    >
+                        <span className="flex flex-nowrap items-center">
+                            <IcSquares className="mr-2 shrink-0" /> {c('Button').t`Copy`}
+                        </span>
+                    </Button>
+                </div>
+            </div>
+
+            <ReferralShareLinks referralLink={referrerLink} />
+
+            <ReferralSignatureToggle />
+        </div>
+    );
+};
+
+export default InviteShareLink;

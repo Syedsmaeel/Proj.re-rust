@@ -1,0 +1,59 @@
+@use 'meet/meet-breakpoints' as *;
+
+@use 'lib/im-to-em' as *;
+
+// Library
+@use 'lib/' as *;
+
+$focus-ring-size: 0.0625rem; // 1px
+
+// Vendors
+@use 'lib/include-media' as im;
+im.$breakpoints: $breakpoints;
+im.$media-expressions: $media-expressions;
+
+// Initialisation
+@use 'base/' as *;
+
+// Layout
+@use 'layout/' as *;
+
+// Components
+@use 'components/' as *;
+
+// Re-set meet breakpoints before utilities to override any $breakpoints-product
+// settings from base/layout/components
+im.$breakpoints: $breakpoints;
+im.$media-expressions: $media-expressions;
+
+// Helpers
+@use 'utilities/' as *;
+
+:root {
+	--font-weight-medium: 500;
+	--scrollshadow-size: 1.8rem;
+	--scrollshadow-opacity: 0.15;
+	--border-radius-xxl: calc(3 * var(--border-radius) * var(--1px));
+}
+
+.settings-toggle-inactive {
+	.toggle-container::before {
+		--field-norm: var(--interaction-norm-minor-1);
+		--field-hover: var(--interaction-norm-major-1);
+	}
+}
+
+// reset focus visible for some elements
+@supports selector(:focus-visible) {
+	.button:focus-visible,
+	.checkbox-input:focus-visible + .checkbox-fakecheck,
+	button:focus-visible,
+	.interactive-pseudo-protrude:focus-visible::after {
+		box-shadow: none !important;
+	}
+
+	button:focus-visible {
+		outline: 1px solid var(--focus-outline) !important;
+		transition: none !important;
+	}
+}

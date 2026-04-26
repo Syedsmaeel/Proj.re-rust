@@ -1,0 +1,104 @@
+import type { InputHTMLAttributes, LabelHTMLAttributes, Ref } from 'react';
+import { forwardRef, useEffect, useRef } from 'react';
+
+import { useCombinedRefs } from '@proton/hooks';
+import { IcCheckmark } from '@proton/icons/icons/IcCheckmark';
+import { IcMinus } from '@proton/icons/icons/IcMinus';
+import clsx from '@proton/utils/clsx';
+
+export interface CheckboxProps extends InputHTMLAttributes<HTMLInputElement> {
+    /**
+     * Interactions will be blocked while loading is true
+     */
+    loading?: boolean;
+    /**
+     * Background color can be set using a css color (e.g. #ff0000 or rgb(255, 0, 0))
+     */
+    backgroundColor?: string;
+    /**
+     * Border color can be set using a css color (e.g. #ff0000 or rgb(255, 0, 0))
+     */
+    borderColor?: string;
+    /**
+     * Color can be set using a css color (e.g. #ff0000 or rgb(255, 0, 0))
+     */
+    color?: string;
+    /**
+     * Display a third state `[–]`.
+     */
+    indeterminate?: boolean;
+    labelOnClick?: (event: React.MouseEvent<HTMLLabelElement, MouseEvent>) => void;
+    labelProps?: LabelHTMLAttributes<HTMLLabelElement> & { 'data-testid': string };
+    /**
+     * Gap class utility between the checkbox and the children.
+     * @see "applications/storybook/src/stories/cssUtilities/Gap.stories.tsx" for the allowed values.
+     * @default gap-2
+     */
+    gap?: string;
+}
+
+const Checkbox = (
+    {
+        id,
+        className,
+        title,
+        loading,
+        disabled,
+        checked,
+        indeterminate = false,
+        color,
+        backgroundColor,
+        borderColor,
+        children,
+        labelOnClick,
+        labelProps,
+        gap = 'gap-2',
+        ...rest
+    }: CheckboxProps,
+    ref: Ref<HTMLInputElement>
+) => {
+    const inputRef = useRef<HTMLInputElement>(null);
+    const combinedRef = useCombinedRefs(inputRef, ref);
+
+    useEffect(() => {
+        if (inputRef.current) {
+            inputRef.current.indeterminate = indeterminate;
+        }
+    }, [indeterminate]);
+
+    return (
+        // eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-noninteractive-element-interactions
+        <label
+            {...labelProps}
+            htmlFor={id}
+            className={clsx(
+                'checkbox-container',
+                !className?.includes('expand-click-area') && 'relative',
+                gap,
+                className
+            )}
+            title={title}
+            onClick={labelOnClick}
+        >
+            <input
+                ref={combinedRef}
+                disabled={disabled || loading}
+                id={id}
+                type="checkbox"
+                className="checkbox-input"
+                checked={checked}
+                {...rest}
+            />
+            <span className="checkbox-fakecheck" style={{ borderColor, background: backgroundColor, color }}>
+                {indeterminate === false ? (
+                    <IcCheckmark className="checkbox-fakecheck-img" size={4} color={color} />
+                ) : (
+                    <IcMinus className="checkbox-fakecheck-img color-disabled" size={4} />
+                )}
+            </span>
+            {children}
+        </label>
+    );
+};
+
+export default forwardRef<HTMLInputElement, CheckboxProps>(Checkbox);

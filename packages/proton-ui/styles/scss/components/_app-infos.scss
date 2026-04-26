@@ -1,0 +1,26 @@
+@use '../base/interactive' as *;
+@use '../lib/em' as *;
+@use '../utilities/visibility' as *;
+
+.app-infos {
+	&-fake-meter {
+		block-size: em(4);
+	}
+
+	&-storage,
+	&-version {
+		color: var(--text-weak);
+	}
+
+	a#{&}-storage,
+	&-version[type='button'] {
+		&:hover,
+		&:focus {
+			color: var(--text-norm);
+		}
+	}
+
+	&-compact &-name {
+		@extend .sr-only;
+	}
+}

@@ -1,0 +1,8 @@
+syntax: glob
+node_modules/
+target/
+.devfile.yaml
+.gitignore
+.gitlab-ci.yml
+*.log
+*.tmp

@@ -1,0 +1,117 @@
+import { c } from 'ttag';
+
+import { useSubscription } from '@proton/account/subscription/hooks';
+import { Href } from '@proton/atoms/Href/Href';
+import SettingsLink from '@proton/components/components/link/SettingsLink';
+import Time from '@proton/components/components/time/Time';
+import { REACTIVATE_SOURCE } from '@proton/components/containers/payments/subscription/cancellationFlow/useCancellationTelemetry';
+import { getReactivateSubscriptionAction } from '@proton/components/containers/payments/subscription/helpers/subscriptionExpires';
+import { SubscriptionPlatform, subscriptionExpires } from '@proton/payments';
+import { isFreeSubscriptionResult } from '@proton/payments/core/subscription/helpers';
+import type { APP_NAMES } from '@proton/shared/lib/constants';
+
+import { useHideBanner } from './SubscriptionEndsBannerHelpers';
+import TopBanner from './TopBanner';
+
+const SubscriptionEndsBanner = ({ app }: { app: APP_NAMES }) => {
+    const [subscription] = useSubscription();
+
+    const subscriptionExpiresResult = subscriptionExpires(subscription);
+
+    const shouldHideBanner = useHideBanner(
+        app,
+        subscription,
+        subscriptionExpiresResult.subscriptionExpiresSoon,
+        subscriptionExpiresResult.expirationDate
+    );
+
+    if (!subscription || isFreeSubscriptionResult(subscriptionExpiresResult)) {
+        return null;
+    }
+
+    if (shouldHideBanner) {
+        return null;
+    }
+
+    const byDate = (
+        <Time format="PPP" key="subscription-end">
+            {subscriptionExpiresResult.expirationDate}
+        </Time>
+    );
+
+    const planName = subscriptionExpiresResult.planName;
+
+    const reactivateLinkData = getReactivateSubscriptionAction(subscription, REACTIVATE_SOURCE.banners);
+
+    if (reactivateLinkData.type === 'external') {
+        if (reactivateLinkData.platform === SubscriptionPlatform.Android) {
+            const reactivateLink = (
+                <Href
+                    key="reactivate-subscription"
+                    className="color-inherit"
+                    href={reactivateLinkData.href}
+                    target="_blank"
+                >
+                    {
+                        // translator: Subscription ending: To keep your {Plan Name} benefits, restart your subscription in the Google Play Store by {Mmm DD, YYYY}. [Resume now](https://play.google.com/store/account/subscriptions)
+                        c('Link').t`Resume now`
+                    }
+                </Href>
+            );
+            return (
+                <TopBanner className="bg-danger">
+                    {
+                        // translator: Subscription ending: To keep your {Plan Name} benefits, restart your subscription in the Google Play Store by {Mmm DD, YYYY}. [Resume now](https://play.google.com/store/account/subscriptions)
+                        c('Info')
+                            .jt`Subscription ending: To keep your ${planName} benefits, restart your subscription in the Google Play Store by ${byDate}. ${reactivateLink}`
+                    }
+                </TopBanner>
+            );
+        }
+
+        if (reactivateLinkData.platform === SubscriptionPlatform.iOS) {
+            const reactivateLink = (
+                <Href
+                    key="reactivate-subscription"
+                    className="color-inherit"
+                    href={reactivateLinkData.href}
+                    target="_blank"
+                >
+                    {
+                        // translator: Subscription ending: To keep your {Plan Name} benefits, restart your subscription in the Apple App Store by {Mmm DD, YYYY}. [Resume now](https://apps.apple.com/account/subscriptions)
+                        c('Link').t`Resume now`
+                    }
+                </Href>
+            );
+            return (
+                <TopBanner className="bg-danger">
+                    {
+                        // translator: Subscription ending: To keep your {Plan Name} benefits, restart your subscription in the Apple App Store by {Mmm DD, YYYY}. [Resume now](https://apps.apple.com/account/subscriptions)
+                        c('Info')
+                            .jt`Subscription ending: To keep your ${planName} benefits, restart your subscription in the Apple App Store by ${byDate}. ${reactivateLink}`
+                    }
+                </TopBanner>
+            );
+        }
+
+        return null;
+    }
+
+    const reactivateLink = (
+        <SettingsLink
+            data-testid="reactivate-link"
+            key="reactivate-subscription"
+            className="color-inherit"
+            path={reactivateLinkData.path}
+        >{c('Link').t`Reactivate now`}</SettingsLink>
+    );
+
+    return (
+        <TopBanner className="bg-danger">
+            {c('Info')
+                .jt`Subscription ending: Reactivate by ${byDate} to keep your ${planName} benefits. ${reactivateLink}`}
+        </TopBanner>
+    );
+};
+
+export default SubscriptionEndsBanner;

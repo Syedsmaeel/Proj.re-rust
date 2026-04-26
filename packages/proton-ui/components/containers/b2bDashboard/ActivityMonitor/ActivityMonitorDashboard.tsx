@@ -1,0 +1,117 @@
+import { useState } from 'react';
+
+import { c } from 'ttag';
+
+import { Tabs } from '@proton/components/components/tabs/Tabs';
+import {
+    getIsB2BAudienceFromPlan,
+    hasAnyB2bBundle,
+    hasPassBusiness,
+    hasVPNPassProfessional,
+    hasVpnBusiness,
+} from '@proton/payments';
+import type { MaybeFreeSubscription } from '@proton/payments/core/subscription/helpers';
+import { PASS_APP_NAME } from '@proton/shared/lib/constants';
+import { hasOrganizationSetup, hasOrganizationSetupWithKeys } from '@proton/shared/lib/helpers/organization';
+import type { OrganizationExtended, UserModel } from '@proton/shared/lib/interfaces';
+import { useFlag } from '@proton/unleash/useFlag';
+import isTruthy from '@proton/utils/isTruthy';
+
+import SettingsSectionExtraWide from '../../account/SettingsSectionExtraWide';
+import { OrganizationEvents } from '../Organization/OrganizationEvents';
+import { PassEvents } from '../Pass/PassEvents';
+import { VPNEvents } from '../VPN/VPNEvents';
+import ActivityMonitorEvents from './ActivityMonitorEvents';
+
+interface Props {
+    user: UserModel;
+    organization?: OrganizationExtended;
+    subscription: MaybeFreeSubscription;
+}
+
+const canViewB2BActivityMonitor = (user: UserModel, organization?: OrganizationExtended) => {
+    const isAdmin = user.isAdmin && user.isSelf;
+    const hasOrganizationKey = hasOrganizationSetupWithKeys(organization);
+    const hasOrganization = hasOrganizationSetup(organization);
+    const isB2B = getIsB2BAudienceFromPlan(organization?.PlanName);
+
+    return (hasOrganizationKey || hasOrganization || isB2B) && isAdmin;
+};
+
+const useCanViewB2BOrganization = (user: UserModel, organization?: OrganizationExtended) => {
+    const isAdmin = user.isAdmin && user.isSelf;
+    const hasOrganizationKey = hasOrganizationSetupWithKeys(organization);
+    const hasOrganization = hasOrganizationSetup(organization);
+    const canDisplayB2BOrganizationEvents = useFlag('B2BOrganizationMonitor');
+
+    return canDisplayB2BOrganizationEvents && (hasOrganizationKey || hasOrganization) && isAdmin;
+};
+
+const useCanViewGatewayMonitor = (
+    user: UserModel,
+    subscription: MaybeFreeSubscription,
+    organization?: OrganizationExtended
+) => {
+    const isAdmin = user.isAdmin && user.isSelf;
+    const hasOrganizationKey = hasOrganizationSetupWithKeys(organization);
+    const hasOrganization = hasOrganizationSetup(organization);
+    const canHaveOrganization = !user.isMember && !!organization && isAdmin;
+    const hasPlanWithEventLogging =
+        hasVpnBusiness(subscription) || hasAnyB2bBundle(subscription) || hasVPNPassProfessional(subscription);
+    const canDisplayB2BLogsVPN = useFlag('B2BLogsVPN');
+
+    return (
+        canDisplayB2BLogsVPN &&
+        hasPlanWithEventLogging &&
+        canHaveOrganization &&
+        (hasOrganizationKey || hasOrganization)
+    );
+};
+
+const useCanViewPassMonitor = (
+    user: UserModel,
+    subscription: MaybeFreeSubscription,
+    organization?: OrganizationExtended
+) => {
+    const isAdmin = user.isAdmin && user.isSelf;
+    const hasOrganizationKey = hasOrganizationSetupWithKeys(organization);
+    const hasOrganization = hasOrganizationSetup(organization);
+    const canHaveOrganization = !user.isMember && !!organization && isAdmin;
+    const hasPassOrBundleB2B = hasPassBusiness(subscription) || hasAnyB2bBundle(subscription);
+    const canDisplayB2BLogsPass = useFlag('B2BLogsPass');
+
+    return (
+        canDisplayB2BLogsPass && hasPassOrBundleB2B && canHaveOrganization && (hasOrganizationKey || hasOrganization)
+    );
+};
+
+const ActivityMonitorDashboard = ({ user, organization, subscription }: Props) => {
+    const [activeTab, setActiveTab] = useState(0);
+
+    const tabs = [
+        canViewB2BActivityMonitor(user, organization) && {
+            title: c('Accounts').t`Accounts`,
+            content: <ActivityMonitorEvents />,
+        },
+        useCanViewB2BOrganization(user, organization) && {
+            title: c('Organization').t`Organization`,
+            content: <OrganizationEvents />,
+        },
+        useCanViewGatewayMonitor(user, subscription, organization) && {
+            title: c('VPN Gateways').t`VPN Gateways`,
+            content: <VPNEvents />,
+        },
+        useCanViewPassMonitor(user, subscription, organization) && {
+            title: PASS_APP_NAME,
+            content: <PassEvents />,
+        },
+    ].filter(isTruthy);
+
+    return (
+        <SettingsSectionExtraWide>
+            <Tabs tabs={tabs} value={activeTab} onChange={setActiveTab} />
+        </SettingsSectionExtraWide>
+    );
+};
+
+export default ActivityMonitorDashboard;

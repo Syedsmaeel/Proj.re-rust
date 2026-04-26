@@ -1,0 +1,28 @@
+@use 'sass:list';
+
+/**
+ * Convert a list of arguments into a string seperated by dashes
+ * @param {String} $args - A list of arguments
+ * @returns {String} - The converted into a strings joined with dashes
+ */
+@function dash-join($args...) {
+	$result: null;
+	$first-add: true;
+	$glue: '-';
+
+	@for $i from 1 through list.length($args) {
+		$e: list.nth($args, $i);
+
+		@if $e != null and $e != '' {
+			@if $i == 1 or $first-add == true {
+				$result: #{$e};
+			} @else {
+				$result: #{$result}#{$glue}#{$e};
+			}
+
+			$first-add: false;
+		}
+	}
+
+	@return $result;
+}

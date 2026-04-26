@@ -1,0 +1,17 @@
+StackConfig(
+    name: "rusty-stack",
+    services: {
+        "web": ServiceConfig(
+            image: "nginx:alpine",
+            command: None,
+            env: None,
+            ports: Some(["8081:80"]),
+        ),
+        "db": ServiceConfig(
+            image: "redis:alpine",
+            command: None,
+            env: None,
+            ports: None,
+        ),
+    },
+)

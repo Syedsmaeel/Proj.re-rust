@@ -1,0 +1,5 @@
+@use 'outline-mixins' as *;
+
+// just to be able to import the outline-mixins somewhere else
+
+@include outline-full-import;

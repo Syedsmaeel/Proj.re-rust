@@ -1,0 +1,197 @@
+import { fireEvent, screen, waitFor } from '@testing-library/react';
+
+import { getModelState } from '@proton/account/test';
+import TopNavbarUpsell from '@proton/components/components/topnavbar/TopNavbarUpsell';
+import type { FeatureCode } from '@proton/features';
+import { APPS } from '@proton/shared/lib/constants';
+import { setBit } from '@proton/shared/lib/helpers/bitset';
+import { NEWSLETTER_SUBSCRIPTIONS_BITS } from '@proton/shared/lib/helpers/newsletter';
+import type { UserModel, UserSettings } from '@proton/shared/lib/interfaces';
+
+import { clearAll, renderWithProviders } from '../contacts/tests/render';
+import { OffersTestProvider } from './Offers.test.helpers';
+import useOfferConfig from './hooks/useOfferConfig';
+import type { OfferConfig } from './interface';
+
+const mockUseOfferConfig = useOfferConfig as jest.MockedFunction<typeof useOfferConfig>;
+
+const OFFER_CONTENT = 'deal deal deal deal deal';
+
+jest.mock('./hooks/useOfferConfig', () => ({
+    __esModule: true,
+    default: jest.fn(),
+}));
+
+jest.mock('./hooks/useFetchOffer', function () {
+    return {
+        __esModule: true,
+        default: jest.fn(({ offerConfig }) => ({
+            offer: offerConfig,
+            loading: false,
+            hasEstimationError: false,
+            initialized: true,
+        })),
+    };
+});
+
+jest.mock('./hooks/useOfferFlags', function () {
+    return {
+        __esModule: true,
+        default: jest.fn(() => ({
+            isVisited: false,
+            loading: false,
+            isActive: true,
+            handleVisit: () => {},
+            handleHide: () => {},
+        })),
+    };
+});
+
+jest.mock('@proton/components/payments/client-extensions', () => ({
+    __esModule: true,
+    useAutomaticCurrency: jest.fn().mockReturnValue(['EUR', false]),
+}));
+
+const TopNavbarComponent = () => (
+    <OffersTestProvider>
+        <TopNavbarUpsell app={APPS.PROTONMAIL} />
+    </OffersTestProvider>
+);
+
+const getUserSettings = ({ offersEnabled }: { offersEnabled: boolean }): UserSettings => {
+    return {
+        News: offersEnabled ? setBit(0, NEWSLETTER_SUBSCRIPTIONS_BITS.IN_APP_NOTIFICATIONS) : 0,
+        UsedClientFlags: 0,
+    } as UserSettings;
+};
+
+const getUser = ({ isFree }: { isFree: boolean }) => {
+    return {
+        isFree,
+    } as UserModel;
+};
+
+const offerConfigData: OfferConfig = {
+    deals: [],
+    featureCode: 'testOffer2022' as FeatureCode,
+    layout: () => <div>{OFFER_CONTENT}</div>,
+    ID: 'test-offer-2022' as OfferConfig['ID'],
+    canBeDisabled: true,
+};
+
+const offerConfigAutopopupData: OfferConfig = {
+    ...offerConfigData,
+    autoPopUp: 'one-time',
+};
+
+describe('Offers', () => {
+    beforeEach(() => {
+        clearAll();
+    });
+
+    describe('Offers display', () => {
+        it('Should display upgrade button for free users', async () => {
+            mockUseOfferConfig.mockReturnValue({ config: undefined, isLoading: false, shouldPrefetch: false });
+            renderWithProviders(<TopNavbarComponent />, {
+                preloadedState: {
+                    user: getModelState(getUser({ isFree: true })),
+                    userSettings: getModelState(getUserSettings({ offersEnabled: true })),
+                },
+            });
+
+            await waitFor(() => {
+                expect(screen.getByTestId('cta:upgrade-plan')).toBeInTheDocument();
+            });
+
+            const link = screen.getByTestId('cta:upgrade-plan');
+
+            expect(link.textContent).toContain('Upgrade');
+        });
+
+        it('Should display nothing for paid users with offers', () => {
+            mockUseOfferConfig.mockReturnValue({ config: undefined, isLoading: false, shouldPrefetch: false });
+            renderWithProviders(<TopNavbarComponent />, {
+                preloadedState: {
+                    user: getModelState(getUser({ isFree: false })),
+                    userSettings: getModelState(getUserSettings({ offersEnabled: true })),
+                },
+            });
+
+            expect(screen.queryByTestId('cta:upgrade-plan')).toBeNull();
+        });
+
+        describe('Non free user with valid offer', () => {
+            it('Should not display an offer button with setting turned off', () => {
+                mockUseOfferConfig.mockReturnValue({
+                    config: offerConfigData,
+                    isLoading: false,
+                    shouldPrefetch: false,
+                });
+                renderWithProviders(<TopNavbarComponent />, {
+                    preloadedState: {
+                        user: getModelState(getUser({ isFree: false })),
+                        userSettings: getModelState(getUserSettings({ offersEnabled: false })),
+                    },
+                });
+
+                expect(screen.queryByTestId('cta:special-offer')).toBeNull();
+            });
+
+            it('Should display an offer button', async () => {
+                mockUseOfferConfig.mockReturnValue({
+                    config: offerConfigData,
+                    isLoading: false,
+                    shouldPrefetch: false,
+                });
+                renderWithProviders(<TopNavbarComponent />, {
+                    preloadedState: {
+                        user: getModelState(getUser({ isFree: false })),
+                        userSettings: getModelState(getUserSettings({ offersEnabled: true })),
+                    },
+                });
+
+                await waitFor(() => {
+                    expect(screen.getByTestId('cta:special-offer')).toBeInTheDocument();
+                });
+
+                expect(screen.getByTestId('cta:special-offer')?.textContent).toBe('Special offer');
+            });
+
+            it('Should open a modal with offer content', () => {
+                mockUseOfferConfig.mockReturnValue({
+                    config: offerConfigData,
+                    isLoading: false,
+                    shouldPrefetch: false,
+                });
+                renderWithProviders(<TopNavbarComponent />, {
+                    preloadedState: {
+                        user: getModelState(getUser({ isFree: false })),
+                        userSettings: getModelState(getUserSettings({ offersEnabled: true })),
+                    },
+                });
+
+                const specialOfferCta = screen.getByTestId('cta:special-offer');
+
+                fireEvent.click(specialOfferCta);
+
+                screen.getByText(OFFER_CONTENT);
+            });
+
+            it.skip('Should open a modal when autopopup', () => {
+                mockUseOfferConfig.mockReturnValue({
+                    config: offerConfigAutopopupData,
+                    isLoading: false,
+                    shouldPrefetch: false,
+                });
+                renderWithProviders(<TopNavbarComponent />, {
+                    preloadedState: {
+                        user: getModelState(getUser({ isFree: false })),
+                        userSettings: getModelState(getUserSettings({ offersEnabled: true })),
+                    },
+                });
+
+                screen.getByText(OFFER_CONTENT);
+            });
+        });
+    });
+});

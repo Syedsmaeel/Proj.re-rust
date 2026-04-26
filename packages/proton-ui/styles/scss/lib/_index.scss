@@ -1,0 +1,16 @@
+// Config
+@forward 'config';
+
+// Functions
+@forward 'em';
+@forward 'rem';
+@forward 'im-to-em';
+@forward 'logical';
+@forward 'str-replace';
+@forward 'easing';
+@forward 'dash-join';
+
+// Mixins
+@forward 'vendor-prefix';
+@forward 'transform-origins';
+@forward 'responsive-classes';

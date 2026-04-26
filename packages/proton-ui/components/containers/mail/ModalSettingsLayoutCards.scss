@@ -1,0 +1,29 @@
+@use '~@proton/styles/scss/lib/config' as *;
+@use '~@proton/styles/scss/lib/include-media' as im;
+im.$breakpoints: $breakpoints-product;
+im.$media-expressions: $media-expressions;
+
+.layoutCards-two-per-row {
+	&#{&} {
+		display: grid;
+		grid-template-columns: 1fr 1fr;
+		grid-gap: 1em;
+
+		.layout-card-button {
+			margin: 0;
+			inline-size: 100%;
+
+			&#{&} {
+				background-color: transparent;
+			}
+		}
+
+		.layout-card-image {
+			inline-size: 100%;
+		}
+
+		@include im.media('<=xsmall') {
+			grid-template-columns: 1fr;
+		}
+	}
+}

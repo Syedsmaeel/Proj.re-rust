@@ -1,0 +1,13 @@
+@use '~@proton/styles/scss/lib/config' as *;
+@use '~@proton/styles/scss/lib/rem' as *;
+
+.dashboard-download-section-button-appstore {
+	--padding-block: 0.25rem;
+	--button-default-background-color: black;
+	--button-hover-background-color: black;
+	--button-active-background-color: black;
+
+	img {
+		block-size: rem(26);
+	}
+}

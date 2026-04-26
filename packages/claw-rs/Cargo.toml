@@ -1,0 +1,9 @@
+[package]
+name = "claw-rs"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+swc_core = "64.0.0"
+swc_ecma_ast = "23.0.0"
+swc_ecma_parser = "39.0.0"

@@ -1,0 +1,36 @@
+# GitLab Remote Development Configuration
+
+This configuration enables the use of GitLab's cloud-native development environments, offloading the storage and build burden from your local Windows machine.
+
+## Implementation Steps
+
+### 1. Enable Remote Development
+- In your GitLab project, go to **Settings > Remote Development**.
+- Enable **"Allow remote development workspaces"**.
+
+### 2. Configure Workspace (`.devfile.yaml`)
+Create this file in the root of your `UnifiedPlatform` directory. It defines the environment that will be provisioned in the cloud.
+
+```yaml
+schemaVersion: 2.2.0
+metadata:
+  name: unified-platform-dev
+components:
+  - name: rust-node-env
+    container:
+      image: rust:latest
+      mountSources: true
+      command: ['/bin/bash', '-c', 'apt-get update && apt-get install -y nodejs npm && tail -f /dev/null']
+      env:
+        - name: CARGO_TARGET_DIR
+          value: /tmp/target # Offloads target dir to ephemeral cloud storage
+commands:
+  - id: build
+    exec:
+      command: cargo build
+      component: rust-node-env
+```
+
+### 3. Usage
+- Once configured, you can click **"Open in Workspace"** on your GitLab project page.
+- Everything runs on GitLab's servers. Your Windows machine simply acts as a display.

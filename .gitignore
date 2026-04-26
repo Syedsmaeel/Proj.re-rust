@@ -1,0 +1,10 @@
+models/
+models/
+node_modules/
+target/
+.env
+.DS_Store
+models/
+node_modules/
+target/
+*.bin

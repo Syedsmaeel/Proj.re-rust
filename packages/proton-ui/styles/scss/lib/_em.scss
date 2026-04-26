@@ -1,0 +1,21 @@
+@use 'sass:math';
+@use '../lib/config' as config;
+
+/**
+ * Calculate an em value from a px value
+ * @param {Number} $px - A value to be converted in em
+ * @param {Number} $base - The base pixel value of the app
+ * @return {Number} - The $px value converted in em
+ */
+@function em($px, $base: config.$base-font-size) {
+	// Normalise the units
+	@if math.unit($px) == '' {
+		$px: $px * 1px;
+	}
+
+	@if math.unit($base) == '' {
+		$base: $base * 1px;
+	}
+
+	@return math.div($px, $base) * 1em;
+}

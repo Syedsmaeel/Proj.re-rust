@@ -1,0 +1,115 @@
+import type { ReactNode } from 'react';
+
+import { c } from 'ttag';
+
+import { Button } from '@proton/atoms/Button/Button';
+import { IcCross } from '@proton/icons/icons/IcCross';
+import clsx from '@proton/utils/clsx';
+import isTruthy from '@proton/utils/isTruthy';
+
+import './PromotionBanner.scss';
+
+interface Props {
+    className?: string;
+    rounded?: boolean | 'md' | 'lg' | 'xl';
+    icon?: ReactNode;
+    description?: ReactNode;
+    cta?: ReactNode;
+    hasDismissAction?: boolean;
+    contentCentered?: boolean;
+    mode?: 'row' | 'banner';
+    gradient?: 'horizontal' | 'vertical';
+    onClose?: () => void;
+    ['data-testid']?: string;
+}
+
+export const PromotionBanner = ({
+    className,
+    rounded = false,
+    contentCentered = true,
+    mode = 'row',
+    gradient = 'horizontal',
+    description,
+    cta,
+    icon,
+    hasDismissAction = false,
+    onClose,
+    'data-testid': dataTestId,
+}: Props) => {
+    const handleClose = () => {
+        onClose?.();
+    };
+
+    const roundedClass = (() => {
+        switch (true) {
+            case rounded === true:
+                return 'rounded';
+            case rounded === 'md':
+                return 'rounded';
+            case rounded === 'lg':
+                return 'rounded-lg';
+            case rounded === 'xl':
+                return 'rounded-xl';
+            default:
+                return '';
+        }
+    })();
+
+    return (
+        <div
+            className={clsx(
+                'flex flex-nowrap shrink-0 bg-promotion relative',
+                gradient === 'horizontal' && 'bg-promotion-gradient-horizontal',
+                gradient === 'vertical' && 'bg-promotion-gradient-vertical',
+                contentCentered && 'text-left lg:text-center p-0-5',
+                roundedClass,
+                className
+            )}
+            data-testid={dataTestId}
+        >
+            <div
+                className={clsx(
+                    'inline-flex mx-auto flex-nowrap items-center flex-column md:flex-row gap-2',
+                    (() => {
+                        if (contentCentered) {
+                            return 'm-0.5 px-2';
+                        }
+                        if (mode === 'banner') {
+                            return 'm-3 px-4 w-full';
+                        }
+                        if (mode === 'row') {
+                            return 'm-2 pl-4 w-full';
+                        }
+                    })()
+                )}
+            >
+                {icon && <div className="shrink-0">{icon}</div>}
+                {description && (
+                    <div
+                        className={clsx(
+                            'bg-promotion-text',
+                            !contentCentered && 'flex-1',
+                            mode === 'banner' && !contentCentered && 'text-center md:text-left'
+                        )}
+                    >
+                        {description}
+                    </div>
+                )}
+                {cta && <div className="shrink-0 w-full md:w-auto md:max-w-1/3 text-right">{cta}</div>}
+            </div>
+            {isTruthy(hasDismissAction) && (
+                <Button
+                    onClick={handleClose}
+                    icon
+                    size="small"
+                    color="weak"
+                    shape="ghost"
+                    className="shrink-0 ml-2 mr-1 my-auto"
+                    title={c('Action').t`Close`}
+                >
+                    <IcCross alt={c('Action').t`Close`} />
+                </Button>
+            )}
+        </div>
+    );
+};

@@ -1,0 +1,32 @@
+@use 'lib/im-to-em' as *;
+
+// Library
+@use 'lib/' as *;
+
+// Variables specific overrides
+$breakpoints-product: im-to-em(
+	(
+		'xlarge': 1500px,
+		'large': 1100px,
+		'medium': 1000px,
+		'small': 870px,
+		'xsmall': 520px,
+	)
+);
+
+// Vendors
+@use 'lib/include-media' as im;
+im.$breakpoints: $breakpoints-product;
+im.$media-expressions: $media-expressions;
+
+// Initialisation
+@use 'base/' as *;
+
+// Layout
+@use 'layout/' as *;
+
+// Components
+@use 'components/' as *;
+
+// Helpers
+@use 'utilities/' as *;

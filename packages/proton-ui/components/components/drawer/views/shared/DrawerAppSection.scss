@@ -1,0 +1,12 @@
+@use '~@proton/styles/scss/lib/config' as *;
+@use '~@proton/styles/scss/lib/rem' as *;
+
+.drawerAppSection {
+	&,
+	&:hover,
+	&:focus,
+	&:focus-within {
+		background-color: var(--background-elevated, var(--bg-norm));
+		min-block-size: rem(40);
+	}
+}

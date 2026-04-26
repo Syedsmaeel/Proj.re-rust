@@ -1,0 +1,66 @@
+@use '~@proton/styles/scss/lib/config' as *;
+@use '~@proton/styles/scss/lib/em' as *;
+@use '~@proton/styles/scss/lib/rem' as *;
+@use '~@proton/styles/scss/lib/include-media' as *;
+@use '~@proton/styles/scss/specifics/placeholder-loading' as *;
+
+.calendar-member-status {
+	padding-block: rem(1);
+	padding-inline: rem(6);
+}
+
+// temporary workaround until Sass modules fix include-media + cal specific breakpoints
+.calendar-member-delete-button-full {
+	@include media('>#{em(866, 16)}') {
+		display: none;
+	}
+}
+
+.calendar-member-delete-button-icon {
+	@include media('<=#{em(866, 16)}') {
+		display: none;
+	}
+}
+
+.calendar-member-skeleton {
+	&-container {
+		display: flex;
+		border-block-end: 1px solid var(--border-weak);
+		padding: rem(8);
+	}
+
+	&-user {
+		display: flex;
+		flex-direction: column;
+
+		> * {
+			block-size: rem(14);
+
+			&:first-child {
+				margin-block-end: rem(4);
+			}
+		}
+	}
+
+	&::before {
+		inline-size: 100%;
+		block-size: 100%;
+
+		@extend %item-loading-pseudo;
+		@extend %placeholder-loading;
+	}
+
+	&--avatar {
+		inline-size: rem(32);
+		block-size: rem(32);
+		margin-inline-end: rem(8);
+	}
+
+	&--user-name {
+		inline-size: 174px;
+	}
+
+	&--user-email {
+		block-size: 109px;
+	}
+}

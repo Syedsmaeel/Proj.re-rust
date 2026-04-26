@@ -1,0 +1,9 @@
+@use '~@proton/styles/scss/lib/config' as *;
+@use '~@proton/styles/scss/lib/em' as *;
+
+.smtp-token {
+	&-copy {
+		padding: em(7); // same as input height
+		inset-block-start: 1px;
+	}
+}

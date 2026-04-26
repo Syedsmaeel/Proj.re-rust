@@ -1,0 +1,25 @@
+@use 'lib/im-to-em' as *;
+
+// Library
+@use 'lib/' as *;
+
+$use-height-auto-td: false;
+$use-height-auto-img: false;
+$use-height-auto-table: false;
+
+// Vendors
+@use 'lib/include-media' as im;
+im.$breakpoints: $breakpoints-product;
+im.$media-expressions: $media-expressions;
+
+// Initialisation
+@use 'base/' as *;
+
+// Layout
+@use 'layout/' as *;
+
+// Components
+@use 'components/' as *;
+
+// Helpers
+@use 'utilities/' as *;

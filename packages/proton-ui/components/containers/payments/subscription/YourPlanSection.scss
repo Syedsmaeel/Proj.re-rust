@@ -1,0 +1,36 @@
+@use '~@proton/styles/scss/lib/config' as *;
+@use '~@proton/styles/scss/lib/include-media' as im;
+im.$breakpoints: $breakpoints-product;
+im.$media-expressions: $media-expressions;
+
+.your-plan-section-container {
+	display: grid;
+
+	& > div {
+		block-size: fit-content;
+	}
+
+	@include im.media('<=medium') {
+		grid-template-columns: repeat(1, 1fr);
+	}
+}
+
+.grid-column-3 {
+	grid-template-columns: repeat(3, 1fr);
+
+	@include im.media('<=large') {
+		grid-template-columns: repeat(2, 1fr);
+	}
+
+	@include im.media('<=medium') {
+		grid-template-columns: repeat(1, 1fr);
+	}
+}
+
+.grid-column-2 {
+	grid-template-columns: repeat(2, 1fr);
+
+	@include im.media('<=medium') {
+		grid-template-columns: repeat(1, 1fr);
+	}
+}

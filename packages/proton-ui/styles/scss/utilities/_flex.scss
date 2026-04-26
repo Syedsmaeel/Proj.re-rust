@@ -1,0 +1,6 @@
+@use 'sass:map';
+@use 'flex-mixins' as *;
+
+// just to be able to import the flex-mixins somewhere else
+
+@include flex-full-import;

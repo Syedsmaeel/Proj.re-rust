@@ -1,0 +1,8 @@
+[workspace]
+members = [
+    "apps/crabs-rs",
+    "packages/ai-agent-rs", "packages/claw-rs",
+    "packages/db-adapter-rs",
+    "packages/git-integrator-rs",
+]
+resolver = "2"

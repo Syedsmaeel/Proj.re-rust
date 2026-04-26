@@ -1,0 +1,57 @@
+image: node:20
+
+stages:
+  - build
+  - micro-os
+  - backend
+  - deploy
+
+before_script:
+  - apt-get update && apt-get install -y git curl build-essential
+  - curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
+  - source $HOME/.cargo/env
+
+build_binary:
+  stage: build
+  script:
+    - source $HOME/.cargo/env
+    - cd apps/crabs-rs
+    - cargo build --release
+  artifacts:
+    paths:
+      - apps/crabs-rs/target/release/crab
+    expire_in: 1 week
+  rules:
+    - changes:
+        - apps/crabs-rs/**/*
+
+build_micro_os:
+  stage: micro-os
+  image: buildroot/buildroot:latest
+  script:
+    - make -C buildroot BR2_EXTERNAL=../board/qemu/x86_64 minimal_defconfig
+    - make -C buildroot
+  artifacts:
+    paths:
+      - buildroot/output/images/rootfs.cpio.gz
+    expire_in: 1 week
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "master"'
+
+audit_agent:
+  stage: backend
+  script:
+    - cd apps/docker-plus && npm install && cd ../..
+    - node apps/docker-plus/src/services/ci-runner.js
+  allow_failure: true
+
+pages:
+  stage: deploy
+  script:
+    - mkdir -p public
+    - cp -r apps/docker-plus/public/* public/
+  artifacts:
+    paths:
+      - public
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "master"'

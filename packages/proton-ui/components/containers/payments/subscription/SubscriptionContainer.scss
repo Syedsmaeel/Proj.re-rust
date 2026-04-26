@@ -1,0 +1,40 @@
+@use '~@proton/styles/scss/lib/config' as *;
+@use '~@proton/styles/scss/lib/rem' as *;
+@use '~@proton/styles/scss/lib/include-media' as im;
+im.$breakpoints: $breakpoints-product;
+im.$media-expressions: $media-expressions;
+
+.subscription-container-plan-customizer:has(*) {
+	margin-block-end: var(--space-8);
+}
+
+@include im.media('<=xsmall') {
+	.subscription-modal-bf-bg {
+		padding: 0;
+		background: var(--background-norm);
+
+		.subscription-modal {
+			border-radius: 0;
+			box-shadow: none;
+		}
+	}
+}
+
+.subscription-modal {
+	&--large-width {
+		--size: #{rem(1200)};
+		--margin: #{rem(32)};
+	}
+
+	&--medium-width {
+		--size: #{rem(900)};
+		--margin: #{rem(24)};
+	}
+}
+
+@include im.media('>medium') {
+	// Set height to avoid it switching between steps
+	.subscription-modal--fixed-height {
+		block-size: rem(900);
+	}
+}

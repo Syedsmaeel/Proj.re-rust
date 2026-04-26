@@ -1,0 +1,31 @@
+@use '../lib/rem' as *;
+@use '../lib/em' as *;
+@use '../lib/rem' as *;
+
+[class*='badge-label'] {
+	text-transform: uppercase;
+	display: inline-flex;
+	font-size: rem(11); // to be sure this is the same height everywhere
+	padding-inline: em(8, 11);
+	line-height: rem(22);
+	border-radius: var(--border-radius-full);
+	text-align: center;
+}
+
+@each $color in (primary, danger, warning, success, info) {
+	$prefix: '';
+	@if $color != 'primary' {
+		$prefix: 'signal-';
+	}
+
+	.badge-label-#{$color} {
+		background-color: var(--#{$prefix + $color});
+		color: var(--#{$prefix + $color}-contrast);
+	}
+}
+
+@each $color in (norm, weak, strong) {
+	.badge-label-#{$color} {
+		background-color: var(--background-#{$color});
+	}
+}

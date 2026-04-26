@@ -1,0 +1,31 @@
+@use '~@proton/styles/scss/lib/config' as *;
+@use '~@proton/styles/scss/lib/em' as *;
+@use '~@proton/styles/scss/lib/rem' as *;
+
+.security-card {
+	&-dismiss-button {
+		transform: translate(-50%, -50%);
+		border: 0;
+	}
+
+	&-container &-dismiss-button {
+		--padding-block: #{em(2)};
+		--padding-inline: #{em(2)};
+	}
+
+	&-icon {
+		&-container {
+			inline-size: rem(30);
+			background-color: var(--signal-info-minor-2);
+
+			&--transparent {
+				background-color: transparent;
+			}
+		}
+
+		// used for account cards
+		&-bubble {
+			transform: translate(50%, -50%);
+		}
+	}
+}

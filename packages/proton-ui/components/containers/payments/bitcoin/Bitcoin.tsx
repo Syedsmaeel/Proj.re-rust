@@ -1,0 +1,114 @@
+import type { ReactNode } from 'react';
+import { useEffect } from 'react';
+
+import { c } from 'ttag';
+
+import { Banner, BannerVariants } from '@proton/atoms/Banner/Banner';
+import { Button } from '@proton/atoms/Button/Button';
+import Bordered from '@proton/components/components/container/Bordered';
+import Price from '@proton/components/components/price/Price';
+import type { BitcoinHook } from '@proton/components/payments/react-extensions/useBitcoin';
+import { getMaxBitcoinAmount, getMinBitcoinAmount } from '@proton/payments/core/amount-limits';
+
+import BitcoinDetails from './BitcoinDetails';
+import type { OwnProps as BitcoinQRCodeProps } from './BitcoinQRCode';
+import BitcoinQRCode from './BitcoinQRCode';
+
+export type Props = BitcoinHook & {
+    suffix?: ReactNode;
+};
+
+const Bitcoin = ({
+    amount,
+    currency,
+    processingBitcoinToken,
+    bitcoinPaymentValidated,
+    model,
+    loading,
+    error,
+    request,
+    billingAddress,
+    suffix,
+}: Props) => {
+    useEffect(() => {
+        void request();
+    }, [amount, currency, billingAddress?.CountryCode, billingAddress?.State, billingAddress?.ZipCode]);
+
+    const minBitcoinAmount = getMinBitcoinAmount(currency);
+    if (amount < minBitcoinAmount) {
+        const i18n = (amount: ReactNode) => c('Info').jt`Amount below minimum (${amount}).`;
+        return (
+            <Banner className="mb-4" variant={BannerVariants.WARNING}>
+                {i18n(
+                    <Price key="price" currency={currency}>
+                        {minBitcoinAmount}
+                    </Price>
+                )}
+            </Banner>
+        );
+    }
+    const maxBitcoinAmount = getMaxBitcoinAmount(currency);
+    if (amount > maxBitcoinAmount) {
+        const i18n = (amount: ReactNode) => c('Info').jt`Amount above maximum (${amount}).`;
+        return (
+            <Banner className="mb-4" variant={BannerVariants.WARNING}>
+                {i18n(
+                    <Price key="price" currency={currency}>
+                        {maxBitcoinAmount}
+                    </Price>
+                )}
+            </Banner>
+        );
+    }
+
+    if (error) {
+        return (
+            <>
+                <Banner className="mb-4" variant={BannerVariants.DANGER}>{c('Error')
+                    .t`Error connecting to the Bitcoin API.`}</Banner>
+                <Button onClick={request} data-testid="bitcoin-try-again">{c('Action').t`Try again`}</Button>
+            </>
+        );
+    }
+
+    const qrCodeStatus: BitcoinQRCodeProps['status'] = (() => {
+        if (loading) {
+            return 'hidden';
+        }
+        if (processingBitcoinToken) {
+            return 'pending';
+        }
+        if (bitcoinPaymentValidated) {
+            return 'confirmed';
+        }
+        return 'initial';
+    })();
+
+    const btcAmountBold = (
+        <span className="text-bold" key="btc-info-amount">
+            {model.amountBitcoin} BTC
+        </span>
+    );
+
+    return (
+        <Bordered className="p-6 rounded" data-testid="bitcoin-payment-data">
+            <div>
+                <span>
+                    {c('Info').jt`To complete your payment, please send ${btcAmountBold} to the address below.`}
+                </span>
+                <div className="my-6 flex justify-center">
+                    <BitcoinQRCode
+                        className="flex items-center flex-column"
+                        amount={model.amountBitcoin}
+                        address={model.address}
+                        status={qrCodeStatus}
+                    />
+                </div>
+            </div>
+            <BitcoinDetails loading={loading} amount={model.amountBitcoin} address={model.address} />
+            {suffix}
+        </Bordered>
+    );
+};
+
+export default Bitcoin;

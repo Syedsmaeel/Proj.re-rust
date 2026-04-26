@@ -1,0 +1,21 @@
+@use 'pass/pass-breakpoints' as *;
+
+// Library
+@use 'lib/' as *;
+
+// Vendors
+@use 'lib/include-media' as im;
+im.$breakpoints: $breakpoints-product;
+im.$media-expressions: $media-expressions;
+
+// Initialisation
+@use 'base/' as *;
+
+// Layout
+@use 'layout/' as *;
+
+// Components
+@use 'components/' as *;
+
+// Helpers
+@use 'utilities/' as *;

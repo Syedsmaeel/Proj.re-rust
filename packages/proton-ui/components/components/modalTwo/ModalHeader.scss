@@ -1,0 +1,20 @@
+@use '~@proton/styles/scss/lib/config' as *;
+@use '~@proton/styles/scss/lib/em' as *;
+
+.modal-two-header {
+	margin-block: var(--margin) 0.5em;
+	margin-inline: var(--margin);
+
+	&-actions {
+		margin-block-start: em(-9.5); // Same as button for icon
+		margin-inline-end: em(-10); // Same as button for icon
+
+		* + * {
+			margin-inline-start: 0.25em;
+		}
+	}
+
+	&-title + &-actions {
+		margin-block-start: 0;
+	}
+}

@@ -1,0 +1,78 @@
+import { useOrganization } from '@proton/account/organization/hooks';
+import { useUser } from '@proton/account/user/hooks';
+import { PLANS } from '@proton/payments';
+
+/**
+ * This hook centralized logic for Drive subscriptions.
+ */
+export const useDrivePlan = () => {
+    const [{ hasPaidDrive, isAdmin }] = useUser();
+    const [organization] = useOrganization();
+    const plan = organization?.PlanName || PLANS.FREE;
+
+    // B2B plans
+    const isDriveProfessional = plan === PLANS.DRIVE_BUSINESS;
+
+    // 2026-03-31: treat bundlepro2022, bundlepro2024 and bundlebiz2025 equivalently, as the old PBS plan
+    // This should be changed later if bundlebiz2025 gets Drive-only functionality
+    const isProtonBusinessSuite =
+        plan === PLANS.BUNDLE_PRO || plan === PLANS.BUNDLE_PRO_2024 || plan === PLANS.BUNDLE_BIZ_2025;
+
+    const isB2B = isDriveProfessional || isProtonBusinessSuite;
+
+    // B2C plans
+    const isDriveLite = plan === PLANS.DRIVE_LITE;
+
+    const isB2C = hasPaidDrive && !isB2B;
+
+    // Upsells
+    const canUpsellFree = !hasPaidDrive;
+    const canUpsellB2B = isB2B && !isProtonBusinessSuite;
+
+    return {
+        /** `true` if the user has a paid Drive plan. */
+        hasPaidDrive,
+
+        /** `true` if the user is admin of their organization. */
+        isAdmin,
+
+        /**
+         * The organization attached to the current user.
+         */
+        organization,
+
+        /** The {@link PLANS} the user is subscribed to. */
+        plan,
+
+        /**
+         * `true` if the user is on a Drive B2B plan.
+         *
+         * For Drive, only Drive-specific and ecosystem B2B plans are considered. \
+         * i.e. Mail Professional is not be considered B2B in a Drive context.
+         */
+        isB2B,
+
+        /**
+         * `true` if the user is on a Drive B2C plan.
+         *
+         * For Drive, only Drive-specific and ecosystem B2C plans are considered. \
+         * i.e. Mail Plus is not be considered B2C in a Drive context.
+         */
+        isB2C,
+
+        /** `true` is plan is *Drive Professional*. */
+        isDriveProfessional,
+
+        /** `true` if plan is *Workspace Standard* (bundlepro2024, bundlepro2022), *Workspace Premium* (bundlebiz2025). */
+        isProtonBusinessSuite,
+
+        /** `true` if plan is *Drive Lite*. */
+        isDriveLite,
+
+        /** `true` if a B2C upsell is available. */
+        canUpsellFree,
+
+        /** `true` if a B2B upsell is available. */
+        canUpsellB2B,
+    };
+};

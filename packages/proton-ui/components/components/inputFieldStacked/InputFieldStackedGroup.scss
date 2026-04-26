@@ -1,0 +1,17 @@
+@use '~@proton/styles/scss/lib/config' as *;
+
+/*
+  groups of inputs
+*/
+.stacked-field-group {
+	> :first-child {
+		border-start-start-radius: var(--stacked-field-border-radius);
+		border-start-end-radius: var(--stacked-field-border-radius);
+	}
+
+	> :last-child {
+		border-block-end: 1px solid var(--border-weak);
+		border-end-start-radius: var(--stacked-field-border-radius);
+		border-end-end-radius: var(--stacked-field-border-radius);
+	}
+}

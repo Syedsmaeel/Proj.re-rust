@@ -1,0 +1,33 @@
+@use '~@proton/styles/scss/lib/config' as *;
+@use '~@proton/styles/scss/lib/rem' as *;
+@use '~@proton/styles/scss/lib/include-media' as im;
+im.$breakpoints: $breakpoints-product;
+im.$media-expressions: $media-expressions;
+
+.member-toggle-container {
+	display: grid;
+	grid-template:
+		'toggle label'
+		'assistive assistive';
+	grid-template-columns: auto 1fr;
+	grid-template-rows: auto 1fr;
+	grid-column-gap: #{rem(8)};
+
+	@include im.media('>xsmall') {
+		grid-template-areas:
+			'toggle label'
+			'toggle assistive';
+	}
+
+	&-toggle {
+		grid-area: toggle;
+	}
+
+	&-label {
+		grid-area: label;
+	}
+
+	&-assistive {
+		grid-area: assistive;
+	}
+}

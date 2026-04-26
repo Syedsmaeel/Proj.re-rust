@@ -1,0 +1,24 @@
+@use '~@proton/styles/scss/lib/config' as *;
+@use '~@proton/styles/scss/lib/include-media' as im;
+im.$breakpoints: $breakpoints-product;
+im.$media-expressions: $media-expressions;
+
+.contactGroupDropdown {
+	.dropdown-content {
+		@include im.media('<=small') {
+			display: flex;
+			flex-flow: column nowrap;
+		}
+	}
+
+	&-list-container {
+		@include im.media('<=small') {
+			min-block-size: 5em;
+		}
+
+		@include im.media('>small') {
+			max-inline-size: 20em;
+			max-block-size: 15em;
+		}
+	}
+}

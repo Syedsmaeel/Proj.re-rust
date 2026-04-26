@@ -1,0 +1,16 @@
+{
+  "mcpServers": {
+    "gitlab": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-gitlab"],
+      "env": {
+        "GITLAB_PERSONAL_ACCESS_TOKEN": "glpat-XO2QH1N3eVKs2nCLPE8wP2M6MQpvOjEKdTpra241Zw8.01.171b89p3l",
+        "GITLAB_URL": "https://gitlab.com"
+      }
+    },
+    "filesystem": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-filesystem", "/home/Syed-Ismaeel/UnifiedPlatform"]
+    }
+  }
+}

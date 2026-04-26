@@ -1,0 +1,32 @@
+@use 'sass:map';
+@use '~@proton/styles/scss/lib/config' as *;
+@use '~@proton/styles/scss/lib/em' as *;
+@use '~@proton/styles/scss/lib/rem' as *;
+@use '~@proton/styles/scss/lib/easing' as *;
+@use '~@proton/styles/scss/lib/include-media' as im;
+im.$breakpoints: $breakpoints-product;
+im.$media-expressions: $media-expressions;
+
+.fab {
+	&#{&} {
+		// Specificity -_-v
+		position: fixed;
+		inset-block-end: em(64);
+		inset-inline-end: var(--right, 1.6em);
+		z-index: map.get($z-indexes, 'floating-action-buttons');
+		block-size: rem(56);
+		inline-size: rem(56);
+		border-radius: 50%;
+		padding: 0.5em;
+		box-shadow: var(--shadow-lifted);
+		transition: inset-block-end 0.5s easing(ease-out-quart);
+
+		&--inBackground {
+			z-index: 0;
+		}
+
+		@include im.media('>small') {
+			inset-block-end: 1em;
+		}
+	}
+}

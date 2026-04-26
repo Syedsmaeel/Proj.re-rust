@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Unified Social | Command Hub</title>
+    <style>
+        :root { --bg: #050505; --panel: #0a0a0a; --accent: #38bdf8; --text: #e2e8f0; }
+        body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); margin: 0; display: flex; height: 100vh; }
+        
+        .sidebar { width: 320px; background: var(--panel); border-right: 1px solid #1e293b; padding: 25px; }
+        .main-view { flex: 1; padding: 40px; overflow-y: auto; display: flex; flex-direction: column; }
+        
+        /* The "Live" elements */
+        .feed-container { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px; }
+        .card { background: rgba(30, 41, 59, 0.4); border: 1px solid rgba(255,255,255,0.1); border-radius: 16px; padding: 25px; transition: 0.3s; backdrop-filter: blur(10px); }
+        .card:hover { transform: translateY(-5px); border-color: var(--accent); }
+        
+        /* Interactive Elements */
+        textarea { width: 100%; height: 120px; background: #0f172a; border: 1px solid #334155; color: white; padding: 15px; border-radius: 8px; resize: none; }
+        .zap-btn { background: var(--accent); color: #000; border: none; padding: 12px; border-radius: 8px; font-weight: bold; cursor: pointer; width: 100%; margin-top: 10px; }
+        
+        /* Real-time indicator */
+        .live-dot { height: 10px; width: 10px; background-color: #22c55e; border-radius: 50%; display: inline-block; margin-right: 5px; animation: blink 1s infinite; }
+        @keyframes blink { 0% { opacity: 1; } 50% { opacity: 0.3; } 100% { opacity: 1; } }
+    </style>
+</head>
+<body>
+    <div class="sidebar">
+        <h1 style="color: var(--accent);">UnifiedSocial</h1>
+        <div id="wasm-status" style="font-size: 0.8em; color: #64748b; margin-bottom: 20px;"><span class="live-dot"></span>Core Online</div>
+        <textarea id="aiInput" placeholder="Agent Query..."></textarea>
+        <button class="zap-btn" onclick="runLocalAI()">RUN AGENTIC AI</button>
+        <div id="aiResponse" style="margin-top:20px; font-size: 0.9em;"></div>
+    </div>
+    
+    <main class="main-view">
+        <h1 id="feed-title">Global Mesh Activity</h1>
+        <div id="activity" class="feed-container"></div>
+    </main>
+
+    <script type="module">
+        import { CreateMLCEngine } from "https://esm.run/@mlc-ai/web-llm";
+        let engine;
+        
+        async function initWasmAI() {
+            engine = await CreateMLCEngine("Llama-3.2-3B-Instruct-q4f32_1-MLC", {
+                initProgressCallback: (i) => document.getElementById('wasm-status').innerText = `Loading: ${(i.progress * 100).toFixed(0)}%`
+            });
+            document.getElementById('wasm-status').innerHTML = '<span class="live-dot"></span> Core Online';
+        }
+        initWasmAI();
+
+        window.runLocalAI = async () => {
+            const res = await engine.chat.completions.create({ messages: [{ role: "user", content: document.getElementById('aiInput').value }] });
+            document.getElementById('aiResponse').innerText = res.choices[0].message.content;
+        };
+
+        async function loadFeed() {
+            // Real-time polling
+            const res = await fetch('https://gitlab.com/Syedsmaeel/unified-platform/-/raw/master/packages/database-adapter/db/feed.json?t=' + Date.now());
+            const data = await res.json();
+            
+            const activityDiv = document.getElementById('activity');
+            activityDiv.innerHTML = data.map(post => `
+                <div class="card">
+                    <h3>${post.name}</h3>
+                    <p style="color: #94a3b8;">Status: ${post.audit.status}</p>
+                    <button onclick="triggerReward('${post.name}')">⚡ ZAP 10M</button>
+                </div>
+            `).join('');
+        }
+        
+        // Auto-refresh feed every 5s for "Alive" feel
+        setInterval(loadFeed, 5000);
+        loadFeed();
+    </script>
+</body>
+</html>

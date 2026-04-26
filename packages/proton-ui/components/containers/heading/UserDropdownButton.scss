@@ -1,0 +1,69 @@
+@use '~@proton/styles/scss/lib/config' as *;
+@use '~@proton/styles/scss/lib/rem' as *;
+@use '~@proton/styles/scss/lib/easing' as *;
+@use '~@proton/styles/scss/lib/include-media' as im;
+im.$breakpoints: $breakpoints-product;
+im.$media-expressions: $media-expressions;
+
+.user-dropdown {
+	&-button {
+		@include im.media('<=small') {
+			flex-direction: row-reverse;
+			inline-size: 100%;
+			padding: var(--space-2);
+			border: 1px solid var(--border-weak);
+			border-radius: var(--border-radius-lg);
+			transition: none;
+		}
+
+		.user-initials {
+			background-color: var(--interaction-default);
+			transition:
+				0.15s easing(ease-out-quint),
+				background-position 0s;
+		}
+
+		&:hover,
+		&:focus {
+			.user-initials {
+				background-color: var(--interaction-default-hover);
+			}
+		}
+
+		&:active,
+		&.is-active,
+		&[aria-expanded='true'] {
+			.user-initials {
+				background-color: var(--interaction-default-active);
+			}
+		}
+
+		&::after {
+			border-radius: var(--border-radius-lg);
+
+			@include im.media('>=small') {
+				border-radius: var(--border-radius-md);
+			}
+
+			@include im.media('>=large') {
+				inset: -$focus-ring-size;
+			}
+		}
+	}
+
+	&-text {
+		&#{&} {
+			// Specificity -_-v
+			max-inline-size: rem(200);
+			text-align: start;
+
+			@include im.media('>medium') {
+				text-align: end;
+			}
+
+			@include im.media('>=small', '<=large') {
+				display: none;
+			}
+		}
+	}
+}

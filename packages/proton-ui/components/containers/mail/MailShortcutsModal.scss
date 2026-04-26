@@ -1,0 +1,11 @@
+@use '~@proton/styles/scss/lib/config' as *;
+@use '~@proton/styles/scss/lib/rem' as *;
+
+.shortcut-modal {
+	// Special case otherwise shortcuts are not properly displayed
+	--size: #{rem(700)};
+
+	kbd {
+		word-spacing: rem(-3);
+	}
+}

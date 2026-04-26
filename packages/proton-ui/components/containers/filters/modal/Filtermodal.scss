@@ -1,0 +1,7 @@
+@use '~@proton/styles/scss/lib/config' as *;
+@use '~@proton/styles/scss/lib/rem' as *;
+
+.mail-filter-modal {
+	// Special case otherwise shortcuts are not properly displayed
+	--size: #{rem(700)};
+}
