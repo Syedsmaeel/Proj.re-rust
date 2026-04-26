@@ -1,0 +1,18 @@
+[package]
+name = "re-pack"
+description = "Binary packager and bundler"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+
+[[bin]]
+name = "re-pack"
+path = "src/main.rs"
+
+[dependencies]
+re-core.workspace = true
+anyhow.workspace = true
+clap.workspace = true
+tokio.workspace = true
+tracing.workspace = true

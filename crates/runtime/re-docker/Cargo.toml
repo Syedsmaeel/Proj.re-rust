@@ -1,0 +1,18 @@
+[package]
+name = "re-docker"
+description = "OCI-compatible container engine"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+
+[[bin]]
+name = "re-docker"
+path = "src/main.rs"
+
+[dependencies]
+re-core.workspace = true
+anyhow.workspace = true
+clap.workspace = true
+tokio.workspace = true
+tracing.workspace = true

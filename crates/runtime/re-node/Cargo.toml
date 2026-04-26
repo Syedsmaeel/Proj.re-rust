@@ -1,0 +1,18 @@
+[package]
+name = "re-node"
+description = "JS runtime, V8-free"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+
+[[bin]]
+name = "re-node"
+path = "src/main.rs"
+
+[dependencies]
+re-core.workspace = true
+anyhow.workspace = true
+clap.workspace = true
+tokio.workspace = true
+tracing.workspace = true

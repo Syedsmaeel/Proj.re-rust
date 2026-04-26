@@ -1,0 +1,37 @@
+[workspace]
+resolver = "2"
+members = [
+    "crates/re-core",
+    "crates/runtime/re-node",
+    "crates/runtime/re-docker",
+    "crates/runtime/re-npm",
+    "crates/runtime/re-shell",
+    "crates/build/re-make",
+    "crates/build/re-ci",
+    "crates/build/re-lint",
+    "crates/build/re-pack",
+    "crates/ai/re-llm",
+    "crates/ai/re-scrape",
+    "crates/ai/re-crypt",
+    "crates/ai/re-agent",
+]
+
+[workspace.package]
+version = "0.1.0"
+edition = "2021"
+authors = ["Syed Ismaeel <lucknow@est2019>"]
+license = "AGPL-3.0"
+repository = "https://github.com/Syedsmaeel/Proj.re-rust"
+rust-version = "1.75"
+
+[workspace.dependencies]
+anyhow = "1"
+thiserror = "1"
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+toml = "0.8"
+clap = { version = "4", features = ["derive"] }
+tokio = { version = "1", features = ["full"] }
+re-core = { path = "crates/re-core" }
