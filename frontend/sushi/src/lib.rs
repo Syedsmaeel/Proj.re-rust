@@ -61,3 +61,21 @@ pub fn render_snapshot<T: DynamicSushiApp>(app: &T, width: u16, height: u16) -> 
     Ok(output)
 }
 pub mod reconciler;
+pub mod hooks;
+pub use hooks::{Hook, HookContext};
+
+// Global state for the 'Current Component' (similar to how React handles hooks)
+thread_local! {
+    pub static HOOK_CTX: Arc<Mutex<Option<HookContext>>> = Arc::new(Mutex::new(None));
+}
+
+/// The 'use_state' Hook - Pure React Style
+pub fn use_state<T: Any + Clone + Send>(initial: T) -> (T, impl Fn(T)) {
+    // This is a simplified version for the demo
+    let val = initial.clone();
+    let setter = move |_new_val: T| {
+        // In a real implementation, this would trigger a re-render
+        println!("⚛️  React Hook: State updating...");
+    };
+    (val, setter)
+}
