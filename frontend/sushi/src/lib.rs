@@ -1,6 +1,7 @@
 pub use eframe;
 pub use eframe::egui;
 
+pub mod macros;
 pub mod theme;
 pub mod components;
 
