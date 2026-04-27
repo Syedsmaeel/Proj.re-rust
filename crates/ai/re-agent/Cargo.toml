@@ -1,6 +1,6 @@
 [package]
 name = "re-agent"
-description = "Agentic task runner"
+description = "Rust-native agentic runner — OpenClaw architecture translated to Rust"
 version.workspace = true
 edition.workspace = true
 authors.workspace = true
@@ -10,9 +10,18 @@ license.workspace = true
 name = "re-agent"
 path = "src/main.rs"
 
+[lib]
+name = "re_agent"
+path = "src/lib.rs"
+
 [dependencies]
 re-core.workspace = true
 anyhow.workspace = true
 clap.workspace = true
 tokio.workspace = true
 tracing.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+thiserror = "1"
+toml.workspace = true
+dirs = "5"
