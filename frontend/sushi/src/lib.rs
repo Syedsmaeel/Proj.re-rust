@@ -6,6 +6,7 @@ pub mod theme;
 pub mod components;
 
 pub use theme::SushiTheme;
+pub use components::SushiUiExt;
 
 /// The core trait for a Sushi application
 pub trait SushiApp {
