@@ -26,10 +26,12 @@ serde_json.workspace = true
 thiserror = "1"
 toml.workspace = true
 dirs = "5"
+# Used by the web_fetch tool (sync). Stays light — rustls only.
+reqwest = { version = "0.12", default-features = false, features = ["blocking", "rustls-tls"] }
 
 [features]
 # Off by default so `cargo build -p re-agent` stays fast and doesn't pull in
-# the candle / hf-hub stack. Enable to make `re-agent send --live` actually
-# call into Phi-3 via re-llm.
+# the heavy candle / hf-hub stack. Enable to make `re-agent send --live` and
+# `re-agent send --with-tools` actually call into Phi-3 via re-llm.
 default = []
 phi = ["dep:re-llm"]
