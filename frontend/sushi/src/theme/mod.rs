@@ -23,3 +23,18 @@ impl SushiTheme {
         ctx.set_visuals(visuals);
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_theme_creation() {
+        let theme = SushiTheme::dark();
+        assert_eq!(theme.rounding, 8.0);
+        // Verify our signature Sushi Orange
+        assert_eq!(theme.primary.r(), 255);
+        assert_eq!(theme.primary.g(), 120);
+        assert_eq!(theme.primary.b(), 0);
+    }
+}
