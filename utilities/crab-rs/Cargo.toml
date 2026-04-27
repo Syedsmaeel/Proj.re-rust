@@ -1,5 +1,5 @@
 [package]
-name = "re-crab"
+name = "crab-rs"
 description = "Toolbox that detects npm/pipx tools and runs Rust-native equivalents"
 version.workspace = true
 edition.workspace = true

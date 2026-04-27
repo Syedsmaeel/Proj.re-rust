@@ -14,7 +14,7 @@ members = [
     "ai-models/re-agent",
     "utilities/re-scrape",
     "utilities/re-crypt",
-    "utilities/re-crab",
+    "utilities/crab-rs",
     "utilities/qual-sea",
 ]
 
