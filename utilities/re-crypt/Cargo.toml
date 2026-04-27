@@ -1,18 +1,23 @@
 [package]
 name = "re-crypt"
-description = "Encryption utility box"
+description = "Sovereign Security & Encryption Toolkit"
 version.workspace = true
 edition.workspace = true
 authors.workspace = true
 license.workspace = true
 
-[[bin]]
-name = "re-crypt"
-path = "src/main.rs"
-
 [dependencies]
 re-core.workspace = true
 anyhow.workspace = true
 clap.workspace = true
-tokio.workspace = true
-tracing.workspace = true
+serde.workspace = true
+age = "0.10"
+argon2 = "0.5"
+rand = "0.8"
+secrecy = "0.8"
+rpassword = "7.3"
+hex = "0.4"
+
+[[bin]]
+name = "re-crypt"
+path = "src/main.rs"
