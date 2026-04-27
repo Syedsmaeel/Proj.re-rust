@@ -38,7 +38,7 @@ impl DynamicSushiApp for StackDashboard {
             .split(area);
 
         // 1. Render Tabs
-        let titles = self.tabs().iter().cloned().map(Line::from).collect();
+        let titles: Vec<Line> = self.tabs().iter().cloned().map(Line::from).collect();
         let tabs = Tabs::new(titles)
             .block(Block::default().borders(Borders::ALL).title(self.title()))
             .select(active_tab)
