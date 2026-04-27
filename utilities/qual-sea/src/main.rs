@@ -1,12 +1,14 @@
 use anyhow::{Result, Context};
-use candle_core::{Device, Tensor, DType};
-use candle_quants::quantized_var_builder::save_gguf;
-use clap::{Parser, Subcommand};
+use candle_core::{Device, Tensor};
+use candle_quants::{GgmlType, precomputed_quantized_tensor, quantized_var_builder::save_gguf};
+use clap::{Parser, Subcommand, ValueEnum};
+use rayon::prelude::*;
 use std::collections::HashMap;
 use std::path::Path;
+use std::sync::{Arc, Mutex};
 
 #[derive(Parser)]
-#[command(name = "qual-sea", about = "Proj.re-rust Quantization Engine", version)]
+#[command(name = "qual-sea", about = "Elite Quantization Engine — Sovereignty Stack", version)]
 struct Cli {
     #[command(subcommand)]
     cmd: Cmd,
@@ -14,7 +16,7 @@ struct Cli {
 
 #[derive(Subcommand)]
 enum Cmd {
-    /// Quantize a model from Safetensors to GGUF format
+    /// Compress model weights using advanced K-Quants
     Compress {
         /// Input safetensors file
         #[arg(short, long)]
@@ -22,57 +24,89 @@ enum Cmd {
         /// Output .gguf file
         #[arg(short, long)]
         output: String,
+        /// Quantization method (K-Quants provide better intelligence/size ratio)
+        #[arg(short, long, value_enum, default_value = "q4-k-m")]
+        method: Method,
     },
+}
+
+#[derive(Copy, Clone, PartialEq, Eq, PartialOrd, Ord, ValueEnum)]
+enum Method {
+    Q4_0,
+    Q4_1,
+    Q5_0,
+    Q5_1,
+    Q8_0,
+    /// 4-bit Medium (Best balance)
+    Q4KM,
+    /// 4-bit Small (Lower RAM)
+    Q4KS,
+    /// 5-bit Medium (High intelligence)
+    Q5KM,
+}
+
+impl Method {
+    fn to_ggml(&self) -> GgmlType {
+        match self {
+            Method::Q4_0 => GgmlType::Q4_0,
+            Method::Q4_1 => GgmlType::Q4_1,
+            Method::Q5_0 => GgmlType::Q5_0,
+            Method::Q5_1 => GgmlType::Q5_1,
+            Method::Q8_0 => GgmlType::Q8_0,
+            Method::Q4KM => GgmlType::Q4_K_M,
+            Method::Q4KS => GgmlType::Q4_K_S,
+            Method::Q5KM => GgmlType::Q5_K_M,
+        }
+    }
 }
 
 fn main() -> Result<()> {
     let cli = Cli::parse();
-    
     match cli.cmd {
-        Cmd::Compress { input, output } => {
-            compress_model(&input, &output)?;
+        Cmd::Compress { input, output, method } => {
+            compress_model(&input, &output, method)?;
         }
     }
-    
     Ok(())
 }
 
-fn compress_model(input_path: &str, output_path: &str) -> Result<()> {
+fn compress_model(input_path: &str, output_path: &str, method: Method) -> Result<()> {
     let device = Device::Cpu;
-    println!("🌊 qual-sea — Loading tensors from {}...", input_path);
+    println!("🌊 qual-sea — Parallel Compression Engine Active");
     
     let tensors = candle_core::safetensors::load(input_path, &device)
-        .context("Failed to load safetensors. Make sure the path is correct.")?;
+        .context("Failed to load safetensors")?;
     
-    println!("🌊 qual-sea — Found {} tensors. Starting quantization...", tensors.len());
-    
-    let mut quantized_tensors = HashMap::new();
-    
-    for (name, tensor) in tensors.iter() {
-        // We only quantize weights of linear and embedding layers.
-        // Biases, layer-norms, and small vectors are kept in F32/F16 for accuracy.
-        let should_quantize = name.contains("weight") && tensor.rank() >= 2;
-        
-        if should_quantize {
-            print!("  [Q4_0] Quantizing {}... ", name);
-            // Convert to 4-bit (Q4_0)
-            let q_tensor = candle_quants::precomputed_quantized_tensor(tensor, candle_quants::GgmlType::Q4_0)?;
-            quantized_tensors.insert(name.clone(), q_tensor);
-            println!("done.");
-        } else {
-            println!("  [F32 ] Passing through {}...", name);
-            // Wrap F32 tensor as "quantized" (no actual bits lost)
-            let q_tensor = candle_quants::precomputed_quantized_tensor(tensor, candle_quants::GgmlType::F32)?;
-            quantized_tensors.insert(name.clone(), q_tensor);
-        }
-    }
+    let total = tensors.len();
+    println!("🌊 qual-sea — Found {} tensors. Quantizing via {}...", total, method.to_possible_value().unwrap().get_name());
 
-    println!("🌊 qual-sea — Writing compressed model to {}...", output_path);
+    // Use Arc<Mutex<...>> to collect results across threads safely
+    let quantized_tensors = Arc::new(Mutex::new(HashMap::new()));
+    let ggml_method = method.to_ggml();
+
+    // Parallelize the quantization loop using Rayon
+    tensors.into_iter().collect::<Vec<_>>().into_par_iter().for_each(|(name, tensor)| {
+        let is_weight = name.contains("weight") && tensor.rank() >= 2;
+        
+        let result = if is_weight {
+            println!("  ⚡ [Quantizing] {}", name);
+            precomputed_quantized_tensor(&tensor, ggml_method)
+        } else {
+            println!("  ✨ [Passing   ] {}", name);
+            precomputed_quantized_tensor(&tensor, GgmlType::F32)
+        };
+
+        if let Ok(q_tensor) = result {
+            quantized_tensors.lock().unwrap().insert(name, q_tensor);
+        }
+    });
+
+    println!("\n🌊 qual-sea — Finalizing GGUF archive...");
+    let final_map = Arc::try_unwrap(quantized_tensors).unwrap().into_inner().unwrap();
     
-    // Save as GGUF so it can be memory-mapped (mmap) later for 50MB-style usage
-    save_gguf(Path::new(output_path), &quantized_tensors, &HashMap::new())
+    save_gguf(Path::new(output_path), &final_map, &HashMap::new())
         .context("Failed to save GGUF file")?;
 
-    println!("\n✅ Successfully compressed model! You can now load this in re-llm.");
+    println!("✅ Successfully compressed with {} threading!", rayon::current_num_threads());
     Ok(())
 }
