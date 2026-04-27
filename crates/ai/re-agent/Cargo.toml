@@ -16,6 +16,7 @@ path = "src/lib.rs"
 
 [dependencies]
 re-core.workspace = true
+re-llm = { path = "../re-llm", optional = true }
 anyhow.workspace = true
 clap.workspace = true
 tokio.workspace = true
@@ -25,3 +26,10 @@ serde_json.workspace = true
 thiserror = "1"
 toml.workspace = true
 dirs = "5"
+
+[features]
+# Off by default so `cargo build -p re-agent` stays fast and doesn't pull in
+# the candle / hf-hub stack. Enable to make `re-agent send --live` actually
+# call into Phi-3 via re-llm.
+default = []
+phi = ["dep:re-llm"]
