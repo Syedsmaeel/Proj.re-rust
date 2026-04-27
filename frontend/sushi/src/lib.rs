@@ -3,8 +3,11 @@ pub use crossterm;
 
 use ratatui::{
     backend::CrosstermBackend,
-    widgets::{Block, Borders, Gauge, Paragraph},
+    widgets::{Block, Borders, Gauge, Tabs, Paragraph},
+    layout::{Layout, Constraint, Direction, Rect},
     Terminal,
+    style::{Style, Color, Modifier},
+    text::{Line, Span},
 };
 use crossterm::{
     event::{self, Event, KeyCode},
@@ -28,10 +31,10 @@ pub fn restore_tui() -> Result<(), anyhow::Error> {
     Ok(())
 }
 
-/// A standard Sushi Loading Bar component
-pub fn loading_bar(title: &str, progress: u16) -> Gauge {
-    Gauge::default()
-        .block(Block::default().borders(Borders::ALL).title(title))
-        .gauge_style(ratatui::style::Style::default().fg(ratatui::style::Color::Rgb(255, 120, 0))) // Sushi Orange
-        .percent(progress)
+/// The core Dynamic App trait
+pub trait DynamicSushiApp {
+    fn title(&self) -> &str;
+    fn tabs(&self) -> Vec<&str>;
+    fn update(&mut self, key: KeyCode) -> bool; // returns true if should exit
+    fn render(&self, frame: &mut ratatui::Frame, area: Rect, active_tab: usize);
 }
