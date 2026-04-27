@@ -5,7 +5,6 @@ members = [
     "runtimes/re-node",
     "runtimes/re-docker",
     "runtimes/re-npm",
-    "runtimes/re-shell",
     "build-tools/re-make",
     "build-tools/re-ci",
     "build-tools/re-lint",
