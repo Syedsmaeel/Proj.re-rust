@@ -13,6 +13,7 @@ clap.workspace = true
 sha2 = "0.10"
 hex = "0.4"
 dirs = "5"
+notify = "6.1"
 
 [[bin]]
 name = "re-run"
