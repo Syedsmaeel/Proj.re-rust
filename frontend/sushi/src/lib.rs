@@ -54,7 +54,7 @@ pub fn render_snapshot<T: DynamicSushiApp>(app: &T, width: u16, height: u16) -> 
     for y in 0..height {
         for x in 0..width {
             let cell = view.buffer().get(x, y);
-            output.push_str(&cell.symbol);
+            output.push_str(&cell.symbol());
         }
         output.push('\n');
     }
