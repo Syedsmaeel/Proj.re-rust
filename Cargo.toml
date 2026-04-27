@@ -1,20 +1,20 @@
 [workspace]
 resolver = "2"
 members = [
-    "crates/re-core",
-    "crates/runtime/re-node",
-    "crates/runtime/re-docker",
-    "crates/runtime/re-npm",
-    "crates/runtime/re-shell",
-    "crates/build/re-make",
-    "crates/build/re-ci",
-    "crates/build/re-lint",
-    "crates/build/re-pack",
-    "crates/ai/re-llm",
-    "crates/ai/re-scrape",
-    "crates/ai/re-crypt",
-    "crates/ai/re-agent",
-    "crates/utils/crab-rs",
+    "core/re-core",
+    "runtimes/re-node",
+    "runtimes/re-docker",
+    "runtimes/re-npm",
+    "runtimes/re-shell",
+    "build-tools/re-make",
+    "build-tools/re-ci",
+    "build-tools/re-lint",
+    "build-tools/re-pack",
+    "ai-models/re-llm",
+    "ai-models/re-agent",
+    "utilities/re-scrape",
+    "utilities/re-crypt",
+    "utilities/re-crab",
 ]
 
 [workspace.package]
@@ -36,4 +36,4 @@ toml = "0.8"
 dirs = "5"
 clap = { version = "4", features = ["derive"] }
 tokio = { version = "1", features = ["full"] }
-re-core = { path = "crates/re-core" }
+re-core = { path = "core/re-core" }
