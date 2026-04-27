@@ -1,11 +1,13 @@
 //! Crab-rs: detects npm & pipx tools and maps them to Rust-native equivalents.
 //!
 //! # Architecture
-//! - `scanner` — detects what npm/pipx tools are installed on the system
-//! - `mapper`  — maps each detected tool to its Rust equivalent
-//! - `runner`  — executes the Rust equivalent with the same intent
-//! - `tools`   — known translation table (npm tool → rust crate/binary)
+//! - `scanner`    — detects what npm/pipx tools are installed on the system
+//! - `mapper`     — maps each detected tool to its Rust equivalent
+//! - `runner`     — executes the Rust equivalent with the same intent
+//! - `downloader` — installs/uninstalls packages from npm and pipx registries
+//! - `tools`      — known translation table (npm tool → rust crate/binary)
 
+pub mod downloader;
 pub mod mapper;
 pub mod runner;
 pub mod scanner;
