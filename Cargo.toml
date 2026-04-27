@@ -42,7 +42,6 @@ re-core = { path = "core/re-core" }
 candle-core = { git = "https://github.com/huggingface/candle.git" }
 candle-nn = { git = "https://github.com/huggingface/candle.git" }
 candle-transformers = { git = "https://github.com/huggingface/candle.git" }
-candle-quants = { git = "https://github.com/huggingface/candle.git" }
 tokenizers = "0.21"
 hf-hub = "0.4"
 rayon = "1.10"
