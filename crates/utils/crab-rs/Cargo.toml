@@ -1,0 +1,28 @@
+[package]
+name = "crab-rs"
+description = "Toolbox that detects npm/pipx tools and runs Rust-native equivalents"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+
+[[bin]]
+name = "crab"
+path = "src/main.rs"
+
+[lib]
+name = "crab_rs"
+path = "src/lib.rs"
+
+[dependencies]
+re-core.workspace = true
+anyhow.workspace = true
+clap.workspace = true
+tokio.workspace = true
+tracing.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+
+[dev-dependencies]
+assert_cmd = "2"
+predicates = "3"
