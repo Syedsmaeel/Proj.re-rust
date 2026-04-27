@@ -1,5 +1,5 @@
-pub mod commit;
 pub mod fiber;
+pub mod commit;
 use fiber::{Fiber, FiberId, WorkTag};
 use std::collections::HashMap;
 use std::any::Any;
@@ -19,13 +19,18 @@ impl Reconciler {
         }
     }
 
-    /// The 'begin_work' function (Translated from ReactFiberBeginWork.js)
-    /// This is where we determine if a component needs to be updated.
+    /// Creates a new Fiber and registers it in the arena
+    pub fn create_fiber(&mut self, tag: WorkTag, props: Box<dyn Any>) -> FiberId {
+        let id = self.next_id;
+        self.next_id += 1;
+        let fiber = Fiber::new(id, tag, props);
+        self.fibers.insert(id, fiber);
+        id
+    }
+
     pub fn begin_work(&mut self, fiber_id: FiberId) -> Result<Option<FiberId>, String> {
         let fiber = self.fibers.get(&fiber_id).ok_or("Fiber not found")?;
-        
         println!("🛠️  BeginWork on Fiber #{} ({:?})", fiber.id, fiber.tag);
-
         match fiber.tag {
             WorkTag::FunctionComponent => self.update_function_component(fiber_id),
             WorkTag::HostComponent => self.update_host_component(fiber_id),
@@ -33,27 +38,11 @@ impl Reconciler {
         }
     }
 
-    fn update_function_component(&mut self, fiber_id: FiberId) -> Result<Option<FiberId>, String> {
-        // Here we would execute the Rust function component
-        // and reconcile its returned elements.
-        Ok(None)
-    }
+    fn update_function_component(&mut self, _fiber_id: FiberId) -> Result<Option<FiberId>, String> { Ok(None) }
+    fn update_host_component(&mut self, _fiber_id: FiberId) -> Result<Option<FiberId>, String> { Ok(None) }
+    fn update_host_root(&mut self, _fiber_id: FiberId) -> Result<Option<FiberId>, String> { Ok(None) }
 
-    fn update_host_component(&mut self, fiber_id: FiberId) -> Result<Option<FiberId>, String> {
-        // Host components (buttons/labels) just reconcile their children
-        Ok(None)
-    }
-
-    fn update_host_root(&mut self, fiber_id: FiberId) -> Result<Option<FiberId>, String> {
-        // The root of the whole tree
-        Ok(None)
-    }
-
-    /// The 'reconcile_children' algorithm (Translated from ReactChildFiber.js)
-    /// This is the "Diffing Algorithm" that compares old vs new.
-    pub fn reconcile_children(&mut self, return_fiber: FiberId, current_first_child: Option<FiberId>, next_children: Vec<Box<dyn Any>>) -> Option<FiberId> {
-        // Pure Rust implementation of React's single-child and list-diffing logic
-        // We use IDs to safely traverse the tree without borrow checker issues.
+    pub fn reconcile_children(&mut self, _return_fiber: FiberId, _current_first_child: Option<FiberId>, _next_children: Vec<Box<dyn Any>>) -> Option<FiberId> {
         None
     }
 }
