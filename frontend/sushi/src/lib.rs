@@ -1,24 +1,34 @@
-use wasm_bindgen::prelude::*;
-use web_sys::{window, Document, HtmlElement};
+pub use eframe;
+use eframe::egui;
 
-#[wasm_bindgen]
-pub fn init_sushi(root_id: &str) -> Result<(), JsValue> {
-    // Set up panic hook for better browser error messages
-    console_error_panic_hook::set_once();
-    
-    let window = window().ok_or("no window")?;
-    let document = window.document().ok_or("no document")?;
-    let root = document.get_element_by_id(root_id)
-        .ok_or_else(|| format!("Root element #{} not found", root_id))?;
-    
-    let el: HtmlElement = document.create_element("div")?.dyn_into()?;
-    el.set_inner_html("<h1>🍣 sushi — Raw Rust Frontend</h1><p>The Sovereignty Stack UI is alive.</p>");
-    
-    root.append_child(&el)?;
-    Ok(())
+/// The core trait for a Sushi application
+pub trait SushiApp {
+    fn name(&self) -> &str;
+    fn update(&mut self, ctx: &egui::Context);
 }
 
-/// A simple Component trait for the Sushi framework
-pub trait Component {
-    fn render(&self) -> String;
+/// The runner that launches a Sushi app natively
+pub fn run_app<T: SushiApp + 'static>(mut app: T) -> eframe::Result<()> {
+    let options = eframe::NativeOptions {
+        viewport: egui::ViewportBuilder::default().with_inner_size([800.0, 600.0]),
+        ..Default::default()
+    };
+    
+    eframe::run_native(
+        app.name(),
+        options,
+        Box::new(|_cc| {
+            Box::new(SushiWrapper { app })
+        }),
+    )
+}
+
+struct SushiWrapper<T: SushiApp> {
+    app: T,
+}
+
+impl<T: SushiApp> eframe::App for SushiWrapper<T> {
+    fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
+        self.app.update(ctx);
+    }
 }
