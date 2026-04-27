@@ -1,6 +1,6 @@
 use anyhow::Result;
 use clap::{Parser, Subcommand};
-use re_llm::{GenerationConfig, PhiBackend, PhiVariant};
+use re_llm::{GenerationConfig, PhiBackend, PhiVariant, GgufBackend};
 use std::io::{Write, stdout};
 
 #[derive(Parser)]
@@ -14,7 +14,12 @@ struct Cli {
 enum Cmd {
     Chat {
         prompt: String,
-        /// System instruction (e.g. 'You are a pirate')
+        /// Path to a local GGUF file (from qual-sea)
+        #[arg(long)]
+        gguf: Option<String>,
+        /// Path to tokenizer.json (required if using --gguf)
+        #[arg(long)]
+        tokenizer: Option<String>,
         #[arg(long)]
         system: Option<String>,
         #[arg(long, default_value = "mini-4k")]
@@ -34,20 +39,30 @@ enum Cmd {
 fn main() -> Result<()> {
     let cli = Cli::parse();
     match cli.cmd {
-        Cmd::Chat { prompt, system, variant, max_tokens, temperature, top_p, seed } => {
-            let variant = PhiVariant::parse(&variant);
-            let mut backend = PhiBackend::load(variant)?;
-            let cfg = GenerationConfig { max_tokens, temperature, top_p: Some(top_p), seed };
-
-            backend.generate_streaming(system.as_deref(), &prompt, &cfg, |token| {
-                print!("{token}");
-                stdout().flush()?;
-                Ok(())
-            })?;
+        Cmd::Chat { prompt, gguf, tokenizer, system, variant, max_tokens, temperature, top_p, seed } => {
+            if let Some(path) = gguf {
+                let tok_path = tokenizer.expect("Please provide --tokenizer path when using --gguf");
+                println!("🌊 re-llm — Loading local GGUF model via qual-sea engine...");
+                let mut backend = GgufBackend::load(&path, &tok_path)?;
+                backend.generate_streaming(&prompt, max_tokens, temperature, |token| {
+                    print!("{token}");
+                    stdout().flush()?;
+                    Ok(())
+                })?;
+            } else {
+                let variant = PhiVariant::parse(&variant);
+                let mut backend = PhiBackend::load(variant)?;
+                let cfg = GenerationConfig { max_tokens, temperature, top_p: Some(top_p), seed };
+                backend.generate_streaming(system.as_deref(), &prompt, &cfg, |token| {
+                    print!("{token}");
+                    stdout().flush()?;
+                    Ok(())
+                })?;
+            }
             println!();
         }
         Cmd::Models => {
-            println!("Supported Phi-3 variants: mini-4k, mini-128k, medium-4k");
+            println!("Supported: Phi-3 (Native HF or Local GGUF via qual-sea)");
         }
     }
     Ok(())
