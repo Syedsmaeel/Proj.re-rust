@@ -1,6 +1,6 @@
 [package]
 name = "re-llm"
-description = "Local LLM inference for Proj.re-rust — Phi-3 via candle"
+description = "Local LLM inference for Proj.re-rust"
 version.workspace = true
 edition.workspace = true
 authors.workspace = true
@@ -9,10 +9,6 @@ license.workspace = true
 [lib]
 name = "re_llm"
 path = "src/lib.rs"
-
-[[bin]]
-name = "re-llm"
-path = "src/main.rs"
 
 [dependencies]
 re-core.workspace = true
@@ -23,12 +19,10 @@ tracing.workspace = true
 tracing-subscriber.workspace = true
 serde.workspace = true
 serde_json.workspace = true
-
-# Local inference stack
-candle-core = "0.9"
-candle-nn = "0.9"
-candle-transformers = "0.9"
-tokenizers = "0.21"
-hf-hub = "0.4"
-candle-quants = "0.9"
-byteorder = "1.5"
+candle-core.workspace = true
+candle-nn.workspace = true
+candle-transformers.workspace = true
+candle-quants.workspace = true
+tokenizers.workspace = true
+hf-hub.workspace = true
+byteorder.workspace = true

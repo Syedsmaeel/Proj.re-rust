@@ -38,3 +38,12 @@ dirs = "5"
 clap = { version = "4", features = ["derive"] }
 tokio = { version = "1", features = ["full"] }
 re-core = { path = "core/re-core" }
+# Candle ecosystem from Git for latest GGUF/Quant support
+candle-core = { git = "https://github.com/huggingface/candle.git" }
+candle-nn = { git = "https://github.com/huggingface/candle.git" }
+candle-transformers = { git = "https://github.com/huggingface/candle.git" }
+candle-quants = { git = "https://github.com/huggingface/candle.git" }
+tokenizers = "0.21"
+hf-hub = "0.4"
+rayon = "1.10"
+byteorder = "1.5"
