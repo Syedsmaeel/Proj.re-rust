@@ -16,3 +16,4 @@ pub mod config;
 pub mod gateway;
 pub mod model;
 pub mod session;
+pub mod tools;
