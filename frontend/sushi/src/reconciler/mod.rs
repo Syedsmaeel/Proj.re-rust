@@ -1,3 +1,4 @@
+pub mod commit;
 pub mod fiber;
 use fiber::{Fiber, FiberId, WorkTag};
 use std::collections::HashMap;
