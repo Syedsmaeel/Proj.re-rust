@@ -1,48 +1,37 @@
-pub use eframe;
-pub use eframe::egui;
+pub use ratatui;
+pub use crossterm;
 
-pub mod macros;
-pub mod theme;
-pub mod components;
+use ratatui::{
+    backend::CrosstermBackend,
+    widgets::{Block, Borders, Gauge, Paragraph},
+    Terminal,
+};
+use crossterm::{
+    event::{self, Event, KeyCode},
+    execute,
+    terminal::{disable_raw_mode, enable_raw_mode, EnterAlternateScreen, LeaveAlternateScreen},
+};
+use std::io;
 
-pub use theme::SushiTheme;
-pub use components::SushiUiExt;
-
-/// The core trait for a Sushi application
-pub trait SushiApp {
-    fn name(&self) -> &str;
-    fn theme(&self) -> SushiTheme { SushiTheme::dark() }
-    fn update(&mut self, ctx: &egui::Context);
+pub fn init_tui() -> Result<Terminal<CrosstermBackend<io::Stdout>>, anyhow::Error> {
+    enable_raw_mode()?;
+    let mut stdout = io::stdout();
+    execute!(stdout, EnterAlternateScreen)?;
+    let backend = CrosstermBackend::new(stdout);
+    Ok(Terminal::new(backend)?)
 }
 
-pub fn run_app<T: SushiApp + 'static>(mut app: T) -> eframe::Result<()> {
-    let name = app.name().to_string(); // Get name BEFORE moving app
-    let theme = app.theme();
-
-    let options = eframe::NativeOptions {
-        viewport: egui::ViewportBuilder::default()
-            .with_inner_size([1000.0, 700.0])
-            .with_transparent(true),
-        ..Default::default()
-    };
-    
-    eframe::run_native(
-        &name,
-        options,
-        Box::new(move |cc| {
-            // Apply the Sushi theme on startup
-            theme.apply(&cc.egui_ctx);
-            Box::new(SushiWrapper { app })
-        }),
-    )
+pub fn restore_tui() -> Result<(), anyhow::Error> {
+    disable_raw_mode()?;
+    let mut stdout = io::stdout();
+    execute!(stdout, LeaveAlternateScreen)?;
+    Ok(())
 }
 
-struct SushiWrapper<T: SushiApp> {
-    app: T,
-}
-
-impl<T: SushiApp> eframe::App for SushiWrapper<T> {
-    fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
-        self.app.update(ctx);
-    }
+/// A standard Sushi Loading Bar component
+pub fn loading_bar(title: &str, progress: u16) -> Gauge {
+    Gauge::default()
+        .block(Block::default().borders(Borders::ALL).title(title))
+        .gauge_style(ratatui::style::Style::default().fg(ratatui::style::Color::Rgb(255, 120, 0))) // Sushi Orange
+        .percent(progress)
 }

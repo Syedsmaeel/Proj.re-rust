@@ -1,6 +1,6 @@
 [package]
 name = "sushi"
-description = "A native, high-performance desktop GUI framework"
+description = "An elite, raw-fish Terminal UI (TUI) framework"
 version.workspace = true
 edition.workspace = true
 authors.workspace = true
@@ -8,9 +8,10 @@ license.workspace = true
 
 [dependencies]
 re-core.workspace = true
-eframe = "0.27" # The elite native GUI engine for Rust
-serde = { version = "1", features = ["derive"] }
+ratatui = "0.26"
+crossterm = "0.27"
+anyhow.workspace = true
 
 [[bin]]
-name = "sushi-demo"
-path = "examples/demo.rs"
+name = "sushi-tui"
+path = "examples/tui_demo.rs"
