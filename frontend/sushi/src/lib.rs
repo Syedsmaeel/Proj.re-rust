@@ -16,6 +16,9 @@ pub trait SushiApp {
 }
 
 pub fn run_app<T: SushiApp + 'static>(mut app: T) -> eframe::Result<()> {
+    let name = app.name().to_string(); // Get name BEFORE moving app
+    let theme = app.theme();
+
     let options = eframe::NativeOptions {
         viewport: egui::ViewportBuilder::default()
             .with_inner_size([1000.0, 700.0])
@@ -24,11 +27,11 @@ pub fn run_app<T: SushiApp + 'static>(mut app: T) -> eframe::Result<()> {
     };
     
     eframe::run_native(
-        app.name(),
+        &name,
         options,
-        Box::new(|cc| {
+        Box::new(move |cc| {
             // Apply the Sushi theme on startup
-            app.theme().apply(&cc.egui_ctx);
+            theme.apply(&cc.egui_ctx);
             Box::new(SushiWrapper { app })
         }),
     )
