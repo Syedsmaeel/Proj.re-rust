@@ -16,7 +16,7 @@ members = [
     "utilities/crab-rs",
     "utilities/qual-sea",
     "utilities/re-run",
-    "frontend/sushi",
+    "utilities/sushi",
 ]
 
 [workspace.package]
