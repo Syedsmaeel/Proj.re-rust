@@ -47,3 +47,10 @@ impl Fiber {
         }
     }
 }
+
+pub mod flags {
+    pub const NO_FLAGS: u32 = 0;
+    pub const PLACEMENT: u32 = 1 << 1;
+    pub const UPDATE: u32 = 1 << 2;
+    pub const DELETION: u32 = 1 << 3;
+}
