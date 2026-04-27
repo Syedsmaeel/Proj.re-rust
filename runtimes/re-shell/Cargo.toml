@@ -1,18 +1,20 @@
 [package]
 name = "re-shell"
-description = "POSIX shell implementation"
+description = "AI-Native Sovereign Shell"
 version.workspace = true
 edition.workspace = true
 authors.workspace = true
 license.workspace = true
 
-[[bin]]
-name = "re-shell"
-path = "src/main.rs"
-
 [dependencies]
 re-core.workspace = true
+re-llm = { path = "../../ai-models/re-llm" }
 anyhow.workspace = true
 clap.workspace = true
 tokio.workspace = true
-tracing.workspace = true
+rustyline = "14.0"
+owo-colors = "4.0"
+
+[[bin]]
+name = "re-shell"
+path = "src/main.rs"
