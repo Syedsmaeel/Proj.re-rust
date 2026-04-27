@@ -38,3 +38,25 @@ pub trait DynamicSushiApp {
     fn update(&mut self, key: KeyCode) -> bool; // returns true if should exit
     fn render(&self, frame: &mut ratatui::Frame, area: Rect, active_tab: usize);
 }
+
+/// NEW: Render a single frame to a string for debugging/testing
+pub fn render_snapshot<T: DynamicSushiApp>(app: &T, width: u16, height: u16) -> Result<String, anyhow::Error> {
+    use ratatui::backend::TestBackend;
+    let backend = TestBackend::new(width, height);
+    let mut terminal = Terminal::new(backend)?;
+    
+    terminal.draw(|f| {
+        app.render(f, f.size(), 0);
+    })?;
+    
+    let mut output = String::new();
+    let view = terminal.backend();
+    for y in 0..height {
+        for x in 0..width {
+            let cell = view.buffer().get(x, y);
+            output.push_str(&cell.symbol);
+        }
+        output.push('\n');
+    }
+    Ok(output)
+}
