@@ -1,0 +1,19 @@
+[package]
+name = "re-run"
+description = "Instant Rust script runner with intelligent caching"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+
+[dependencies]
+re-core.workspace = true
+anyhow.workspace = true
+clap.workspace = true
+sha2 = "0.10"
+hex = "0.4"
+dirs = "5"
+
+[[bin]]
+name = "re-run"
+path = "src/main.rs"
