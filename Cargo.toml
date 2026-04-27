@@ -15,6 +15,7 @@ members = [
     "utilities/re-scrape",
     "utilities/re-crypt",
     "utilities/re-crab",
+    "utilities/qual-sea",
 ]
 
 [workspace.package]
