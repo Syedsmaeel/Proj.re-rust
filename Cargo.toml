@@ -17,6 +17,7 @@ members = [
     "utilities/qual-sea",
     "utilities/re-run",
     "utilities/sushi",
+    "utilities/sushi-macros",
 ]
 
 [workspace.package]
