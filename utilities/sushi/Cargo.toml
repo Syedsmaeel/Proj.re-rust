@@ -1,6 +1,6 @@
 [package]
 name = "sushi"
-description = "An elite, raw-fish Terminal UI (TUI) framework"
+description = "Kernel-level Framebuffer GUI"
 version.workspace = true
 edition.workspace = true
 authors.workspace = true
@@ -8,10 +8,4 @@ license.workspace = true
 
 [dependencies]
 re-core.workspace = true
-ratatui = "0.26"
-crossterm = "0.27"
-anyhow.workspace = true
-
-[[bin]]
-name = "sushi-tui"
-path = "examples/tui_demo.rs"
+libc = "0.2"

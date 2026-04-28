@@ -1,95 +1,41 @@
-//! sushi — Sovereign React in Rust + Cyberpunk TUI helpers.
-//!
-//! Two layers:
-//!   * `reconciler` — a real React-Fiber-style work loop with `use_state`,
-//!     a deadline-aware scheduler, prop diffing, child reconciliation by
-//!     index, and a pluggable `Host` trait so the same component tree can
-//!     render to a debug sink, a TUI buffer, or anything you implement.
-//!   * TUI helpers — thin wrappers around ratatui + crossterm so demo apps
-//!     don't repeat boilerplate.
+use std::fs::{OpenOptions, File};
+use std::os::unix::io::AsRawFd;
+use std::ptr;
+use libc::{mmap, PROT_READ, PROT_WRITE, MAP_SHARED, MAP_FAILED};
 
-pub use crossterm;
-pub use ratatui;
-
-pub mod host;
-pub mod reconciler;
-
-pub use host::{DebugHost, Host, TuiHost};
-pub use reconciler::fiber::{flags, ChildSpec, FiberId, Props, WorkTag};
-pub use reconciler::hooks::{use_effect, use_state, Setter, UpdateQueue};
-pub use reconciler::scheduler::Scheduler;
-pub use reconciler::Reconciler;
-
-use crossterm::{
-    execute,
-    terminal::{disable_raw_mode, enable_raw_mode, EnterAlternateScreen, LeaveAlternateScreen},
-};
-use ratatui::{
-    backend::CrosstermBackend,
-    style::{Color, Modifier, Style},
-    widgets::{Block, Borders, Gauge},
-    Terminal,
-};
-use std::io;
-
-pub fn init_tui() -> Result<Terminal<CrosstermBackend<io::Stdout>>, anyhow::Error> {
-    enable_raw_mode()?;
-    let mut stdout = io::stdout();
-    execute!(stdout, EnterAlternateScreen)?;
-    let backend = CrosstermBackend::new(stdout);
-    Ok(Terminal::new(backend)?)
+pub struct Framebuffer {
+    pub width: usize,
+    pub height: usize,
+    data: *mut u32,
+    size: usize,
 }
 
-pub fn restore_tui() -> Result<(), anyhow::Error> {
-    disable_raw_mode()?;
-    let mut stdout = io::stdout();
-    execute!(stdout, LeaveAlternateScreen)?;
-    Ok(())
-}
+impl Framebuffer {
+    pub fn open() -> Result<Self, String> {
+        let file = OpenOptions::new().read(true).write(true).open("/dev/fb0")
+            .map_err(|e| format!("Failed to open /dev/fb0: {}. Are you root?", e))?;
+        
+        // This is a simplified hardware resolution (1920x1080)
+        let width = 1920;
+        let height = 1080;
+        let size = width * height * 4;
 
-pub fn loading_bar<'a>(label: &'a str, percent: u16) -> Gauge<'a> {
-    Gauge::default()
-        .block(Block::default().borders(Borders::ALL).title(label))
-        .gauge_style(
-            Style::default()
-                .fg(Color::Cyan)
-                .bg(Color::Black)
-                .add_modifier(Modifier::BOLD),
-        )
-        .percent(percent.min(100))
-}
+        let ptr = unsafe {
+            mmap(ptr::null_mut(), size, PROT_READ | PROT_WRITE, MAP_SHARED, file.as_raw_fd(), 0)
+        };
 
-pub trait DynamicSushiApp {
-    fn title(&self) -> &str;
-    fn tabs(&self) -> Vec<&str>;
-    fn update(&mut self, key: crossterm::event::KeyCode) -> bool;
-    fn render(
-        &self,
-        frame: &mut ratatui::Frame,
-        area: ratatui::layout::Rect,
-        active_tab: usize,
-    );
-}
-
-pub fn render_snapshot<T: DynamicSushiApp>(
-    app: &T,
-    width: u16,
-    height: u16,
-) -> Result<String, anyhow::Error> {
-    use ratatui::backend::TestBackend;
-    let backend = TestBackend::new(width, height);
-    let mut terminal = Terminal::new(backend)?;
-    terminal.draw(|f| {
-        app.render(f, f.size(), 0);
-    })?;
-    let mut output = String::new();
-    let view = terminal.backend();
-    for y in 0..height {
-        for x in 0..width {
-            let cell = view.buffer().get(x, y);
-            output.push_str(cell.symbol());
+        if ptr == MAP_FAILED {
+            return Err("Failed to map framebuffer".into());
         }
-        output.push('\n');
+
+        Ok(Self { width, height, data: ptr as *mut u32, size })
     }
-    Ok(output)
+
+    pub fn set_pixel(&mut self, x: usize, y: usize, color: u32) {
+        if x < self.width && y < self.height {
+            unsafe {
+                *self.data.add(y * self.width + x) = color;
+            }
+        }
+    }
 }
