@@ -1,6 +1,6 @@
 [package]
 name = "sushi"
-description = "Sovereign High-Res TUI Engine"
+description = "Sovereign Vector-Native GUI"
 version.workspace = true
 edition.workspace = true
 authors.workspace = true
@@ -8,3 +8,5 @@ license.workspace = true
 
 [dependencies]
 re-core.workspace = true
+lyon = "1.0"
+tiny-skia = "0.11"
