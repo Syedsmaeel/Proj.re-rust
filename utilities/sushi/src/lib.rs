@@ -1,16 +1,26 @@
-use tiny_skia::*;
+use nix::pty::{openpty, Winsize};
+use std::os::unix::io::AsRawFd;
 
-pub struct Shape {
-    pub path: Path,
-    pub color: [u8; 4],
+pub struct SovereignTerminal {
+    pub master: std::fs::File,
+    pub slave: std::fs::File,
 }
 
-impl Shape {
-    pub fn rect(x: f32, y: f32, w: f32, h: f32, color: [u8; 4]) -> Self {
-        let path = PathBuilder::from_rect(Rect::from_xywh(x, y, w, h).unwrap());
-        Self { path, color }
+impl SovereignTerminal {
+    pub fn new() -> Result<Self, anyhow::Error> {
+        let pty = openpty(None, None)?;
+        // We now have total control over the terminal's input/output
+        Ok(Self {
+            master: unsafe { std::fs::File::from_raw_fd(pty.master) },
+            slave: unsafe { std::fs::File::from_raw_fd(pty.slave) },
+        })
+    }
+
+    /// Direct 24-bit color injection
+    pub fn paint_pixel(&self, r: u8, g: u8, b: u8) {
+        // Send raw RGB bytes directly to the terminal's display buffer
+        use std::io::Write;
+        let mut master = &self.master;
+        write!(master, "\x1b[48;2;{};{};{}m ", r, g, b).unwrap();
     }
 }
-
-pub mod vector;
-pub use vector::Canvas;
