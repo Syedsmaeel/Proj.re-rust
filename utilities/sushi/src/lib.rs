@@ -1,18 +1,34 @@
-pub use ratatui;
-pub use crossterm;
+//! sushi — Sovereign React in Rust + Cyberpunk TUI helpers.
+//!
+//! Two layers:
+//!   * `reconciler` — a real React-Fiber-style work loop with `use_state`,
+//!     a deadline-aware scheduler, prop diffing, child reconciliation by
+//!     index, and a pluggable `Host` trait so the same component tree can
+//!     render to a debug sink, a TUI buffer, or anything you implement.
+//!   * TUI helpers — thin wrappers around ratatui + crossterm so demo apps
+//!     don't repeat boilerplate.
 
-use ratatui::{
-    backend::CrosstermBackend,
-    widgets::{Block, Borders, Gauge, Tabs, Paragraph},
-    layout::{Layout, Constraint, Direction, Rect},
-    Terminal,
-    style::{Style, Color, Modifier},
-    text::{Line, Span},
-};
+pub use crossterm;
+pub use ratatui;
+
+pub mod host;
+pub mod reconciler;
+
+pub use host::{DebugHost, Host, TuiHost};
+pub use reconciler::fiber::{flags, ChildSpec, FiberId, Props, WorkTag};
+pub use reconciler::hooks::{use_effect, use_state, Setter, UpdateQueue};
+pub use reconciler::scheduler::Scheduler;
+pub use reconciler::Reconciler;
+
 use crossterm::{
-    event::{self, Event, KeyCode},
     execute,
     terminal::{disable_raw_mode, enable_raw_mode, EnterAlternateScreen, LeaveAlternateScreen},
+};
+use ratatui::{
+    backend::CrosstermBackend,
+    style::{Color, Modifier, Style},
+    widgets::{Block, Borders, Gauge},
+    Terminal,
 };
 use std::io;
 
@@ -31,51 +47,49 @@ pub fn restore_tui() -> Result<(), anyhow::Error> {
     Ok(())
 }
 
-/// The core Dynamic App trait
+pub fn loading_bar<'a>(label: &'a str, percent: u16) -> Gauge<'a> {
+    Gauge::default()
+        .block(Block::default().borders(Borders::ALL).title(label))
+        .gauge_style(
+            Style::default()
+                .fg(Color::Cyan)
+                .bg(Color::Black)
+                .add_modifier(Modifier::BOLD),
+        )
+        .percent(percent.min(100))
+}
+
 pub trait DynamicSushiApp {
     fn title(&self) -> &str;
     fn tabs(&self) -> Vec<&str>;
-    fn update(&mut self, key: KeyCode) -> bool; // returns true if should exit
-    fn render(&self, frame: &mut ratatui::Frame, area: Rect, active_tab: usize);
+    fn update(&mut self, key: crossterm::event::KeyCode) -> bool;
+    fn render(
+        &self,
+        frame: &mut ratatui::Frame,
+        area: ratatui::layout::Rect,
+        active_tab: usize,
+    );
 }
 
-/// NEW: Render a single frame to a string for debugging/testing
-pub fn render_snapshot<T: DynamicSushiApp>(app: &T, width: u16, height: u16) -> Result<String, anyhow::Error> {
+pub fn render_snapshot<T: DynamicSushiApp>(
+    app: &T,
+    width: u16,
+    height: u16,
+) -> Result<String, anyhow::Error> {
     use ratatui::backend::TestBackend;
     let backend = TestBackend::new(width, height);
     let mut terminal = Terminal::new(backend)?;
-    
     terminal.draw(|f| {
         app.render(f, f.size(), 0);
     })?;
-    
     let mut output = String::new();
     let view = terminal.backend();
     for y in 0..height {
         for x in 0..width {
             let cell = view.buffer().get(x, y);
-            output.push_str(&cell.symbol());
+            output.push_str(cell.symbol());
         }
         output.push('\n');
     }
     Ok(output)
-}
-pub mod reconciler;
-pub mod hooks;
-pub use hooks::{Hook, HookContext};
-
-// Global state for the 'Current Component' (similar to how React handles hooks)
-thread_local! {
-    pub static HOOK_CTX: Arc<Mutex<Option<HookContext>>> = Arc::new(Mutex::new(None));
-}
-
-/// The 'use_state' Hook - Pure React Style
-pub fn use_state<T: Any + Clone + Send>(initial: T) -> (T, impl Fn(T)) {
-    // This is a simplified version for the demo
-    let val = initial.clone();
-    let setter = move |_new_val: T| {
-        // In a real implementation, this would trigger a re-render
-        println!("⚛️  React Hook: State updating...");
-    };
-    (val, setter)
 }

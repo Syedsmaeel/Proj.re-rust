@@ -1,4 +1,4 @@
-use sushi::{init_tui, restore_tui, DynamicSushiApp, render_snapshot, reconciler::{Reconciler, fiber::{WorkTag, flags}}, ratatui::{
+use sushi::{init_tui, restore_tui, DynamicSushiApp, render_snapshot, Props, reconciler::{Reconciler, fiber::WorkTag}, ratatui::{
     widgets::{Block, Borders, Tabs, Paragraph, Gauge, Sparkline, Wrap},
     layout::{Layout, Constraint, Direction, Alignment},
     style::{Style, Color, Modifier},
@@ -33,7 +33,7 @@ impl DynamicSushiApp for StackDashboard {
             KeyCode::Right | KeyCode::Tab => {
                 self.active_tab = (self.active_tab + 1) % self.tabs().len();
                 // Trigger React-style Reconciler
-                let id = self.reconciler.create_fiber(WorkTag::FunctionComponent, Box::new("TabSwitch"));
+                let _id = self.reconciler.create_fiber(WorkTag::FunctionComponent, Props::Text("TabSwitch".into()));
                 println!("⚛️  Reconciler: Tab switched to #{}", self.active_tab);
             },
             _ => {}

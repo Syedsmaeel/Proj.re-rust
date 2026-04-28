@@ -1,45 +1,78 @@
-use sushi::reconciler::{Reconciler, fiber::{WorkTag, flags}};
+use std::sync::{Arc, Mutex};
+use std::time::{Duration, Instant};
+
+use sushi::reconciler::fiber::WorkTag;
+use sushi::{use_state, ChildSpec, DebugHost, Props, Reconciler, Setter};
 
 fn main() -> Result<(), String> {
     println!("⚛️  sushi — Sovereign React (Pure Rust Reconciler)\n");
 
-    let mut reconciler = Reconciler::new();
+    let mut r = Reconciler::new();
+    let root = r.create_host_root();
 
-    // -- 1. THE INITIAL RENDER PHASE --
+    let setter_slot: Arc<Mutex<Option<Setter<i32>>>> = Arc::new(Mutex::new(None));
+    let slot = setter_slot.clone();
+
+    let counter = r.create_function_fiber("Counter", move || {
+        let (n, set_n) = use_state(0_i32);
+        *slot.lock().unwrap() = Some(set_n);
+        vec![ChildSpec::Text(format!("count = {n}"))]
+    });
+    r.append_child(root, counter);
+
+    let mut host = DebugHost::new();
+
     println!("--- [PHASE 1: INITIAL RENDER] ---");
-    // Create the root of our application
-    let root_id = reconciler.create_fiber(WorkTag::HostRoot, Box::new("Root"));
-    
-    // Create a child (e.g. a Button)
-    let button_id = reconciler.create_fiber(WorkTag::HostComponent, Box::new("Neon Button"));
-    
-    // Setup relationship & set 'Placement' flag (Initial Render)
-    if let Some(root) = reconciler.fibers.get_mut(&root_id) {
-        root.child_id = Some(button_id);
+    r.schedule_update(root);
+    r.work_loop_with_deadline(None);
+    r.finish_commit(&mut host)?;
+
+    println!("\n--- [PHASE 2: STATE UPDATE via setter ] ---");
+    if let Some(s) = setter_slot.lock().unwrap().as_ref() {
+        s.set(42);
     }
-    if let Some(btn) = reconciler.fibers.get_mut(&button_id) {
-        btn.return_id = Some(root_id);
-        btn.flags |= flags::PLACEMENT; // Mark for creation
+    r.pump(&mut host, Duration::from_secs(1));
+
+    println!("\n--- [PHASE 3: SECOND UPDATE — only diff is committed ] ---");
+    if let Some(s) = setter_slot.lock().unwrap().as_ref() {
+        s.set(43);
     }
+    r.pump(&mut host, Duration::from_secs(1));
 
-    // Run 'Begin Work' on the tree
-    reconciler.begin_work(root_id)?;
-    reconciler.begin_work(button_id)?;
-
-    // -- 2. THE COMMIT PHASE --
-    println!("\n--- [PHASE 2: COMMIT] ---");
-    reconciler.commit_root(root_id)?;
-
-    // -- 3. AN UPDATE (e.g. state change) --
-    println!("\n--- [PHASE 3: STATE UPDATE] ---");
-    if let Some(btn) = reconciler.fibers.get_mut(&button_id) {
-        btn.flags |= flags::UPDATE; // Mark for refresh
-        println!("State changed: Button needs to be re-rendered.");
+    println!("\n--- [PHASE 4: NO-OP UPDATE — same value, no commit ] ---");
+    if let Some(s) = setter_slot.lock().unwrap().as_ref() {
+        s.set(43);
     }
-    
-    reconciler.begin_work(button_id)?;
-    reconciler.commit_root(root_id)?;
+    let log_len_before = host.log.len();
+    r.pump(&mut host, Duration::from_secs(1));
+    println!("  host log grew by {}", host.log.len() - log_len_before);
 
-    println!("\n✅ Success! The Sushi Reconciler managed the lifecycle perfectly.");
+    println!("\n--- [PHASE 5: INTERRUPTIBLE WORK LOOP ] ---");
+    let big = r.create_host_root();
+    for i in 0..2_000 {
+        let id = r.create_fiber(WorkTag::HostComponent, Props::Text(format!("item {i}")));
+        r.append_child(big, id);
+    }
+    r.schedule_update(big);
+    let started = Instant::now();
+    r.work_loop_with_deadline(Some(Duration::from_micros(500)));
+    let elapsed = started.elapsed();
+    println!(
+        "  yielded after {:?}; remaining unit_of_work: {:?}; render_complete = {}",
+        elapsed,
+        r.next_unit_of_work,
+        r.is_render_complete()
+    );
+
+    println!("\n--- [PHASE 6: RESUME — finish the rest in unbounded run ] ---");
+    let started = Instant::now();
+    r.work_loop_with_deadline(None);
+    println!(
+        "  finished remaining work in {:?}; render_complete = {}",
+        started.elapsed(),
+        r.is_render_complete()
+    );
+
+    println!("\n✅ Reconciler upgraded.");
     Ok(())
 }

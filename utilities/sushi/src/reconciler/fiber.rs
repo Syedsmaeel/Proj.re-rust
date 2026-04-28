@@ -1,38 +1,61 @@
 use std::any::Any;
+use std::sync::Arc;
+use crate::reconciler::hooks::HookSlot;
 
 pub type FiberId = usize;
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub enum WorkTag {
     FunctionComponent,
-    HostComponent, // e.g. a Button or Label
+    HostComponent,
     HostRoot,
 }
 
-/// The Fiber: The unit of work in Sushi (Translated from ReactFiber.js)
+#[derive(Debug, Clone, PartialEq)]
+pub enum Props {
+    None,
+    Text(String),
+    Map(Vec<(String, String)>),
+}
+
+pub type RenderFn = dyn Fn() -> Vec<ChildSpec> + Send + Sync;
+
+#[derive(Clone)]
+pub enum ChildSpec {
+    Text(String),
+    Host { tag: String, text: String },
+    Function { name: String, render: Arc<RenderFn> },
+}
+
+impl std::fmt::Debug for ChildSpec {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            ChildSpec::Text(t) => write!(f, "Text({t:?})"),
+            ChildSpec::Host { tag, text } => write!(f, "Host {{ tag: {tag:?}, text: {text:?} }}"),
+            ChildSpec::Function { name, .. } => write!(f, "Function {{ name: {name:?} }}"),
+        }
+    }
+}
+
 pub struct Fiber {
     pub id: FiberId,
     pub tag: WorkTag,
-    
-    // Relationships (Using IDs instead of pointers for Rust safety)
     pub return_id: Option<FiberId>,
     pub child_id: Option<FiberId>,
     pub sibling_id: Option<FiberId>,
-    
-    // State & Props
-    pub pending_props: Box<dyn Any>,
-    pub memoized_props: Option<Box<dyn Any>>,
-    pub memoized_state: Option<Box<dyn Any>>,
-    
-    // The "Alt" fiber (used for double-buffering during updates)
+    pub pending_props: Props,
+    pub memoized_props: Option<Props>,
+    pub memoized_state: Option<Box<dyn Any + Send>>,
     pub alternate_id: Option<FiberId>,
-    
-    // Flags for the Commit phase
     pub flags: u32,
+    pub hooks: Vec<HookSlot>,
+    pub host_text: Option<String>,
+    pub render_fn: Option<Arc<RenderFn>>,
+    pub name: String,
 }
 
 impl Fiber {
-    pub fn new(id: FiberId, tag: WorkTag, props: Box<dyn Any>) -> Self {
+    pub fn new(id: FiberId, tag: WorkTag, props: Props) -> Self {
         Self {
             id,
             tag,
@@ -44,6 +67,10 @@ impl Fiber {
             memoized_state: None,
             alternate_id: None,
             flags: 0,
+            hooks: Vec::new(),
+            host_text: None,
+            render_fn: None,
+            name: String::new(),
         }
     }
 }

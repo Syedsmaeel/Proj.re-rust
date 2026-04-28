@@ -1,47 +1,71 @@
-use crate::reconciler::fiber::{Fiber, FiberId, WorkTag, flags};
+use crate::host::{DebugHost, Host};
+use crate::reconciler::fiber::{flags, FiberId, WorkTag};
 use crate::reconciler::Reconciler;
 
 impl Reconciler {
-    /// The 'commit_root' function (The Synchronous Phase)
-    /// This is where we actually apply changes to the host (e.g., TUI or Desktop)
     pub fn commit_root(&mut self, root_id: FiberId) -> Result<(), String> {
-        println!("🚀 Committing changes to host...");
-        self.commit_work(root_id)?;
+        let mut sink = DebugHost::new();
+        self.commit_root_with_host(root_id, &mut sink)
+    }
+
+    pub fn commit_root_with_host(
+        &mut self,
+        root_id: FiberId,
+        host: &mut dyn Host,
+    ) -> Result<(), String> {
+        self.commit_work(root_id, host)?;
         Ok(())
     }
 
-    fn commit_work(&mut self, fiber_id: FiberId) -> Result<(), String> {
-        let (flags, tag, child_id, sibling_id) = {
-            let fiber = self.fibers.get(&fiber_id).ok_or("Fiber not found")?;
-            (fiber.flags, fiber.tag.clone(), fiber.child_id, fiber.sibling_id)
+    fn commit_work(&mut self, fiber_id: FiberId, host: &mut dyn Host) -> Result<(), String> {
+        let snapshot = match self.fibers.get(&fiber_id) {
+            Some(f) => (
+                f.flags,
+                f.tag.clone(),
+                f.child_id,
+                f.sibling_id,
+                f.host_text.clone().unwrap_or_default(),
+                f.name.clone(),
+            ),
+            None => return Ok(()),
+        };
+        let (flags_v, tag, child_id, sibling_id, text, name) = snapshot;
+
+        let tag_str = match tag {
+            WorkTag::FunctionComponent => "fn",
+            WorkTag::HostComponent => "host",
+            WorkTag::HostRoot => "root",
+        };
+        let display = if name.is_empty() {
+            text.clone()
+        } else if text.is_empty() {
+            name.clone()
+        } else {
+            format!("{name}: {text}")
         };
 
-        // 1. Apply effects to this fiber
-        if flags & flags::PLACEMENT != 0 {
-            println!("  [Placement] Render new element for Fiber #{}", fiber_id);
+        if flags_v & flags::DELETION != 0 {
+            host.delete(fiber_id);
+            self.fibers.remove(&fiber_id);
+            return Ok(());
         }
-        if flags & flags::UPDATE != 0 {
-            println!("  [Update] Refresh existing element for Fiber #{}", fiber_id);
-        }
-        if flags & flags::DELETION != 0 {
-            println!("  [Deletion] Remove element for Fiber #{}", fiber_id);
-        }
-
-        // 2. Commit children
-        if let Some(child) = child_id {
-            self.commit_work(child)?;
+        if flags_v & flags::PLACEMENT != 0 {
+            host.place(fiber_id, tag_str, &display);
+        } else if flags_v & flags::UPDATE != 0 {
+            host.update(fiber_id, tag_str, &display);
         }
 
-        // 3. Commit siblings
-        if let Some(sibling) = sibling_id {
-            self.commit_work(sibling)?;
+        if let Some(c) = child_id {
+            self.commit_work(c, host)?;
+        }
+        if let Some(s) = sibling_id {
+            self.commit_work(s, host)?;
         }
 
-        // 4. Clear flags after commit
-        if let Some(fiber) = self.fibers.get_mut(&fiber_id) {
-            fiber.flags = flags::NO_FLAGS;
+        if let Some(f) = self.fibers.get_mut(&fiber_id) {
+            f.flags = flags::NO_FLAGS;
+            f.memoized_props = Some(f.pending_props.clone());
         }
-
         Ok(())
     }
 }
