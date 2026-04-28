@@ -8,5 +8,4 @@ license.workspace = true
 
 [dependencies]
 re-core.workspace = true
-lyon = "1.0"
 tiny-skia = "0.11"
