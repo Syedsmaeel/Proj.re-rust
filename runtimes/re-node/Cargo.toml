@@ -1,18 +1,20 @@
 [package]
 name = "re-node"
-description = "JS runtime, V8-free"
+description = "Sovereign Rust-native JavaScript Runtime"
 version.workspace = true
 edition.workspace = true
 authors.workspace = true
 license.workspace = true
 
-[[bin]]
-name = "re-node"
-path = "src/main.rs"
-
 [dependencies]
 re-core.workspace = true
 anyhow.workspace = true
 clap.workspace = true
-tokio.workspace = true
+tokio = { workspace = true, features = ["full"] }
 tracing.workspace = true
+boa_engine = "0.19"
+boa_runtime = "0.19"
+
+[[bin]]
+name = "re-node"
+path = "src/main.rs"
