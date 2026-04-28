@@ -1,3 +1,4 @@
+pub mod diff_renderer;
 pub struct SubPixelCanvas {
     pub width: usize,
     pub height: usize,
