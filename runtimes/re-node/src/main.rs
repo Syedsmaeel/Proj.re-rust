@@ -15,6 +15,8 @@ fn main() -> Result<()> {
     let code = fs::read_to_string(&cli.file).context("Failed to read JS file")?;
 
     let mut context = BoaContext::default();
+    let mut canvas = sushi::Canvas::new(400, 400);
+    runtimes::re_node::bridge::register_sushi_bridge(&mut context, &mut canvas);
     
     println!("🚀 re-node — Executing JS on Rust Engine...");
     
