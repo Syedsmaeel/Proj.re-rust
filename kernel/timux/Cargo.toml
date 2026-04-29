@@ -1,0 +1,40 @@
+[package]
+name = "timux"
+description = "Timux — sovereign kernel with hybrid ring+capability privilege model"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+
+[lib]
+name = "timux"
+path = "src/lib.rs"
+
+[[bin]]
+name = "timux-x86_64"
+path = "src/arch/x86_64/main.rs"
+
+[[bin]]
+name = "timux-riscv"
+path = "src/arch/riscv/main.rs"
+
+[[bin]]
+name = "timux-arm64"
+path = "src/arch/arm64/main.rs"
+
+[dependencies]
+anyhow.workspace = true
+thiserror.workspace = true
+serde.workspace = true
+spin = "0.9"
+bitflags = "2"
+static_assertions = "1"
+
+[profile.release]
+panic = "abort"
+lto = true
+opt-level = "s"
+codegen-units = 1
+
+[profile.dev]
+panic = "abort"

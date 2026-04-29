@@ -1,6 +1,7 @@
 [workspace]
 resolver = "2"
 members = [
+    "kernel/timux",
     "core/re-core",
     "runtimes/re-node",
     "runtimes/re-docker",
