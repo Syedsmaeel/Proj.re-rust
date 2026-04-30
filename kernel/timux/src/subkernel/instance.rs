@@ -285,8 +285,9 @@ impl SubKernel {
 
     /// Clone this sub-kernel — returns a new SubKernel with copied state
     pub fn clone_sk(&self, new_parent: Option<SubKernelId>) -> SubKernel {
-        SubKernel::spawn(self.config.clone(), new_parent)
-        // Full state clone (tasks, memory map) happens at arch level
+        let mut cloned = SubKernel::spawn(self.config.clone(), new_parent);
+        cloned.boot(); // clone starts Running immediately
+        cloned
     }
 
     /// Begin migration — freeze and mark for transport
