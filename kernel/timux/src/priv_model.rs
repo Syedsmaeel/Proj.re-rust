@@ -190,6 +190,7 @@ const MAX_CAPS: usize = 256;
 
 /// Per-task capability table — stores all capabilities a task holds
 #[derive(Debug)]
+#[derive(Clone)]
 pub struct CapabilityTable {
     slots: [Option<CapabilityToken>; MAX_CAPS],
     count: usize,

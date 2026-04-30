@@ -1,4 +1,8 @@
-//! Timux Memory Manager — capability-gated virtual memory
+//! Timux Memory Manager
+
+pub mod allocator;
+
+pub use allocator::{LinkedListAllocator, align_up, align_down};
 
 use crate::priv_model::{CapRight, CapabilityToken, PrivError};
 
@@ -22,10 +26,10 @@ bitflags::bitflags! {
     }
 }
 
-/// Virtual address space — one per task
+/// Virtual address space — one per task / per sub-kernel
 pub struct AddressSpace {
-    regions: alloc::vec::Vec<VmRegion>,
-    arch_root: usize, // physical address of arch page table root
+    regions:   alloc::vec::Vec<VmRegion>,
+    arch_root: usize,
 }
 
 impl AddressSpace {
@@ -33,7 +37,6 @@ impl AddressSpace {
         Self { regions: alloc::vec::Vec::new(), arch_root }
     }
 
-    /// Map a region — requires MAP capability
     pub fn map(
         &mut self,
         cap: &CapabilityToken,
@@ -48,11 +51,10 @@ impl AddressSpace {
         Ok(())
     }
 
-    /// Map MMIO — requires MMIO_ACCESS capability
     pub fn map_mmio(
         &mut self,
         cap: &CapabilityToken,
-        phys: usize,
+        _phys: usize,
         vaddr: usize,
         size: usize,
     ) -> Result<(), PrivError> {
@@ -64,7 +66,6 @@ impl AddressSpace {
             size,
             flags: RegionFlags::READ | RegionFlags::WRITE | RegionFlags::MMIO,
         });
-        let _ = phys; // arch-specific mapping happens here
         Ok(())
     }
 
