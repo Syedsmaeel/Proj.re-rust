@@ -172,6 +172,45 @@ border style=rounded
 
 ## Architecture
 
+
+## Architecture Diagram
+
+```
+                    master kernel — ring 0
+         CapAuthority · SubKernelManager · IPC broker · shared memory arbiter
+                              spawn(cap)
+              |                    |                    |
+              ▼                    ▼                    ▼
+┌─────────────────────┐  ┌─────────────────────┐  ┌─────────────────────┐
+│    sub-kernel 1     │  │    sub-kernel 2     │  │    sub-kernel 3     │
+│     net-kernel      │  │     fs-kernel       │  │     gpu-kernel      │
+│─────────────────────│  │─────────────────────│  │─────────────────────│
+│  ring 0 — sk-core   │  │  ring 0 — sk-core   │  │  ring 0 — sk-core   │
+│  ring 1 — sk-ext    │  │  ring 1 — sk-ext    │  │  ring 1 — sk-ext    │
+│  ring 2 — sk-svc    │◄─►  ring 2 — sk-svc    │◄─►  ring 2 — sk-svc    │
+│  ring 3 — user      │IPC│  ring 3 — user      │IPC│  ring 3 — user      │
+│  ring 4 — sandbox   │  │  ring 4 — sandbox   │  │  ring 4 — sandbox   │
+│─────────────────────│  │─────────────────────│  │─────────────────────│
+│     cap table       │  │     cap table       │  │     cap table       │
+│  NET_SEND·NET_RECV  │  │  FS_READ·FS_WRITE   │  │  DMA·MMIO_ACCESS    │
+└──────────┬──────────┘  └──────────┬──────────┘  └──────────┬──────────┘
+           ╎                        ╎                        ╎
+           ╎  (MAP cap)             ╎  (MAP cap)             ╎  (MAP cap)
+           ▼                        ▼                        ▼
+┌──────────────────────────────────────────────────────────────────────────┐
+│                        shared memory region                              │
+│  MAP cap required · page-table entries controlled by master kernel       │
+│              read-only or read-write per capability token                │
+└──────────────────────────────────────────────────────────────────────────┘
+
+Legend:
+  ◄─► ─────  IPC channel          (SEND + RECV cap required)
+  ╎ - - -    shared memory        (MAP cap required)
+  spawn(cap) master kernel or sub-kernel creates a new OS instance
+             each sub-kernel has its own fully isolated ring 0–4
+```
+
+
 ```
 kernel/timux/
 ├── src/
