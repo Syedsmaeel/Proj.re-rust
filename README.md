@@ -14,7 +14,9 @@ This repository is a monorepo containing the **Re-Rust** ecosystem—a suite of 
 
 ## 🛡 Timux Kernel Model (Software-Defined Ring -1)
 
-Timux implements a sovereign fractal hierarchy where the master kernel acts as a **Ring -1 Software-Defined Substrate**. Isolation and sovereignty are enforced via pure software logic and capability-gated memory management:
+Timux implements a sovereign fractal hierarchy where the master kernel acts as a **Ring -1 Software-Defined Substrate**. Isolation and sovereignty are enforced via pure software logic and capability-gated memory management.
+
+Each sub-kernel can host native Timux binaries, or foreign applications (.deb/.exe) via our **Sovereign Binary Shim Layer**, which maps foreign system calls to native Timux capabilities.
 
 ```text
           [ RING -1: SOVEREIGN ROOT SUBSTRATE ] <══╗  Root Authority
@@ -23,10 +25,10 @@ Timux implements a sovereign fractal hierarchy where the master kernel acts as a
                       │            │                ║
            ┌──────────▼────────┐   └────────────────╣  Software Gated
            │ SUB-KERNEL (TMX)  │                    ║  (Logical Isolation)
-           │ - Rings 0-4       │   ┌────────────────▼───────────────┐
-           │ - Bash++ TUI      │   │ SUB-KERNEL (FOREIGN/NESTED)    │
-           └───────────────────┘   │ - Guest OS (Linux/BSD)         │
-                                   │ - Nested Ring -1 Substrate     │
+           │ - Native Binary   │   ┌────────────────▼───────────────┐
+           │ - Bash++ TUI      │   │ SUB-KERNEL (BINARY SHIM)       │
+           └───────────────────┘   │ - Foreign OS (.deb/.exe)       │
+                                   │ - Syscall/API Translation Layer│
                                    └────────────────────────────────┘
 ```
 
