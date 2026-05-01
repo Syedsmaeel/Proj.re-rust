@@ -13,6 +13,24 @@ pub struct IngestionGate {
     fs: ScopedProtocol<SimpleFileSystem>,
 }
 
+#[derive(Debug, Clone, Copy)]
+pub enum PartitionType {
+    Gpt,
+    Mbr,
+}
+
+#[derive(Debug, Clone, Copy)]
+pub struct Partition {
+    pub start_lba: u64,
+    pub size_lba: u64,
+    pub is_bootable: bool,
+}
+
+pub struct PartitionTable {
+    pub kind: PartitionType,
+    pub partitions: [Option<Partition>; 4],
+}
+
 impl IngestionGate {
     pub fn new(bt: &BootServices) -> Self {
         let handle = bt.get_handle_for_protocol::<SimpleFileSystem>()
@@ -23,23 +41,61 @@ impl IngestionGate {
         Self { fs }
     }
 
-    /// Scans the root directory for bootable sovereign assets (.iso, .img)
-    pub fn scan_assets(&mut self) {
-        let mut root = self.fs.open_volume().expect("failed to open volume");
-        
-        info!("󰚚 Ingestion Gate: Scanning for sovereign assets...");
+    /// Parses the partition table of an image file
+    pub fn parse_image(&self, buffer: &[u8]) -> Option<PartitionTable> {
+        // Simple MBR check (Magic 0x55AA at end of first sector)
+        if buffer.len() >= 512 && buffer[510] == 0x55 && buffer[511] == 0xAA {
+            info!("󰒋 Detected MBR Partition Table");
+            let mut partitions = [None; 4];
+            
+            // Simplified MBR parsing (extracting first partition for demo)
+            partitions[0] = Some(Partition {
+                start_lba: 2048, // Standard alignment
+                size_lba: 1024 * 1024, // 512MB placeholder
+                is_bootable: true,
+            });
 
-        // Placeholder for directory traversal logic
-        // In a full implementation, we would iterate through the root directory
-        // and filter for files ending in .iso or .img
-        
-        info!("󰚚 Found: debian-12.iso (mapped to SK-GUEST)");
-        info!("󰚚 Found: recovery.img    (mapped to SK-FLAT)");
+            return Some(PartitionTable { kind: PartitionType::Mbr, partitions });
+        }
+
+        // Simple GPT check (Signature 'EFI PART' at sector 1)
+        if buffer.len() >= 1024 && &buffer[512..520] == b"EFI PART" {
+            info!("󰒋 Detected GPT Partition Table");
+            let mut partitions = [None; 4];
+            partitions[0] = Some(Partition {
+                start_lba: 4096,
+                size_lba: 2048 * 1024, // 1GB placeholder
+                is_bootable: true,
+            });
+            return Some(PartitionTable { kind: PartitionType::Gpt, partitions });
+        }
+
+        None
     }
 
-    /// Verifies the integrity of an ingested image
-    pub fn verify_image(&self, _path: &str) -> bool {
-        // TODO: Integrate re-pack Ed25519 verification logic
-        true
-    }
+pub struct MountedAsset {
+    pub start_lba: u64,
+    pub size_lba: u64,
+    pub data: &'static [u8],
 }
+
+impl IngestionGate {
+    // ... existing new, parse_image, scan_assets methods ...
+
+    /// Mounts an image file by locating its bootable partition
+    pub fn mount_image(&self, buffer: &'static [u8]) -> Option<MountedAsset> {
+        let table = self.parse_image(buffer)?;
+        
+        // Locate the bootable partition
+        for part in table.partitions.iter().flatten() {
+            if part.is_bootable {
+                info!("󰒋 Mounting bootable partition at LBA {}", part.start_lba);
+                return Some(MountedAsset {
+                    start_lba: part.start_lba,
+                    size_lba: part.size_lba,
+                    data: buffer,
+                });
+            }
+        }
+        None
+    }
