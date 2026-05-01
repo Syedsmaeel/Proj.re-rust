@@ -45,31 +45,38 @@ Every cross-ring and cross-kernel operation requires a valid `CapabilityToken`.
 
 ## Architecture Diagram
 
-```
-          RING -1: SOVEREIGN SUBSTRATE
-         CapAuthority · SubKernelManager · IPC broker · Blueprint Parser
-                              spawn(cap)
-              |                    |                    |
-              ▼                    ▼                    ▼
-┌─────────────────────┐  ┌─────────────────────┐  ┌─────────────────────┐
-│    SUB-KERNEL 1     │  │    SUB-KERNEL 2     │  │    SUB-KERNEL 3     │
-│  (script: net.sh)   │  │  (script: fs.sh)    │  │  (NESTED BASE -1)   │
-│─────────────────────│  │─────────────────────│  │─────────────────────│
-│  ring 0 — sk-core   │  │  ring 0 — sk-core   │  │  ring 0 — sk-core   │
-│  ring 1 — sk-ext    │  │  ring 1 — sk-ext    │  │  ring 1 — sk-ext    │
-│  ring 2 — sk-svc    │◄─►  ring 2 — sk-svc    │◄─►  ring 2 — sk-svc    │
-│  ring 3 — user      │IPC│  ring 3 — user      │IPC│  ring 3 — user      │
-│  ring 4 — sandbox   │  │  ring 4 — sandbox   │  │  ring 4 — sandbox   │
-│─────────────────────│  │─────────────────────│  │─────────────────────│
-│     cap table       │  │     cap table       │  │     cap table       │
-└──────────┬──────────┘  └──────────┬──────────┘  └──────────┬──────────┘
-           ╎                        ╎                        ╎
-           ╎  (MAP cap)             ╎  (MAP cap)             ╎  (NESTED spawn)
-           ▼                        ▼                        ▼
-┌──────────────────────────────────────────────────────────────────────────┐
-│                        SOVEREIGN LOGIC BRIDGES                           │
-│     Software-Defined IPC · Capability-Gated Shared Memory Segments       │
-└──────────────────────────────────────────────────────────────────────────┘
+```text
+          ══════════════════════════════════════════════════════════════════════
+                         TIMUX: SOVEREIGN FRACTAL ARCHITECTURE
+          ══════════════════════════════════════════════════════════════════════
+
+          [ RING -5: SOVEREIGN ORIGIN ] ──(Root Authority/Entropy)──┐
+                                                                    │
+          [ RING -1: SOVEREIGN SUBSTRATE (Master) ] <───────────────┘
+          │ CapAuthority · SubKernelManager · vDisk Arbiter
+          ├──────────────────────────┬───────────────────────────┐
+          │                          │                           │
+  ┌───────▼───────┐          ┌───────▼───────┐          ┌────────▼────────┐
+  │ SUB-KERNEL 1  │          │ SUB-KERNEL 2  │          │ NESTED BASE (-1)│
+  │ (Native)      │          │ (Guest/Linux) │          │ (Fractal Sub-Root)│
+  │ ├─ R0-R4      │          │ ├─ R0, R3     │          │ ├─ R0-R4        │
+  │ └─ [net.sh]   │          │ └─ [fs.sh]    │          │ └─ [sub_base.sh]│
+  └───────┬───────┘          └───────┬───────┘          └────────┬────────┘
+          │                          │                           │
+  ┌───────▼───────┐          ┌───────▼───────┐          ┌────────▼────────┐
+  │ [vDisk: nat]  │          │ [vDisk: ext]  │          │ [vDisk: base]   │
+  └───────────────┘          └───────────────┘          └────────┬────────┘
+                                                                 │
+                                                       (Recursive Delegation)
+                                                                 ▼
+                                                       ┌───────────────────┐
+                                                       │ SUB-SUB-KERNEL X  │
+                                                       │ (Rings 0-4)       │
+                                                       └───────────────────┘
+
+          ══════════════════════════════════════════════════════════════════════
+            LOGIC BRIDGES: [ Software-Defined IPC ] ─── [ Cap-Gated Memory ]
+          ══════════════════════════════════════════════════════════════════════
 ```
 
 
