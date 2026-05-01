@@ -1,7 +1,9 @@
 # Proj.re-rust: The Re-Rust Ecosystem
 
 <p align="center">
-  <img src="https://www.rust-lang.org/static/images/rust-logo-blk.svg" alt="Rust Logo" width="120" height="120">
+  <img src="https://www.rust-lang.org/static/images/rust-logo-blk.svg" alt="Rust Logo" width="100" height="100">
+  <img src="https://rustacean.net/assets/rustacean-flat-noshadow.svg" alt="Ferris the Crab" width="100" height="100">
+  <img src="https://upload.wikimedia.org/wikipedia/commons/3/35/Tux.svg" alt="Tux the Penguin" width="100" height="100">
 </p>
 
 **A sovereign, high-performance system architecture built entirely in Rust.**
