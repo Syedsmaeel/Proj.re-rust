@@ -111,8 +111,14 @@ impl Scheduler {
         }
     }
 
-    pub fn tick(&mut self) -> u64 {
+    pub fn tick(&mut self, sk_manager: &mut crate::subkernel::manager::SubKernelManager) -> u64 {
         self.tick += 1;
+        
+        // Every 1000 ticks, trigger a global health check
+        if self.tick % 1000 == 0 {
+            sk_manager.shadows.check_health();
+        }
+        
         self.tick
     }
 

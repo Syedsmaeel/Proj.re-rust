@@ -34,6 +34,12 @@ fn main(image_handle: Handle, mut system_table: SystemTable<Boot>) -> Status {
     let mut stdin = bt.open_protocol_exclusive::<Input>(stdin_handle)
         .expect("failed to open stdin protocol");
 
+    // Phase 3: Sovereign Shield
+    if !tbm::crypto::SovereignShield::unlock_kernel(&mut stdin) {
+        return Status::ABORTED;
+    }
+    tbm::crypto::SovereignShield::verify_integrity(&[]);
+
     let mut secret_sequence = [0u8; 5];
     let mut seq_idx = 0;
     let target_sequence = b"TIMUX";
@@ -72,7 +78,32 @@ fn main(image_handle: Handle, mut system_table: SystemTable<Boot>) -> Status {
                             }
                             b'b' => { // Boot
                                 info!("Booting: {}", dashboard.blueprints[dashboard.selected_index].name);
-                                break;
+                                
+                                // Phase 4: Finalize Kernel Handoff
+                                // This is a placeholder for the kernel image data
+                                let kernel_elf = include_bytes!("../../../target/x86_64-unknown-none/debug/timux-x86_64");
+                                let mut boot_info = BootInfo {
+                                    magic: BootInfo::MAGIC,
+                                    version: 1,
+                                    heap_start: 0x10_0000,
+                                    heap_size: 0x40_0000,
+                                    framebuffer: renderer.fb_info(),
+                                    mmap_addr: 0,
+                                    mmap_len: 0,
+                                    blueprint_addr: 0,
+                                    blueprint_len: 0,
+                                    entropy_seed: [0; 32],
+                                };
+
+                                let entry = tbm::loader::KernelLoader::load(kernel_elf, &mut boot_info)
+                                    .expect("failed to load kernel");
+
+                                info!("Jumping to kernel at {:#x}", entry);
+                                
+                                // Jump to kernel entry point
+                                type KernelEntry = unsafe extern "C" fn(*const BootInfo) -> !;
+                                let kernel_main: KernelEntry = unsafe { core::mem::transmute(entry as *const ()) };
+                                unsafe { kernel_main(&boot_info); }
                             }
                             _ => {}
                         }
