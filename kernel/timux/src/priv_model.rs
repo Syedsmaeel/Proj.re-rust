@@ -1,47 +1,59 @@
 //! Timux Privilege Model — Hybrid Ring + Capability System
 //!
-//! Unlike Intel's fixed Ring 0-3, Timux defines its own ring hierarchy:
+//! Timux defines a Software-Defined Sovereign hierarchy from Ring -5 to Ring 4:
 //!
-//! Ring 0 — Kernel Core      (timux kernel itself, unrestricted)
-//! Ring 1 — Kernel Extension (drivers, filesystems — supervised)
-//! Ring 2 — System Services  (init, IPC daemons — capability-gated)
-//! Ring 3 — User             (applications — fully capability-isolated)
-//! Ring 4 — Sandbox          (untrusted code — maximum restriction)
-//!
-//! Every cross-ring operation requires a valid CapabilityToken.
-//! No capability = no access, regardless of ring level.
+//! Ring -5 — Sovereign Origin      (hardware handoff, absolute root)
+//! Ring -4 — Security Fabric       (integrity monitoring, encryption)
+//! Ring -3 — Orchestration Layer   (global resource management)
+//! Ring -2 — Fractal Root          (recursive kernel factory)
+//! Ring -1 — Sovereign Substrate  (Timux master kernel core)
+//! Ring  0 — Kernel Core           (sub-kernel kernel)
+//! Ring  1 — Kernel Extension      (drivers, filesystems)
+//! Ring  2 — System Services       (init, IPC, Bash++)
+//! Ring  3 — User                  (applications)
+//! Ring  4 — Sandbox               (untrusted code)
 
 use bitflags::bitflags;
 use core::sync::atomic::{AtomicU64, Ordering};
 
-/// The 5-level Timux ring hierarchy
+/// The Timux Deep Sovereignty ring hierarchy
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
-#[repr(u8)]
+#[repr(i8)]
 pub enum RingLevel {
-    KernelCore      = 0,
-    KernelExtension = 1,
-    SystemService   = 2,
-    User            = 3,
-    Sandbox         = 4,
+    SovereignOrigin  = -5,
+    SecurityFabric   = -4,
+    Orchestration    = -3,
+    FractalRoot      = -2,
+    SovereignBase    = -1,
+    KernelCore       = 0,
+    KernelExtension  = 1,
+    SystemService    = 2,
+    User             = 3,
+    Sandbox          = 4,
 }
 
 impl RingLevel {
     pub fn can_access(self, target: RingLevel) -> bool {
-        // Lower ring number = higher privilege
-        (self as u8) <= (target as u8)
+        // Lower ring number = higher privilege (more negative is more powerful)
+        (self as i8) <= (target as i8)
     }
 
     pub fn is_privileged(self) -> bool {
-        (self as u8) < 2
+        (self as i8) < 2
     }
 
     pub fn name(self) -> &'static str {
         match self {
-            Self::KernelCore      => "ring0:kernel-core",
-            Self::KernelExtension => "ring1:kernel-ext",
-            Self::SystemService   => "ring2:sys-service",
-            Self::User            => "ring3:user",
-            Self::Sandbox         => "ring4:sandbox",
+            Self::SovereignOrigin  => "ring-5:origin",
+            Self::SecurityFabric   => "ring-4:security",
+            Self::Orchestration    => "ring-3:orchestrate",
+            Self::FractalRoot      => "ring-2:fractal",
+            Self::SovereignBase    => "ring-1:substrate",
+            Self::KernelCore       => "ring0:kernel-core",
+            Self::KernelExtension  => "ring1:kernel-ext",
+            Self::SystemService    => "ring2:sys-service",
+            Self::User             => "ring3:user",
+            Self::Sandbox          => "ring4:sandbox",
         }
     }
 }
@@ -71,7 +83,7 @@ impl Ring {
             return Err(PrivError::InsufficientRights);
         }
         // Can only transition to less-privileged rings without special cap
-        if (target as u8) < (self.level as u8)
+        if (target as i8) < (self.level as i8)
             && !token.permits(CapRight::PRIVILEGE_ESCALATION)
         {
             return Err(PrivError::EscalationDenied);
@@ -161,7 +173,7 @@ impl CapabilityToken {
             return Err(PrivError::InsufficientRights);
         }
         // Cannot delegate to a higher-privilege ring
-        if (to as u8) < (self.owner as u8) {
+        if (to as i8) < (self.owner as i8) {
             return Err(PrivError::EscalationDenied);
         }
         Ok(CapabilityToken::mint(rights, to))

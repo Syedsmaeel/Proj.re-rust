@@ -2,6 +2,29 @@
 //!
 //! Shared definitions for system handoff.
 
+#[derive(Debug, Clone, Copy, PartialEq)]
+#[repr(C)]
+pub struct StaticStr {
+    ptr: *const u8,
+    len: usize,
+}
+
+impl StaticStr {
+    pub const fn new(s: &'static str) -> Self {
+        Self {
+            ptr: s.as_ptr(),
+            len: s.len(),
+        }
+    }
+
+    pub fn as_str(&self) -> &'static str {
+        unsafe {
+            let slice = core::slice::from_raw_parts(self.ptr, self.len);
+            core::str::from_utf8_unchecked(slice)
+        }
+    }
+}
+
 #[derive(Debug, Clone, Copy)]
 #[repr(C)]
 pub struct BootInfo {
