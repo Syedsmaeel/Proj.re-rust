@@ -12,6 +12,35 @@ This repository is a monorepo containing the **Re-Rust** ecosystem—a suite of 
 
 ---
 
+## 🛡 Timux Kernel Model
+
+Timux does not use the standard Ring 0-3 model. It implements a sovereign 5-ring hierarchy gated by unforgeable capabilities:
+
+```text
+          [  RING 0: KERNEL CORE  ] <══╗  Mint / Revoke / Verify
+          │  - CapAuthority        │   ║  (CapabilityToken)
+          │  - Scheduler / MMU     │   ║
+          └──────────┬─────────────┘   ║
+                     ▼                 ║
+          [  RING 1: EXTENSIONS   ] <══╣  Supervised Access
+          │  - Drivers / FS        │   ║  (IRQ_BIND, DMA_ACCESS)
+          └──────────┬─────────────┘   ║
+                     ▼                 ║
+          [  RING 2: SYS SERVICES ] <══╣  Capability Isolated
+          │  - init / IPC / Auth   │   ║  (PROCESS_SPAWN, SEND)
+          └──────────┬─────────────┘   ║
+                     ▼                 ║
+          [  RING 3: USER SPACE   ] <══╣  Application Logic
+          │  - Standard Apps       │   ║  (FS_READ, NET_SEND)
+          └──────────┬─────────────┘   ║
+                     ▼                 ║
+          [  RING 4: SANDBOX      ] <══╝  Maximum Restriction
+          │  - Untrusted Code      │      (READ ONLY / NO IPC)
+          └────────────────────────┘
+```
+
+---
+
 ## 🏗 Workspace Architecture
 
 The ecosystem is organized into several functional domains:
