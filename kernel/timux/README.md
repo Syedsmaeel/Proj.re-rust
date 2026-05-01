@@ -46,7 +46,7 @@ Every cross-ring and cross-kernel operation requires a valid `CapabilityToken`.
 ## Architecture Diagram
 
 ```
-                    RING -1: SOVEREIGN SUBSTRATE
+          RING -1: SOVEREIGN SUBSTRATE
          CapAuthority · SubKernelManager · IPC broker · Blueprint Parser
                               spawn(cap)
               |                    |                    |
