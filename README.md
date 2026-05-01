@@ -12,31 +12,22 @@ This repository is a monorepo containing the **Re-Rust** ecosystem—a suite of 
 
 ---
 
-## 🛡 Timux Kernel Model
+## 🛡 Timux Kernel Model (Software-Defined Ring -1)
 
-Timux does not use the standard Ring 0-3 model. It implements a sovereign 5-ring hierarchy gated by unforgeable capabilities:
+Timux implements a sovereign fractal hierarchy where the master kernel acts as a **Ring -1 Software-Defined Substrate**. Isolation and sovereignty are enforced via pure software logic and capability-gated memory management:
 
 ```text
-          [  RING 0: KERNEL CORE  ] <══╗  Mint / Revoke / Verify
-          │  - CapAuthority        │   ║  (CapabilityToken)
-          │  - Scheduler / MMU     │   ║
-          └──────────┬─────────────┘   ║
-                     ▼                 ║
-          [  RING 1: EXTENSIONS   ] <══╣  Supervised Access
-          │  - Drivers / FS        │   ║  (IRQ_BIND, DMA_ACCESS)
-          └──────────┬─────────────┘   ║
-                     ▼                 ║
-          [  RING 2: SYS SERVICES ] <══╣  Capability Isolated
-          │  - init / IPC / Auth   │   ║  (PROCESS_SPAWN, SEND)
-          └──────────┬─────────────┘   ║
-                     ▼                 ║
-          [  RING 3: USER SPACE   ] <══╣  Application Logic
-          │  - Standard Apps       │   ║  (FS_READ, NET_SEND)
-          └──────────┬─────────────┘   ║
-                     ▼                 ║
-          [  RING 4: SANDBOX      ] <══╝  Maximum Restriction
-          │  - Untrusted Code      │      (READ ONLY / NO IPC)
-          └────────────────────────┘
+          [ RING -1: SOVEREIGN ROOT SUBSTRATE ] <══╗  Root Authority
+          │  (Timux Master Kernel Core)         │   ║  (Capability Minting)
+          └───────────┬────────────┬────────────┘   ║
+                      │            │                ║
+           ┌──────────▼────────┐   └────────────────╣  Software Gated
+           │ SUB-KERNEL (TMX)  │                    ║  (Logical Isolation)
+           │ - Rings 0-4       │   ┌────────────────▼───────────────┐
+           │ - Bash++ TUI      │   │ SUB-KERNEL (FOREIGN/NESTED)    │
+           └───────────────────┘   │ - Guest OS (Linux/BSD)         │
+                                   │ - Nested Ring -1 Substrate     │
+                                   └────────────────────────────────┘
 ```
 
 ---
@@ -46,7 +37,8 @@ Timux does not use the standard Ring 0-3 model. It implements a sovereign 5-ring
 The ecosystem is organized into several functional domains:
 
 ### 🛡 Kernel & Core
-- **`kernel/timux`**: A sovereign kernel featuring a hybrid ring + capability privilege model. It moves beyond traditional Unix/Windows models to provide fine-grained, capability-gated access control across 5 rings (0-4).
+- **`kernel/timux`**: A sovereign kernel featuring a hybrid ring + capability privilege model. It acts as the Ring -1 Software-Defined substrate for the ecosystem.
+- **`kernel/tbm`**: Timux Boot Manager — a sovereign, GPU-accelerated, and programmable bootloader featuring the **Sovereign Dashboard**.
 - **`core/re-core`**: The foundational library providing shared types, traits, and logic for the entire ecosystem.
 
 ### 🧠 AI & Intelligence

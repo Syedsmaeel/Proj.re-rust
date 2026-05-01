@@ -1,0 +1,31 @@
+[package]
+name = "tbm"
+version = "0.1.0"
+edition = "2021"
+authors = ["Syed Ismaeel <lucknow@est2019>"]
+license = "AGPL-3.0"
+description = "Timux Boot Manager — Sovereign Fractal Bootloader"
+
+[dependencies]
+uefi = { version = "0.24", features = ["alloc"] }
+uefi-services = "0.21"
+log = "0.4"
+# Shared types and protocol definitions
+re-core = { path = "../../core/re-core" }
+# Minimal ELF parser for kernel loading
+xmas-elf = "0.9"
+# Cryptography for sovereign security
+ed25519-dalek = { version = "2", default-features = false }
+
+[lib]
+name = "tbm"
+path = "src/lib.rs"
+
+[[bin]]
+name = "tbm_bin"
+path = "src/main.rs"
+
+[features]
+default = []
+# Enable for RISC-V support
+riscv = []

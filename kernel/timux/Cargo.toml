@@ -26,6 +26,7 @@ path = "src/arch/arm64/main.rs"
 anyhow.workspace = true
 thiserror.workspace = true
 serde.workspace = true
+re-core = { path = "../../core/re-core" }
 spin = "0.9"
 bitflags = "2"
 static_assertions = "1"
