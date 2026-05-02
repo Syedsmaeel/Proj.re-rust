@@ -13,7 +13,7 @@ log = "0.4"
 # Shared types and protocol definitions
 re-core = { path = "../../core/re-core" }
 # Minimal ELF parser for kernel loading
-xmas-elf = "0.9"
+xmas-elf = "0.10"
 
 [lib]
 name = "tbm"
