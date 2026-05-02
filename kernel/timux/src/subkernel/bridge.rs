@@ -31,8 +31,8 @@ impl OnionRelay for Bridge {
     }
 
     fn relay(&mut self, frame: OnionFrame) -> Result<(), &'static str> {
-        info!("󰚚 Relaying OnionFrame to SK-{}", frame.next_hop);
-        // Implementation: Route frame to the next sub-kernel via IPC
+        let hop = frame.next_hop;
+        info!("󰚚 Relaying OnionFrame to SK-{}", hop);
         Ok(())
     }
 }
@@ -45,11 +45,12 @@ impl Bridge {
     pub fn deactivate(&mut self) { self.active = false; }
 
     pub fn teleport(blob: &MigrationBlob, target_node: [u8; 4]) -> Result<(), &'static str> {
-        info!("󰚚 Teleporting sub-kernel '{}' to node {:?}", blob.subkernel_name.as_str(), target_node);
+        let name = core::str::from_utf8(blob.subkernel_name.as_bytes()).unwrap_or("unknown");
+        info!("󰚚 Teleporting sub-kernel '{}' to node {:?}", name, target_node);
         Ok(())
     }
 
-    pub fn receive_teleport(blob: &MigrationBlob) -> Result<(), &'static str> {
+    pub fn receive_teleport(_blob: &MigrationBlob) -> Result<(), &'static str> {
         info!("󰚚 Receiving teleported kernel...");
         Ok(())
     }

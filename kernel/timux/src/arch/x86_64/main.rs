@@ -5,7 +5,7 @@ use timux::boot::{BootInfo, KernelState, ALLOCATOR};
 
 // Register Timux's linked-list allocator as the global heap allocator
 #[global_allocator]
-static GLOBAL_ALLOC: &LinkedListAllocator = &ALLOCATOR;
+static GLOBAL_ALLOC: LinkedListAllocator = LinkedListAllocator::new();
 use timux::mm::LinkedListAllocator;
 
 #[no_mangle]

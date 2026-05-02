@@ -5,7 +5,7 @@ use uefi::prelude::*;
 use uefi::proto::console::gop::GraphicsOutput;
 use uefi::proto::console::text::Input;
 use log::info;
-use tbm::graphics::{Renderer, SovereignDashboard, Color};
+use tbm::graphics::{Renderer, SovereignDashboard};
 use tbm::protocol::BootInfo;
 
 #[entry]
@@ -34,44 +34,48 @@ fn main(image_handle: Handle, mut system_table: SystemTable<Boot>) -> Status {
         .expect("failed to get stdin handle");
     let mut stdin = bt.open_protocol_exclusive::<Input>(stdin_handle)
         .expect("failed to open stdin protocol");
-// Event Loop
-loop {
-    if let Ok(Some(key)) = stdin.read_key() {
-        match key {
-            uefi::proto::console::text::Key::Special(uefi::proto::console::text::Key::F12) => {
-                if dashboard.is_stealth_active {
-                    dashboard.is_stealth_active = false;
-                    info!("Sovereignty unlocked via F12.");
-                }
-            }
-            uefi::proto::console::text::Key::Printable(c) => {
-                let ch = c.0 as u8;
 
-                if !dashboard.is_stealth_active {
-                    // Sovereign Dashboard logic
-                    match ch {
-                        b'j' | b's' => { // Down
-                            dashboard.selected_index = (dashboard.selected_index + 1) % dashboard.blueprints.len();
+    // Event Loop
+    loop {
+        if let Ok(Some(key)) = stdin.read_key() {
+            match key {
+                uefi::proto::console::text::Key::Special(s) => {
+                    if s == uefi::proto::console::text::ScanCode::F12 {
+                        if dashboard.is_stealth_active {
+                            dashboard.is_stealth_active = false;
+                            info!("Sovereignty unlocked via F12.");
                         }
-                        b'k' | b'w' => { // Up
-                            if dashboard.selected_index == 0 {
-                                dashboard.selected_index = dashboard.blueprints.len() - 1;
-                            } else {
-                                dashboard.selected_index -= 1;
-                            }
-                        }
-                        b'b' => { // Boot
-                            info!("Booting: {}", dashboard.blueprints[dashboard.selected_index].name);
-                            info!("Kernel loading skipped (missing binary)");
-                        }
-                        _ => {}
                     }
                 }
+                uefi::proto::console::text::Key::Printable(c) => {
+                    let ch = u16::from(c) as u8;
+
+                    if !dashboard.is_stealth_active {
+                        match ch {
+                            b'j' | b's' => {
+                                dashboard.selected_index = (dashboard.selected_index + 1) % dashboard.blueprints.len();
+                            }
+                            b'k' | b'w' => {
+                                if dashboard.selected_index == 0 {
+                                    dashboard.selected_index = dashboard.blueprints.len() - 1;
+                                } else {
+                                    dashboard.selected_index -= 1;
+                                }
+                            }
+                            b'b' => {
+                                info!("Booting: {}", dashboard.blueprints[dashboard.selected_index].name);
+                                info!("Kernel loading skipped (missing binary)");
+                                break;
+                            }
+                            _ => {}
+                        }
+                    }
+                }
+                _ => {}
             }
-            _ => {}
+            dashboard.render();
         }
-        dashboard.render();
     }
+
+    Status::SUCCESS
 }
-
-

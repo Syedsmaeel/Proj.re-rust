@@ -12,8 +12,6 @@ uefi-services = "0.21"
 log = "0.4"
 # Shared types and protocol definitions
 re-core = { path = "../../core/re-core" }
-# Minimal ELF parser for kernel loading
-xmas-elf = "0.9"
 
 [lib]
 name = "tbm"

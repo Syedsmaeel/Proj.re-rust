@@ -5,11 +5,11 @@ use timux::boot::{BootInfo, KernelState, ALLOCATOR};
 use timux::mm::LinkedListAllocator;
 
 #[global_allocator]
-static GLOBAL_ALLOC: &LinkedListAllocator = &ALLOCATOR;
+static GLOBAL_ALLOC: LinkedListAllocator = LinkedListAllocator::new();
 
 #[no_mangle]
 pub extern "C" fn _start() -> ! {
-    let boot_info = BootInfo::minimal(0x8020_0000); // OpenSBI hands off here
+    let boot_info = BootInfo::minimal(0x8020_0000);
     let mut kernel = unsafe { KernelState::init(&boot_info) };
     kernel.spawn_init_sk();
     loop {

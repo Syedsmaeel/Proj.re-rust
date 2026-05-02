@@ -1,52 +1,58 @@
 //! Timux ELF Loader
 //!
-//! Parses and loads the master kernel binary into memory.
+//! Parses and loads the master kernel binary into memory using the Sovereign ELF-Gate (SEG).
 
-use xmas_elf::{ElfFile, program};
 use log::info;
 use crate::protocol::BootInfo;
+use re_core::seg::ElfParser;
 
 pub struct KernelLoader;
 
 impl KernelLoader {
-    /// Loads an ELF binary into memory at the specified physical address.
+    /// Loads an ELF binary into memory using the SEG parser.
     pub fn load(elf_data: &'static [u8], _boot_info: &mut BootInfo) -> Result<u64, &'static str> {
-        let elf = ElfFile::new(elf_data).map_err(|_| "Failed to parse ELF")?;
+        if !ElfParser::is_valid(elf_data) {
+            return Err("Invalid ELF binary");
+        }
+
+        let header = ElfParser::header(elf_data);
+        let phnum = header.phnum;
+        let entry = header.entry;
         
-        // Ensure it's a 64-bit kernel
-        // Skipping strict machine check for now to allow build completion
-        // assert_eq!(elf.header.pt2.machine(), xmas_elf::header::Machine::X86_64, "Not x86_64");
+        info!("󰒋 Loading Sovereign ELF binary, segments: {}", phnum);
 
-        for program_header in elf.program_iter() {
-            if program_header.get_type() == Ok(program::Type::Load) {
-                let load_addr = program_header.virtual_addr();
-                let mem_size = program_header.mem_size();
-                let file_size = program_header.file_size();
-                let file_offset = program_header.offset() as usize;
+        for i in 0..phnum {
+            if let Some(ph) = ElfParser::program_header(elf_data, i) {
+                // Program Type 1 is LOAD
+                if ph.type_ == 1 {
+                    let load_addr = ph.vaddr as *mut u8;
+                    let file_size = ph.filesz as usize;
+                    let mem_size = ph.memsz as usize;
+                    let offset = ph.offset as usize;
+                    let ph_offset = ph.offset;
+                    let ph_vaddr = ph.vaddr;
 
-                info!("󰒋 Loading segment at {:#x}", load_addr);
+                    info!("󰒋 Mapping segment: {:#x} -> {:#x}", ph_offset, ph_vaddr);
 
-                // Copy segment data to target memory
-                unsafe {
-                    core::ptr::copy_nonoverlapping(
-                        elf_data.as_ptr().add(file_offset),
-                        load_addr as *mut u8,
-                        file_size as usize,
-                    );
-                    
-                    // Zero out the remaining part of the memory segment
-                    if mem_size > file_size {
-                        core::ptr::write_bytes(
-                            (load_addr + file_size) as *mut u8,
-                            0,
-                            (mem_size - file_size) as usize,
+                    unsafe {
+                        core::ptr::copy_nonoverlapping(
+                            elf_data.as_ptr().add(offset),
+                            load_addr,
+                            file_size,
                         );
+                        
+                        if mem_size > file_size {
+                            core::ptr::write_bytes(
+                                load_addr.add(file_size),
+                                0,
+                                mem_size - file_size,
+                            );
+                        }
                     }
                 }
             }
         }
 
-        // Return the entry point
-        Ok(elf.header.pt2.entry_point())
+        Ok(entry)
     }
 }

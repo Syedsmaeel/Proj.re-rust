@@ -1,5 +1,4 @@
-use uefi::prelude::*;
-use uefi::proto::console::gop::{GraphicsOutput, PixelFormat};
+use uefi::proto::console::gop::GraphicsOutput;
 use re_core::protocol::FramebufferInfo;
 
 #[derive(Debug, Clone, Copy)]
@@ -136,9 +135,7 @@ impl<'a> SovereignDashboard<'a> {
             nodes,
         }
     }
-}
 
-impl<'a> SovereignDashboard<'a> {
     pub fn render(&mut self) {
         if self.is_stealth_active {
             self.render_decoy();

@@ -28,6 +28,7 @@ thiserror.workspace = true
 serde.workspace = true
 re-core = { path = "../../core/re-core" }
 spin = "0.9"
+log = "0.4"
 bitflags = "2"
 static_assertions = "1"
 
