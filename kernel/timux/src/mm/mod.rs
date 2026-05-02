@@ -1,6 +1,8 @@
 //! Timux Memory Manager
 
 pub mod allocator;
+pub mod cortex;
+pub mod cortex_map;
 
 pub use allocator::{LinkedListAllocator, align_up, align_down};
 
