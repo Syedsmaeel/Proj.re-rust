@@ -1,0 +1,35 @@
+name: Sovereign CI
+
+on:
+  push:
+    branches: [ main/root ]
+  pull_request:
+    branches: [ main/root ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Install Rust Toolchain
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: x86_64-unknown-uefi
+          
+      - name: Build TBM
+        run: |
+          cd kernel/tbm
+          cargo build --target x86_64-unknown-uefi
+          
+      - name: Build Timux Kernel
+        run: |
+          cd kernel/timux
+          cargo build --target x86_64-unknown-uefi
+
+  audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Cargo Audit
+        uses: rustsec/audit-action@v1
