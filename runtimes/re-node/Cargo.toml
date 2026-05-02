@@ -12,8 +12,8 @@ anyhow.workspace = true
 clap.workspace = true
 tokio = { workspace = true, features = ["full"] }
 tracing.workspace = true
-boa_engine = "0.19"
-boa_runtime = "0.19"
+boa_engine = "0.19.1"
+boa_runtime = "0.19.1"
 
 [[bin]]
 name = "re-node"
