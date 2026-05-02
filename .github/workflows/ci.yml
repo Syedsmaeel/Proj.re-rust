@@ -10,6 +10,7 @@ permissions:
   contents: write
   security-events: write
   actions: read
+  id-token: write
 
 jobs:
   build:
