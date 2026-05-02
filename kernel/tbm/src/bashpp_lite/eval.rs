@@ -4,12 +4,12 @@ use crate::bashpp_lite::parser::Command;
 use crate::graphics::SovereignDashboard;
 
 pub struct Evaluator<'a, 'b> {
-    dashboard: &'a mut SovereignDashboard<'b>,
+    _dashboard: &'a mut SovereignDashboard<'b>,
 }
 
 impl<'a, 'b> Evaluator<'a, 'b> {
     pub fn new(dashboard: &'a mut SovereignDashboard<'b>) -> Self {
-        Self { dashboard }
+        Self { _dashboard: dashboard }
     }
 
     pub fn eval(&mut self, cmds: &[Option<Command>]) {

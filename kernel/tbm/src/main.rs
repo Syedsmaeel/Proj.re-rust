@@ -6,7 +6,6 @@ use uefi::proto::console::gop::GraphicsOutput;
 use uefi::proto::console::text::Input;
 use log::info;
 use tbm::graphics::{Renderer, SovereignDashboard};
-use tbm::protocol::BootInfo;
 
 #[entry]
 fn main(image_handle: Handle, mut system_table: SystemTable<Boot>) -> Status {
@@ -40,7 +39,7 @@ fn main(image_handle: Handle, mut system_table: SystemTable<Boot>) -> Status {
         if let Ok(Some(key)) = stdin.read_key() {
             match key {
                 uefi::proto::console::text::Key::Special(s) => {
-                    if s == uefi::proto::console::text::ScanCode::F12 {
+                    if s == uefi::proto::console::text::ScanCode::FUNCTION_12 {
                         if dashboard.is_stealth_active {
                             dashboard.is_stealth_active = false;
                             info!("Sovereignty unlocked via F12.");
@@ -71,7 +70,6 @@ fn main(image_handle: Handle, mut system_table: SystemTable<Boot>) -> Status {
                         }
                     }
                 }
-                _ => {}
             }
             dashboard.render();
         }

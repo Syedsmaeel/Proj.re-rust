@@ -23,9 +23,6 @@ name = "timux-arm64"
 path = "src/arch/arm64/main.rs"
 
 [dependencies]
-anyhow.workspace = true
-thiserror.workspace = true
-serde.workspace = true
 re-core = { path = "../../core/re-core" }
 spin = "0.9"
 log = "0.4"

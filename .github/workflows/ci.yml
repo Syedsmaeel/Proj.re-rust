@@ -19,17 +19,17 @@ jobs:
       - name: Install Rust Toolchain
         uses: dtolnay/rust-toolchain@stable
         with:
-          targets: x86_64-unknown-uefi
+          targets: x86_64-unknown-uefi, x86_64-unknown-none
           
       - name: Build TBM (Bootloader)
         run: |
           cd kernel/tbm
           cargo build --target x86_64-unknown-uefi
           
-      - name: Build Timux Kernel
+      - name: Build Timux Kernel (x86_64)
         run: |
           cd kernel/timux
-          cargo build --target x86_64-unknown-uefi
+          cargo build --bin timux-x86_64 --target x86_64-unknown-none
 
   audit:
     runs-on: ubuntu-latest

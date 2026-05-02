@@ -3170,11 +3170,7 @@ dependencies = [
 name = "re-core"
 version = "0.1.0"
 dependencies = [
- "anyhow",
- "serde",
- "thiserror 1.0.69",
- "toml 0.8.23",
- "tracing",
+ "log",
 ]
 
 [[package]]
@@ -3304,6 +3300,10 @@ dependencies = [
  "tokio",
  "tracing",
 ]
+
+[[package]]
+name = "re-sim"
+version = "0.1.0"
 
 [[package]]
 name = "reborrow"
@@ -4142,14 +4142,11 @@ dependencies = [
 name = "timux"
 version = "0.1.0"
 dependencies = [
- "anyhow",
  "bitflags 2.11.1",
  "log",
  "re-core",
- "serde",
  "spin",
  "static_assertions",
- "thiserror 1.0.69",
 ]
 
 [[package]]

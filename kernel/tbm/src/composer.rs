@@ -4,7 +4,6 @@
 //! UEFI file system for sub-kernel deployment.
 
 use uefi::prelude::*;
-use uefi::proto::media::file::{File, FileAttribute, FileMode, FileInfo};
 use uefi::proto::media::fs::SimpleFileSystem;
 use uefi::table::boot::ScopedProtocol;
 use log::info;
@@ -35,7 +34,7 @@ pub struct PartitionTable {
 }
 
 pub struct IngestionGate<'a> {
-    fs: ScopedProtocol<'a, SimpleFileSystem>,
+    _fs: ScopedProtocol<'a, SimpleFileSystem>,
 }
 
 impl<'a> IngestionGate<'a> {
@@ -45,7 +44,7 @@ impl<'a> IngestionGate<'a> {
         let fs = bt.open_protocol_exclusive::<SimpleFileSystem>(handle)
             .expect("failed to open FS protocol");
         
-        Self { fs }
+        Self { _fs: fs }
     }
 
     pub fn format_tmx_disk(size_gb: u32, root_cap: u64) -> TmxDiskHeader {
