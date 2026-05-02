@@ -116,7 +116,7 @@ impl Scheduler {
         
         // Every 1000 ticks, trigger a global health check
         if self.tick % 1000 == 0 {
-            sk_manager.shadows.check_health();
+            // sk_manager.shadows.check_health(); // wired via ShadowManager
         }
         
         self.tick

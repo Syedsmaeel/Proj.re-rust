@@ -1,28 +1,28 @@
 //! Sovereign IPC & Transport Bridge
 //!
 //! Handles IPC channels and cross-node network transport for Teleportation.
+extern crate alloc;
+use alloc::vec::Vec;
+use crate::subkernel::instance::SubKernelId;
 
-use crate::subkernel::snapshot::MigrationBlob;
-use log::info;
+pub struct Bridge {
+    pub id:   u64,
+    pub from: SubKernelId,
+    pub to:   SubKernelId,
+    pub kind: BridgeKind,
+    pub active: bool,
+}
 
-pub struct Bridge;
+#[derive(Debug, Clone)]
+pub enum BridgeKind {
+    Ipc,
+    SharedMemory { size: usize, read_only: bool },
+    Teleport,
+}
 
 impl Bridge {
-    /// Transmits a MigrationBlob to a target node over an encrypted P2P tunnel
-    pub fn teleport(blob: &MigrationBlob, target_node: [u8; 4]) -> Result<(), &'static str> {
-        info!("󰚚 Teleporting sub-kernel '{}' to node {:?}", blob.subkernel_name.as_str(), target_node);
-        
-        // Implementation: Stream the blob over a secure socket connection.
-        // We use the existing capability-gated IPC logic to queue the data for 
-        // the network driver service.
-        
-        Ok(())
+    pub fn new(id: u64, from: SubKernelId, to: SubKernelId, kind: BridgeKind) -> Self {
+        Self { id, from, to, kind, active: true }
     }
-
-    /// Receives a MigrationBlob from a remote node and re-instantiates it
-    pub fn receive_teleport(blob: &MigrationBlob) -> Result<(), &'static str> {
-        info!("󰚚 Receiving teleported kernel...");
-        // Re-verify signature and hand off to SubKernelManager
-        Ok(())
-    }
+    pub fn deactivate(&mut self) { self.active = false; }
 }

@@ -2,6 +2,7 @@
 resolver = "2"
 members = [
     "kernel/timux",
+    "kernel/ring-neg1",
     "core/re-core",
     "runtimes/re-node",
     "runtimes/re-docker",

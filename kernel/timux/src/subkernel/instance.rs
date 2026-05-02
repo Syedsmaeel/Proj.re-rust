@@ -131,6 +131,18 @@ impl SubKernelState {
     pub fn is_alive(self) -> bool { !matches!(self, Self::Terminated) }
 }
 
+
+/// A contiguous memory range (for shadow mirroring)
+#[derive(Debug, Clone, Copy)]
+pub struct MemoryRange {
+    pub start: usize,
+    pub size:  usize,
+}
+
+impl MemoryRange {
+    pub fn end(&self) -> usize { self.start + self.size }
+}
+
 /// A complete isolated OS instance
 pub struct SubKernel {
     pub id:        SubKernelId,
@@ -319,6 +331,23 @@ impl SubKernel {
     pub fn tick(&mut self) -> u64 {
         self.tick += 1;
         self.tick
+    }
+
+
+    /// Return the memory range of this sub-kernel (for shadow mirroring)
+    pub fn memory_range(&self) -> MemoryRange {
+        MemoryRange {
+            start: self.memory.arch_root(),
+            size:  self.config.mem_pages * 4096,
+        }
+    }
+
+    /// Return mutable memory range pointer (for shadow copy)
+    pub fn memory_range_mut(&mut self) -> MemoryRange {
+        MemoryRange {
+            start: self.memory.arch_root(),
+            size:  self.config.mem_pages * 4096,
+        }
     }
 
     pub fn is_alive(&self) -> bool { self.state.is_alive() }
