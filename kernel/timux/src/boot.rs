@@ -16,7 +16,29 @@ use crate::mm::LinkedListAllocator;
 use crate::subkernel::{SubKernelManager, SubKernelConfig};
 use crate::subkernel::instance::SubKernelProfile;
 
-pub use re_core::protocol::BootInfo;
+
+/// Boot information passed from Ring -1 to Timux
+/// Matches re_core::protocol::BootInfo
+#[derive(Debug, Clone, Copy)]
+#[repr(C)]
+pub struct BootInfo {
+    pub magic:      u64,
+    pub version:    u32,
+    pub heap_start: usize,
+    pub heap_size:  usize,
+    pub mmap_addr:  usize,
+    pub mmap_len:   usize,
+    pub cmdline:    [u8; 256],
+}
+
+impl BootInfo {
+    pub const MAGIC: u64 = 0x54494d55582d3121; // "TIMUX-1!"
+    pub fn cmdline_str(&self) -> &str {
+        let end = self.cmdline.iter().position(|&b| b==0).unwrap_or(255);
+        core::str::from_utf8(&self.cmdline[..end]).unwrap_or("")
+    }
+}
+
 
 /// Heap size: 4MB default (fallback if not specified in BootInfo)
 pub const HEAP_SIZE: usize = 4 * 1024 * 1024;

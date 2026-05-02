@@ -17,7 +17,7 @@ pub mod subkernel;
 
 pub use priv_model::{Ring, RingLevel, Capability, CapabilityToken};
 pub use subkernel::{SubKernel, SubKernelConfig, SubKernelId, SubKernelManager};
-pub use subkernel::instance::{SubKernelProfile, SubKernelState};
-pub use subkernel::bridge::{Bridge, BridgeKind};
+pub use subkernel::{SubKernelProfile, SubKernelState, MemoryRange};
+pub use subkernel::{ShadowManager, ShadowInstance};
 pub use mm::allocator::LinkedListAllocator;
 pub use bashpp::{Lexer, Token, TokenKind, Parser, Ast, Command, Runtime, Env, TuiShell, Tab, Pane, Widget};

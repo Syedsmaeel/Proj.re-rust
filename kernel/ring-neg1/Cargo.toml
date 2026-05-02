@@ -1,0 +1,23 @@
+[package]
+name = "ring-neg1"
+description = "Ring -1 — Timux sovereign bootloader. UEFI primary, BIOS fallback, Bash++ TUI boot menu."
+version = "0.1.0"
+edition = "2021"
+authors = ["Syed Ismaeel <lucknow@est2019>"]
+license = "AGPL-3.0"
+
+[lib]
+name = "ring_neg1"
+path = "src/lib.rs"
+
+[dependencies]
+bitflags = "2"
+
+[profile.release]
+panic = "abort"
+opt-level = "s"
+lto = true
+codegen-units = 1
+
+[profile.dev]
+panic = "abort"

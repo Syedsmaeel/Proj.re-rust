@@ -2,11 +2,27 @@
 //!
 //! Handles IPC channels and cross-node network transport for Teleportation.
 
+extern crate alloc;
+use alloc::vec::Vec;
+use crate::subkernel::instance::SubKernelId;
 use crate::subkernel::snapshot::MigrationBlob;
 use re_core::onion::{OnionFrame, OnionRelay};
 use log::info;
 
-pub struct Bridge;
+pub struct Bridge {
+    pub id:   u64,
+    pub from: SubKernelId,
+    pub to:   SubKernelId,
+    pub kind: BridgeKind,
+    pub active: bool,
+}
+
+#[derive(Debug, Clone)]
+pub enum BridgeKind {
+    Ipc,
+    SharedMemory { size: usize, read_only: bool },
+    Teleport,
+}
 
 impl OnionRelay for Bridge {
     fn can_relay(&self) -> bool {
@@ -22,6 +38,12 @@ impl OnionRelay for Bridge {
 }
 
 impl Bridge {
+    pub fn new(id: u64, from: SubKernelId, to: SubKernelId, kind: BridgeKind) -> Self {
+        Self { id, from, to, kind, active: true }
+    }
+
+    pub fn deactivate(&mut self) { self.active = false; }
+
     pub fn teleport(blob: &MigrationBlob, target_node: [u8; 4]) -> Result<(), &'static str> {
         info!("󰚚 Teleporting sub-kernel '{}' to node {:?}", blob.subkernel_name.as_str(), target_node);
         Ok(())
