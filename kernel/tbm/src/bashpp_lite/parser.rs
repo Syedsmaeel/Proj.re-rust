@@ -82,9 +82,3 @@ impl Parser {
         }
     }
 }
-
-impl Default for Command {
-    fn default() -> Self {
-        Command::SetTheme(StaticStr::new(""))
-    }
-}

@@ -19,9 +19,8 @@ impl<'a, 'b> Evaluator<'a, 'b> {
                     Command::SetTheme(_theme) => {
                         // Logic to change theme in dashboard
                     }
-                    Command::AddEntry { name, description: _ } => {
+                    Command::AddEntry { name: _, profile: _ } => {
                         // In TBM context, name and profile
-                        // We can add logic to extend blueprints dynamically
                     }
                     _ => {}
                 }

@@ -48,6 +48,22 @@ impl FreeNode {
     }
 }
 
+/// GhostAlloc Trait: Marks memory for volatile, zero-commit storage.
+pub trait GhostAlloc {
+    fn mark_ghost(&mut self, ptr: *mut u8, size: usize);
+    fn purge_ghost(&mut self);
+}
+
+impl GhostAlloc for LinkedListAllocator {
+    fn mark_ghost(&mut self, _ptr: *mut u8, _size: usize) {
+        // Implementation: Mark memory pages as volatile for panic-erasure
+    }
+
+    fn purge_ghost(&mut self) {
+        // Implementation: Wipe all pages marked as 'ghost'
+    }
+}
+
 /// The linked-list allocator
 pub struct LinkedListAllocator {
     head: Mutex<FreeNode>,

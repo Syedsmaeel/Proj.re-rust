@@ -9,6 +9,7 @@ pub mod boot;
 pub mod cap;
 pub mod ipc;
 pub mod mm;
+pub mod morph;
 pub mod storage;
 pub mod priv_model;
 pub mod sched;

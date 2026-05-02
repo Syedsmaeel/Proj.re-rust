@@ -14,8 +14,6 @@ log = "0.4"
 re-core = { path = "../../core/re-core" }
 # Minimal ELF parser for kernel loading
 xmas-elf = "0.9"
-# Cryptography for sovereign security
-ed25519-dalek = { version = "2", default-features = false }
 
 [lib]
 name = "tbm"

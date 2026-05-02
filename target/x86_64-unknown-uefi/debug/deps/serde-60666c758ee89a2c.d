@@ -1,0 +1,14 @@
+/home/Syed-Ismaeel/Proj.re-rust/target/x86_64-unknown-uefi/debug/deps/serde-60666c758ee89a2c.d: /home/Syed-Ismaeel/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/lib.rs /home/Syed-Ismaeel/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/integer128.rs /home/Syed-Ismaeel/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/private/mod.rs /home/Syed-Ismaeel/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/private/de.rs /home/Syed-Ismaeel/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/private/ser.rs /home/Syed-Ismaeel/Proj.re-rust/target/x86_64-unknown-uefi/debug/build/serde-62604053a325cf1c/out/private.rs
+
+/home/Syed-Ismaeel/Proj.re-rust/target/x86_64-unknown-uefi/debug/deps/libserde-60666c758ee89a2c.rlib: /home/Syed-Ismaeel/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/lib.rs /home/Syed-Ismaeel/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/integer128.rs /home/Syed-Ismaeel/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/private/mod.rs /home/Syed-Ismaeel/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/private/de.rs /home/Syed-Ismaeel/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/private/ser.rs /home/Syed-Ismaeel/Proj.re-rust/target/x86_64-unknown-uefi/debug/build/serde-62604053a325cf1c/out/private.rs
+
+/home/Syed-Ismaeel/Proj.re-rust/target/x86_64-unknown-uefi/debug/deps/libserde-60666c758ee89a2c.rmeta: /home/Syed-Ismaeel/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/lib.rs /home/Syed-Ismaeel/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/integer128.rs /home/Syed-Ismaeel/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/private/mod.rs /home/Syed-Ismaeel/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/private/de.rs /home/Syed-Ismaeel/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/private/ser.rs /home/Syed-Ismaeel/Proj.re-rust/target/x86_64-unknown-uefi/debug/build/serde-62604053a325cf1c/out/private.rs
+
+/home/Syed-Ismaeel/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/lib.rs:
+/home/Syed-Ismaeel/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/integer128.rs:
+/home/Syed-Ismaeel/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/private/mod.rs:
+/home/Syed-Ismaeel/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/private/de.rs:
+/home/Syed-Ismaeel/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/private/ser.rs:
+/home/Syed-Ismaeel/Proj.re-rust/target/x86_64-unknown-uefi/debug/build/serde-62604053a325cf1c/out/private.rs:
+
+# env-dep:OUT_DIR=/home/Syed-Ismaeel/Proj.re-rust/target/x86_64-unknown-uefi/debug/build/serde-62604053a325cf1c/out
