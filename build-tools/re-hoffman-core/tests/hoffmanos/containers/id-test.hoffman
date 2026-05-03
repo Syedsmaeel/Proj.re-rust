@@ -1,0 +1,10 @@
+{
+  name,
+  uidRange ? false,
+}:
+
+with import <hoffmanpkgs> { };
+
+runCommand name {
+  requiredSystemFeatures = if uidRange then [ "uid-range" ] else [ ];
+} "id; id > $out"

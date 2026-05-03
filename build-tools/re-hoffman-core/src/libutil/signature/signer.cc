@@ -1,0 +1,23 @@
+#include "hoffman/util/signature/signer.hh"
+
+#include <sodium.h>
+
+namespace hoffman {
+
+LocalSigner::LocalSigner(SecretKey && privateKey)
+    : privateKey(privateKey)
+    , publicKey(privateKey.toPublicKey())
+{
+}
+
+Signature LocalSigner::signDetached(std::string_view s) const
+{
+    return privateKey.signDetached(s);
+}
+
+const PublicKey & LocalSigner::getPublicKey()
+{
+    return publicKey;
+}
+
+} // namespace hoffman

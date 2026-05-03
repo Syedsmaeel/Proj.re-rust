@@ -1,0 +1,5 @@
+{
+  inHoffmanShell ? false,
+  ...
+}@args:
+import ./shell.hoffman (args // { contentAddressed = true; })

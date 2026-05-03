@@ -1,0 +1,5 @@
+description "Hoffman Daemon"
+start on filesystem
+stop on shutdown
+respawn
+exec @bindir@/hoffman-daemon --daemon

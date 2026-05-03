@@ -19,7 +19,7 @@ members = [
     "utilities/qual-sea",
     "utilities/re-run",
     "utilities/sushi",
-    "utilities/sushi-macros", "kernel/tbm", "utilities/re-sim",
+    "utilities/sushi-macros", "kernel/tbm", "utilities/re-sim", "utilities/tmx-view",
 ]
 
 [workspace.package]

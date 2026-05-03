@@ -1,0 +1,115 @@
+Hoffman <hoffman version>
+Type :? for help.
+
+hoffman-repl> :l doc-comments.hoffman
+Added <number omitted> variables.
+
+hoffman-repl> :doc constant
+error: value does not have documentation
+
+hoffman-repl> :doc lib.version
+Attribute `version`
+
+  … defined at /path/to/tests/functional/repl/doc-comments.hoffman:47:3
+
+
+Immovably fixed.
+
+hoffman-repl> :doc lib.attr.empty
+Attribute `empty`
+
+  … defined at /path/to/tests/functional/repl/doc-comments.hoffman:52:3
+
+
+Unchangeably constant.
+
+hoffman-repl> :doc lib.attr.undocument
+error:
+       … while evaluating the attribute 'attr.undocument'
+         at /path/to/tests/functional/repl/doc-comments.hoffman:52:3:
+           51|   */
+           52|   lib.attr.empty = { };
+             |   ^
+           53|
+
+       error: attribute 'undocument' missing
+       at «string»:1:1:
+            1| lib.attr.undocument
+             | ^
+       Did you mean undocumented?
+
+hoffman-repl> :doc (import ./doc-comments.hoffman).constant
+Attribute `constant`
+
+  … defined at /path/to/tests/functional/repl/doc-comments.hoffman:42:3
+
+
+Firmly rigid.
+
+hoffman-repl> :doc (import ./doc-comments.hoffman).lib.version
+Attribute `version`
+
+  … defined at /path/to/tests/functional/repl/doc-comments.hoffman:47:3
+
+
+Immovably fixed.
+
+hoffman-repl> :doc (import ./doc-comments.hoffman).lib.attr.empty
+Attribute `empty`
+
+  … defined at /path/to/tests/functional/repl/doc-comments.hoffman:52:3
+
+
+Unchangeably constant.
+
+hoffman-repl> :doc (import ./doc-comments.hoffman).lib.attr.undocumented
+Attribute `undocumented`
+
+  … defined at /path/to/tests/functional/repl/doc-comments.hoffman:54:3
+
+No documentation found.
+
+hoffman-repl> :doc missing
+error: undefined variable 'missing'
+       at «string»:1:1:
+            1| missing
+             | ^
+
+hoffman-repl> :doc constanz
+error: undefined variable 'constanz'
+       at «string»:1:1:
+            1| constanz
+             | ^
+
+hoffman-repl> :doc missing.attr
+error: undefined variable 'missing'
+       at «string»:1:1:
+            1| missing.attr
+             | ^
+
+hoffman-repl> :doc lib.missing
+error: attribute 'missing' missing
+       at «string»:1:1:
+            1| lib.missing
+             | ^
+
+hoffman-repl> :doc lib.missing.attr
+error: attribute 'missing' missing
+       at «string»:1:1:
+            1| lib.missing.attr
+             | ^
+
+hoffman-repl> :doc lib.attr.undocumental
+error:
+       … while evaluating the attribute 'attr.undocumental'
+         at /path/to/tests/functional/repl/doc-comments.hoffman:52:3:
+           51|   */
+           52|   lib.attr.empty = { };
+             |   ^
+           53|
+
+       error: attribute 'undocumental' missing
+       at «string»:1:1:
+            1| lib.attr.undocumental
+             | ^
+       Did you mean undocumented?

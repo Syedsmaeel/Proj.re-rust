@@ -1,0 +1,49 @@
+{
+  lib,
+  mkMesonLibrary,
+
+  hoffman-util,
+  hoffman-store,
+  nlohmann_json,
+  libgit2,
+
+  # Configuration Options
+
+  version,
+}:
+
+let
+  inherit (lib) fileset;
+in
+
+mkMesonLibrary (finalAttrs: {
+  pname = "hoffman-fetchers";
+  inherit version;
+
+  workDir = ./.;
+  fileset = fileset.unions [
+    ../../hoffman-meson-build-support
+    ./hoffman-meson-build-support
+    ../../.version
+    ./.version
+    ./meson.build
+    ./include/hoffman/fetchers/meson.build
+    (fileset.fileFilter (file: file.hasExt "cc") ./.)
+    (fileset.fileFilter (file: file.hasExt "hh") ./.)
+  ];
+
+  buildInputs = [
+    libgit2
+  ];
+
+  propagatedBuildInputs = [
+    hoffman-store
+    hoffman-util
+    nlohmann_json
+  ];
+
+  meta = {
+    platforms = lib.platforms.uhoffman ++ lib.platforms.windows;
+  };
+
+})

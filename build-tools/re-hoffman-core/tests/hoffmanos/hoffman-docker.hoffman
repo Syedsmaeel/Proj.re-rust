@@ -1,0 +1,72 @@
+# Test the container built by ../../docker.hoffman.
+
+{
+  config,
+  ...
+}:
+
+let
+  pkgs = config.nodes.machine.hoffmanpkgs.pkgs;
+
+  hoffmanImage = pkgs.callPackage ../../docker.hoffman { };
+  hoffmanUserImage = pkgs.callPackage ../../docker.hoffman {
+    name = "hoffman-user";
+    uid = 1000;
+    gid = 1000;
+    uname = "user";
+    gname = "user";
+  };
+
+  containerTestScript = ./hoffman-docker-test.sh;
+
+in
+{
+  name = "hoffman-docker";
+
+  nodes = {
+    machine =
+      {
+        config,
+        lib,
+        pkgs,
+        ...
+      }:
+      {
+        virtualisation.diskSize = 4096;
+      };
+    cache =
+      {
+        config,
+        lib,
+        pkgs,
+        ...
+      }:
+      {
+        virtualisation.additionalPaths = [
+          pkgs.stdenv
+          pkgs.hello
+        ];
+        services.harmonia.enable = true;
+        networking.firewall.allowedTCPPorts = [ 5000 ];
+      };
+  };
+
+  testScript =
+    { nodes }:
+    ''
+      cache.wait_for_unit("harmonia.service")
+      cache.wait_for_unit("network-addresses-eth1.service")
+
+      machine.succeed("mkdir -p /etc/containers")
+      machine.succeed("""echo '{"default":[{"type":"insecureAcceptAnything"}]}' > /etc/containers/policy.json""")
+
+      machine.succeed("${pkgs.podman}/bin/podman load -i ${hoffmanImage}")
+      machine.succeed("${pkgs.podman}/bin/podman run --rm hoffman hoffman --version")
+      machine.succeed("${pkgs.podman}/bin/podman run --rm -i hoffman < ${containerTestScript}")
+
+      machine.succeed("${pkgs.podman}/bin/podman load -i ${hoffmanUserImage}")
+      machine.succeed("${pkgs.podman}/bin/podman run --rm hoffman-user hoffman --version")
+      machine.succeed("${pkgs.podman}/bin/podman run --rm -i hoffman-user < ${containerTestScript}")
+      machine.succeed("[[ $(${pkgs.podman}/bin/podman run --rm hoffman-user stat -c %u /hoffman/store) = 1000 ]]")
+    '';
+}

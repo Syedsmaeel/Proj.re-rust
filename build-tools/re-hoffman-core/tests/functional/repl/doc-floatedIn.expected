@@ -1,0 +1,12 @@
+Hoffman <hoffman version>
+Type :? for help.
+
+hoffman-repl> :l doc-comments.hoffman
+Added <number omitted> variables.
+
+hoffman-repl> :doc floatedIn
+Function `floatedIn`\
+  … defined at /path/to/tests/functional/repl/doc-comments.hoffman:21:5
+
+
+This also works.

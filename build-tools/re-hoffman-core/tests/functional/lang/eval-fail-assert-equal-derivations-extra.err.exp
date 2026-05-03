@@ -1,0 +1,26 @@
+error:
+       … while evaluating the condition of the assertion '({ foo = { outPath = "/hoffman/store/0"; type = "derivation"; }; } == { foo = { devious = true; outPath = "/hoffman/store/1"; type = "derivation"; }; })'
+         at /pwd/lang/eval-fail-assert-equal-derivations-extra.hoffman:1:1:
+            1| assert
+             | ^
+            2|   {
+
+       … while comparing attribute 'foo'
+
+       … where left hand side is
+         at /pwd/lang/eval-fail-assert-equal-derivations-extra.hoffman:3:5:
+            2|   {
+            3|     foo = {
+             |     ^
+            4|       type = "derivation";
+
+       … where right hand side is
+         at /pwd/lang/eval-fail-assert-equal-derivations-extra.hoffman:8:5:
+            7|   } == {
+            8|     foo = {
+             |     ^
+            9|       type = "derivation";
+
+       … while comparing a derivation by its 'outPath' attribute
+
+       error: string '"/hoffman/store/0"' is not equal to string '"/hoffman/store/1"'

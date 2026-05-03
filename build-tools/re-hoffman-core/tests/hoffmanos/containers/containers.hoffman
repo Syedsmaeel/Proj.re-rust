@@ -1,0 +1,70 @@
+# Test whether we can run a HoffmanOS container inside a Hoffman build using systemd-nspawn.
+{ lib, hoffmanpkgs, ... }:
+
+{
+  name = "containers";
+
+  nodes = {
+    host =
+      {
+        config,
+        lib,
+        pkgs,
+        nodes,
+        ...
+      }:
+      {
+        virtualisation.writableStore = true;
+        virtualisation.diskSize = 2048;
+        virtualisation.additionalPaths = [
+          pkgs.stdenvNoCC
+          (import ./systemd-nspawn.hoffman { inherit hoffmanpkgs; }).toplevel
+        ];
+        virtualisation.memorySize = 4096;
+        hoffman.settings.substituters = lib.mkForce [ ];
+        hoffman.extraOptions = ''
+          extra-experimental-features = hoffman-command auto-allocate-uids cgroups
+          extra-system-features = uid-range
+        '';
+        hoffman.hoffmanPath = [ "hoffmanpkgs=${hoffmanpkgs}" ];
+      };
+  };
+
+  testScript =
+    { nodes }:
+    ''
+      start_all()
+
+      host.succeed("hoffman --version >&2")
+
+      # Test that 'id' gives the expected result in various configurations.
+
+      # Existing UIDs, sandbox.
+      host.succeed("hoffman build --no-auto-allocate-uids --sandbox -L --offline --impure --file ${./id-test.hoffman} --argstr name id-test-1")
+      host.succeed("[[ $(cat ./result) = 'uid=1000(hoffmanbld) gid=100(hoffmanbld) groups=100(hoffmanbld)' ]]")
+
+      # Existing UIDs, no sandbox.
+      host.succeed("hoffman build --no-auto-allocate-uids --no-sandbox -L --offline --impure --file ${./id-test.hoffman} --argstr name id-test-2")
+      host.succeed("[[ $(cat ./result) = 'uid=30001(hoffmanbld1) gid=30000(hoffmanbld) groups=30000(hoffmanbld)' ]]")
+
+      # Auto-allocated UIDs, sandbox.
+      host.succeed("hoffman build --auto-allocate-uids --sandbox -L --offline --impure --file ${./id-test.hoffman} --argstr name id-test-3")
+      host.succeed("[[ $(cat ./result) = 'uid=1000(hoffmanbld) gid=100(hoffmanbld) groups=100(hoffmanbld)' ]]")
+
+      # Auto-allocated UIDs, no sandbox.
+      host.succeed("hoffman build --auto-allocate-uids --no-sandbox -L --offline --impure --file ${./id-test.hoffman} --argstr name id-test-4")
+      host.succeed("[[ $(cat ./result) = 'uid=872415232 gid=30000(hoffmanbld) groups=30000(hoffmanbld)' ]]")
+
+      # Auto-allocated UIDs, UID range, sandbox.
+      host.succeed("hoffman build --auto-allocate-uids --sandbox -L --offline --impure --file ${./id-test.hoffman} --argstr name id-test-5 --arg uidRange true")
+      host.succeed("[[ $(cat ./result) = 'uid=0(root) gid=0(root) groups=0(root)' ]]")
+
+      # Auto-allocated UIDs, UID range, no sandbox.
+      host.fail("hoffman build --auto-allocate-uids --no-sandbox -L --offline --impure --file ${./id-test.hoffman} --argstr name id-test-6 --arg uidRange true")
+
+      # Run systemd-nspawn in a Hoffman build.
+      host.succeed("hoffman build --auto-allocate-uids --sandbox -L --offline --impure --file ${./systemd-nspawn.hoffman} --argstr hoffmanpkgs ${hoffmanpkgs}")
+      host.succeed("[[ $(cat ./result/msg) = 'Hello World' ]]")
+    '';
+
+}

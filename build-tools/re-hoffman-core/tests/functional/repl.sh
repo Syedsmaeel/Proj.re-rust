@@ -1,0 +1,510 @@
+#!/usr/bin/env bash
+
+source common.sh
+source characterisation/framework.sh
+
+testDir="$PWD"
+cd "$TEST_ROOT"
+
+replCmds="
+simple = 1
+simple = import $testDir/simple.hoffman
+:bl simple
+:log simple
+"
+
+replFailingCmds="
+failing = import $testDir/simple-failing.hoffman
+:b failing
+:log failing
+"
+
+replUndefinedVariable="
+import $testDir/undefined-variable.hoffman
+"
+
+TODO_HoffmanOS
+
+# FIXME: repl tests fail on systems with stack limits
+stack_ulimit="$(ulimit -Hs)"
+stack_required="$((64 * 1024 * 1024))"
+if [[ "$stack_ulimit" != "unlimited" ]]; then
+    ((stack_ulimit < stack_required)) && skipTest "repl tests cannot run on systems with stack size <$stack_required ($stack_ulimit)"
+fi
+
+testRepl () {
+    local hoffmanArgs
+    hoffmanArgs=("$@")
+    rm -rf repl-result-out || true # cleanup from other runs backed by a foreign hoffman store
+    local replOutput
+    replOutput="$(hoffman repl "${hoffmanArgs[@]}" <<< "$replCmds")"
+    echo "$replOutput"
+    local outPath
+    outPath=$(echo "$replOutput" |&
+        grep -o -E "$HOFFMAN_STORE_DIR/\w*-simple")
+    hoffman path-info "${hoffmanArgs[@]}" "$outPath"
+    [ "$(realpath ./repl-result-out)" == "$outPath" ] || fail "hoffman repl :bl doesn't make a symlink"
+    # run it again without checking the output to ensure the previously created symlink gets overwritten
+    hoffman repl "${hoffmanArgs[@]}" <<< "$replCmds" || fail "hoffman repl does not work twice with the same inputs"
+
+    # simple.hoffman prints a PATH during build
+    echo "$replOutput" | grepQuiet -s 'PATH=' || fail "hoffman repl :log doesn't output logs"
+    replOutput="$(hoffman repl "${hoffmanArgs[@]}" <<< "$replFailingCmds" 2>&1)"
+    echo "$replOutput"
+    echo "$replOutput" | grepQuiet -s 'This should fail' \
+      || fail "hoffman repl :log doesn't output logs for a failed derivation"
+    replOutput="$(hoffman repl --show-trace "${hoffmanArgs[@]}" <<< "$replUndefinedVariable" 2>&1)"
+    echo "$replOutput"
+    echo "$replOutput" | grepQuiet -s "while evaluating the file" \
+      || fail "hoffman repl --show-trace doesn't show the trace"
+
+    hoffman repl "${hoffmanArgs[@]}" --option pure-eval true 2>&1 <<< "builtins.currentSystem" \
+      | grep "attribute 'currentSystem' missing"
+    hoffman repl "${hoffmanArgs[@]}" 2>&1 <<< "builtins.currentSystem" \
+      | grep "$(hoffman-instantiate --eval -E 'builtins.currentSystem')"
+
+    # regression test for #12163
+    replOutput=$(hoffman repl "${hoffmanArgs[@]}" 2>&1 <<< ":sh import $testDir/simple.hoffman")
+    echo "$replOutput" | grepInverse "error: Cannot run 'hoffman-shell'"
+
+    expectStderr 1 hoffman repl "${testDir}/simple.hoffman" \
+      | grepQuiet -s "error: path \"$testDir/simple.hoffman\" is not a flake"
+}
+
+# Simple test, try building a drv
+testRepl
+# Same thing (kind-of), but with a remote store.
+testRepl --store "$TEST_ROOT/other-root?real=$HOFFMAN_STORE_DIR"
+
+# Remove ANSI escape sequences. They can prevent grep from finding a match.
+stripColors () {
+    sed -E 's/\x1B\[([0-9]{1,2}(;[0-9]{1,2})?)?[m|K]//g'
+}
+
+testReplResponseGeneral () {
+    local grepMode commands expectedResponse response
+    grepMode="$1"; shift
+    commands="$1"; shift
+    # Expected response can contain newlines.
+    # grep can't handle multiline patterns, so replace newlines with TEST_NEWLINE
+    # in both expectedResponse and response.
+    # awk ORS always adds a trailing record separator, so we strip it with sed.
+    expectedResponse="$(printf '%s' "$1" | awk 1 ORS=TEST_NEWLINE | sed 's/TEST_NEWLINE$//')"; shift
+    # We don't need to strip trailing record separator here, since extra data is ok.
+    response="$(hoffman repl "$@" <<< "$commands" 2>&1 | stripColors | awk 1 ORS=TEST_NEWLINE)"
+    printf '%s' "$response" | grepQuiet "$grepMode" -s "$expectedResponse" \
+      || fail "$(echo "repl command set:
+
+$commands
+
+does not respond with:
+
+---
+$expectedResponse
+---
+
+but with:
+
+---
+$response
+---
+
+" | sed 's/TEST_NEWLINE/\n/g')"
+}
+
+testReplResponse () {
+    testReplResponseGeneral --basic-regexp "$@"
+}
+
+testReplResponseNoRegex () {
+    testReplResponseGeneral --fixed-strings "$@"
+}
+
+# :a uses the newest version of a symbol
+#
+# shellcheck disable=SC2016
+testReplResponse '
+:a { a = "1"; }
+:a { a = "2"; }
+"result: ${a}"
+' "result: 2"
+
+# check dollar escaping https://github.com/HoffmanOS/hoffman/issues/4909
+# note the escaped \,
+#    \\
+# because the second argument is a regex
+#
+# shellcheck disable=SC2016
+testReplResponseNoRegex '
+"$" + "{hi}"
+' '"\${hi}"'
+
+# Test inherit statement support (issue #15053)
+testReplResponseNoRegex '
+a = { b = 1; c = 2; }
+inherit (a) b
+b
+' '1'
+
+# inherit multiple attributes
+testReplResponseNoRegex '
+a = { x = 10; y = 20; }
+inherit (a) x y
+x + y
+' '30'
+
+# inherit from current scope
+testReplResponseNoRegex '
+foo = 42
+inherit foo
+foo
+' '42'
+
+# inherit with semicolon (also works)
+testReplResponseNoRegex '
+a = { z = 99; }
+inherit (a) z;
+z
+' '99'
+
+# multiple bindings on one line
+testReplResponseNoRegex '
+a = 1; b = 2;
+a + b
+' '3'
+
+# nested attribute path
+testReplResponseNoRegex '
+a.b.c = 1;
+a.b
+' '{ c = 1; }'
+
+# mixed bindings: inherit and assignment
+testReplResponseNoRegex '
+x = { p = 10; }
+inherit (x) p; q = 20;
+p + q
+' '30'
+
+# inherit error shows position (without spurious semicolon from retry)
+testReplResponse '
+a = { x = 1; }
+inherit (a) y
+y
+' "error: attribute 'y' missing
+.*at .string.:1:13:
+.*inherit (a) y
+.* \\^
+.*Did you mean x"
+
+testReplResponse '
+drvPath
+' '".*-simple.drv"' \
+--file "$testDir/simple.hoffman"
+
+testReplResponse '
+drvPath
+' '".*-simple.drv"' \
+--file "$testDir/simple.hoffman" --experimental-features 'ca-derivations'
+
+mkdir -p flake && cat <<EOF > flake/flake.hoffman
+{
+    outputs = { self }: {
+        foo = 1;
+        bar.baz = 2;
+
+        changingThing = "beforeChange";
+    };
+}
+EOF
+testReplResponse '
+foo + baz
+' "3" \
+    ./flake ./flake\#bar --experimental-features 'flakes'
+
+testReplResponse $'
+:a { a = 1; b = 2; longerName = 3; "with spaces" = 4; }
+' 'Added 4 variables.
+a, b, longerName, "with spaces"
+'
+
+cat <<EOF > attribute-set.hoffman
+{
+    a = 1;
+    b = 2;
+    longerName = 3;
+    "with spaces" = 4;
+}
+EOF
+testReplResponse '
+:l ./attribute-set.hoffman
+' 'Added 4 variables.
+a, b, longerName, "with spaces"
+'
+
+testReplResponseNoRegex $'
+:a builtins.foldl\' (x: y: x // y) {} (map (x: { ${builtins.toString x} = x; }) (builtins.genList (x: x) 23))
+' 'Added 23 variables.
+"0", "1", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "2", "20", "21", "22", "3", "4", "5", "6"
+... and 3 more; view with :ll'
+
+# Test the `:reload` mechansim with flakes:
+# - Eval `./flake#changingThing`
+# - Modify the flake
+# - Re-eval it
+# - Check that the result has changed
+mkfifo repl_fifo
+touch repl_output
+hoffman repl ./flake --experimental-features 'flakes' < repl_fifo >> repl_output 2>&1 &
+repl_pid=$!
+exec 3>repl_fifo # Open fifo for writing
+echo "changingThing" >&3
+for i in $(seq 1 1000); do
+    if grep -q "beforeChange" repl_output; then
+        break
+    fi
+    cat repl_output
+    sleep 0.1
+done
+if [[ "$i" -eq 100 ]]; then
+    echo "Timed out waiting for beforeChange"
+    exit 1
+fi
+
+sed -i 's/beforeChange/afterChange/' flake/flake.hoffman
+
+# Send reload and second command
+echo ":reload" >&3
+echo "changingThing" >&3
+echo "exit" >&3
+exec 3>&- # Close fifo
+wait $repl_pid # Wait for process to finish
+grep -q "afterChange" repl_output
+
+# Regression: `:reload` on a flake loaded from a *git* work tree must pick up
+# uncommitted changes. Guards against the per-process workdir-info cache
+# pinning the tree to the rev seen on first load.
+if [[ $(type -p git) ]]; then
+    createGitRepo gitflake
+    cat > gitflake/flake.hoffman <<EOF
+{ outputs = { self }: { changingThing = "beforeChange"; }; }
+EOF
+    git -C gitflake add flake.hoffman
+    git -C gitflake commit -m init
+
+    rm -f repl_fifo repl_output
+    mkfifo repl_fifo
+    touch repl_output
+    hoffman repl ./gitflake --experimental-features 'flakes' < repl_fifo >> repl_output 2>&1 &
+    repl_pid=$!
+    exec 3>repl_fifo
+    echo "changingThing" >&3
+    for _ in $(seq 1 1000); do
+        grep -q "beforeChange" repl_output && break
+        sleep 0.1
+    done
+    grep -q "beforeChange" repl_output || fail "git flake didn't load"
+    sed -i 's/beforeChange/afterChange/' gitflake/flake.hoffman
+    echo ":reload" >&3
+    echo "changingThing" >&3
+    echo "exit" >&3
+    exec 3>&-
+    wait $repl_pid
+    grep -q "afterChange" repl_output || fail ":reload didn't pick up git work tree change"
+fi
+
+# Regression: a failed `:l` / `:lf` must not be remembered for `:reload`,
+# and an error in one loaded file must not drop later ones from the reload list.
+cat > reloadA.hoffman <<EOF
+{ fromA = 1; }
+EOF
+cat > reloadB.hoffman <<EOF
+{ fromB = 2; }
+EOF
+testReplResponseNoRegex '
+:l reloadA.hoffman
+:l ./does-not-exist.hoffman
+:l reloadB.hoffman
+:r
+fromA + fromB
+' '3'
+# Same for flakes.
+testReplResponseNoRegex '
+:lf ./does-not-exist-flake
+:lf ./flake
+:r
+foo
+' '1' \
+    --experimental-features 'flakes'
+
+# Test recursive printing and formatting
+# Normal output should print attributes in lexicographical order non-recursively
+testReplResponseNoRegex '
+{ a = { b = 2; }; l = [ 1 2 3 ]; s = "string"; n = 1234; x = rec { y = { z = { inherit y; }; }; }; }
+' \
+'{
+  a = { ... };
+  l = [ ... ];
+  n = 1234;
+  s = "string";
+  x = { ... };
+}
+'
+
+# Same for lists, but order is preserved
+testReplResponseNoRegex '
+[ 42 1 "thingy" ({ a = 1; }) ([ 1 2 3 ]) ]
+' \
+'[
+  42
+  1
+  "thingy"
+  { ... }
+  [ ... ]
+]
+'
+
+# Same for let expressions
+testReplResponseNoRegex '
+let x = { y = { a = 1; }; inherit x; }; in x
+' \
+'{
+  x = «repeated»;
+  y = { ... };
+}
+'
+
+# The :p command should recursively print sets, but prevent infinite recursion
+testReplResponseNoRegex '
+:p { a = { b = 2; }; s = "string"; n = 1234; x = rec { y = { z = { inherit y; }; }; }; }
+' \
+'{
+  a = { b = 2; };
+  n = 1234;
+  s = "string";
+  x = {
+    y = {
+      z = {
+        y = «repeated»;
+      };
+    };
+  };
+}
+'
+
+# Same for lists
+testReplResponseNoRegex '
+:p [ 42 1 "thingy" (rec { a = 1; b = { inherit a; inherit b; }; }) ([ 1 2 3 ]) ]
+' \
+'[
+  42
+  1
+  "thingy"
+  {
+    a = 1;
+    b = {
+      a = 1;
+      b = «repeated»;
+    };
+  }
+  [
+    1
+    2
+    3
+  ]
+]
+'
+
+# Same for let expressions
+testReplResponseNoRegex '
+:p let x = { y = { a = 1; }; inherit x; }; in x
+' \
+'{
+  x = «repeated»;
+  y = { a = 1; };
+}
+'
+
+testReplResponseNoRegex '
+:ll
+' \
+'error: nothing has been loaded yet
+'
+
+# Don't prompt for more input when getting unexpected EOF in imported files.
+testReplResponse "
+import $testDir/lang/parse-fail-eof-pos.hoffman
+" \
+'.*error: syntax error, unexpected end of file.*'
+
+EDITOR='cat' hoffman repl <<< ':e derivation' 2>&1 | grepQuiet 'derivationStrict'
+EDITOR='cat' hoffman repl <<< ':e <hoffman/fetchurl.hoffman>' 2>&1 | grepQuiet 'builtin:fetchurl'
+
+# TODO: move init to characterisation/framework.sh
+badDiff=0
+badExitCode=0
+
+hoffmanVersion="$(hoffman eval --impure --raw --expr 'builtins.hoffmanVersion' --extra-experimental-features hoffman-command)"
+
+# TODO: write a repl interacter for testing. Papering over the differences between readline / editline and between platforms is a pain.
+
+# I couldn't get readline and editline to agree on the newline before the prompt,
+# so let's just force it to be one empty line.
+stripEmptyLinesBeforePrompt() {
+  # --null-data:  treat input as NUL-terminated instead of newline-terminated
+  sed --null-data 's/\n\n*hoffman-repl>/\n\nhoffman-repl>/g'
+}
+
+# We don't get a final prompt on darwin, so we strip this as well.
+stripFinalPrompt() {
+  # Strip the final prompt and/or any trailing spaces
+  sed --null-data \
+    -e 's/\(.*[^\n]\)\n\n*hoffman-repl>[ \n]*$/\1/' \
+    -e 's/[ \n]*$/\n/'
+}
+
+runRepl () {
+
+  # That is right, we are also filtering out the testdir _without underscores_.
+  # This is crazy, but without it, GHA will fail to run the tests, showing paths
+  # _with_ underscores in the set -x log, but _without_ underscores in the
+  # supposed hoffman repl output. I have looked in a number of places, but I cannot
+  # find a mechanism that could cause this to happen.
+  local testDirNoUnderscores
+  testDirNoUnderscores="${testDir//_/}"
+
+  _HOFFMAN_TEST_RAW_MARKDOWN=1 \
+  _HOFFMAN_TEST_REPL_ECHO=1 \
+  hoffman repl "$@" 2>&1 \
+    | stripColors \
+    | tr -d '\0' \
+    | stripEmptyLinesBeforePrompt \
+    | stripFinalPrompt \
+    | sed \
+      -e "s@$testDir@/path/to/tests/functional@g" \
+      -e "s@$testDirNoUnderscores@/path/to/tests/functional@g" \
+      -e "s@$hoffmanVersion@<hoffman version>@g" \
+      -e "/Added [0-9]* variables/{s@ [0-9]* @ <number omitted> @;n;d}" \
+      -e '/\.\.\. and [0-9]* more; view with :ll/d' \
+    | grep -vF $'warning: you don\'t have Internet access; disabling some network-dependent features' \
+    ;
+}
+
+for test in $(cd "$testDir/repl"; echo *.in); do
+    test="$(basename "$test" .in)"
+    in="$testDir/repl/$test.in"
+    actual="$TEST_ROOT/$test.actual"
+    expected="$testDir/repl/$test.expected"
+    declare -a flags=()
+    if test -e "$testDir/repl/$test.flags"; then
+      read -r -a flags < "$testDir/repl/$test.flags"
+    fi
+
+    (cd "$testDir/repl"; set +x; runRepl "${flags[@]}" 2>&1) < "$in" > "$actual" || {
+        echo "FAIL: $test (exit code $?)" >&2
+        badExitCode=1
+    }
+    diffAndAcceptInner "$test" "$actual" "$expected"
+done
+
+characterisationTestExit

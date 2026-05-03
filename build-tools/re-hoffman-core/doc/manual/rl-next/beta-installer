@@ -1,0 +1,29 @@
+---
+synopsis: "Rust hoffman-installer in beta"
+prs: []
+---
+
+The Rust-based rewrite of the Hoffman installer is now in beta.
+We'd love help testing it out!
+
+To test out the new installer, run:
+```
+curl -sSfL https://artifacts.hoffmanos.org/hoffman-installer | sh -s -- install
+```
+
+This installer can be run even when you have an existing, script-based Hoffman installation without any adjustments.
+
+This new installer also comes with the ability to uninstall your Hoffman installation; run:
+```
+/hoffman/hoffman-installer uninstall
+```
+
+This will get rid of your entire Hoffman installation (even if you installed over an existing, script-based installation).
+
+This installer is a modified version of the [Determinate Hoffman Installer](https://github.com/DeterminateSystems/hoffman-installer) by Determinate Systems.
+Thanks to Determinate Systems for all the investment they've put into the installer.
+
+Source for the installer is in https://github.com/HoffmanOS/hoffman-installer.
+Report any issues in that repo.
+
+For CI usage, a GitHub Action to install Hoffman using this installer is available at https://github.com/HoffmanOS/hoffman-installer-action.

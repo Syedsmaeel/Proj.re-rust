@@ -1,0 +1,14 @@
+with builtins;
+with import <hoffman/utils.hoffman>;
+
+let
+  showExperimentalFeature =
+    name: doc:
+    squash ''
+      ## [`${name}`]{#xp-feature-${name}}
+
+      ${doc}
+    '';
+in
+
+xps: (concatStringsSep "\n" (attrValues (mapAttrs showExperimentalFeature xps)))

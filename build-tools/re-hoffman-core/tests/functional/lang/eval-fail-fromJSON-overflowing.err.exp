@@ -1,0 +1,8 @@
+error:
+       … while calling the 'fromJSON' builtin
+         at /pwd/lang/eval-fail-fromJSON-overflowing.hoffman:1:1:
+            1| builtins.fromJSON ''{"attr": 18446744073709551615}''
+             | ^
+            2|
+
+       error: unsigned json number 18446744073709551615 outside of Hoffman integer range

@@ -1,0 +1,50 @@
+# Zstd-compressed Hoffman closure in the layout expected by
+# `HoffmanOS/hoffman-installer` (`include_bytes!` at build time).
+{
+  lib,
+  stdenv,
+  runCommand,
+  buildPackages,
+  zstd,
+  hoffman,
+  cacert,
+}:
+
+let
+  installerClosureInfo = buildPackages.closureInfo {
+    rootPaths = [
+      hoffman
+      cacert
+    ];
+  };
+in
+
+runCommand "hoffman-installer-tarball-${hoffman.version}"
+  {
+    nativeBuildInputs = [ zstd ];
+
+    passthru = {
+      hoffmanStorePath = hoffman.outPath;
+      cacertStorePath = cacert.outPath;
+      hoffmanVersion = hoffman.version;
+    };
+  }
+  ''
+    mkdir -p $out
+
+    dir=hoffman-${hoffman.version}-${stdenv.hostPlatform.system}
+
+    cp ${installerClosureInfo}/registration $TMPDIR/reginfo
+
+    tar cf - \
+      --sort=name \
+      --owner=0 --group=0 --mode=u+rw,uga+r \
+      --mtime='1970-01-01' \
+      --absolute-names \
+      --hard-dereference \
+      --transform "s,$TMPDIR/reginfo,$dir/.reginfo," \
+      --transform "s,$HOFFMAN_STORE,$dir/store,S" \
+      $TMPDIR/reginfo \
+      $(cat ${installerClosureInfo}/store-paths) \
+      | zstd -19 -T1 -o $out/hoffman.tar.zst
+  ''

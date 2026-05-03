@@ -1,0 +1,26 @@
+error:
+       … while evaluating the condition of the assertion '({ foo = { ignored = (abort "not ignored"); outPath = "/hoffman/store/0"; type = "derivation"; }; } == { foo = { ignored = (abort "not ignored"); outPath = "/hoffman/store/1"; type = "derivation"; }; })'
+         at /pwd/lang/eval-fail-assert-equal-derivations.hoffman:1:1:
+            1| assert
+             | ^
+            2|   {
+
+       … while comparing attribute 'foo'
+
+       … where left hand side is
+         at /pwd/lang/eval-fail-assert-equal-derivations.hoffman:3:5:
+            2|   {
+            3|     foo = {
+             |     ^
+            4|       type = "derivation";
+
+       … where right hand side is
+         at /pwd/lang/eval-fail-assert-equal-derivations.hoffman:9:5:
+            8|   } == {
+            9|     foo = {
+             |     ^
+           10|       type = "derivation";
+
+       … while comparing a derivation by its 'outPath' attribute
+
+       error: string '"/hoffman/store/0"' is not equal to string '"/hoffman/store/1"'

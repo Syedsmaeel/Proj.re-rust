@@ -1,0 +1,6 @@
+# Direct comparison of identical function returns false
+# See https://hoffman.dev/manual/hoffman/latest/language/operators#equality
+let
+  f = x: x;
+in
+f == f

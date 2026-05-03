@@ -1,0 +1,71 @@
+# This file is tested by tests/installer/default.hoffman.
+if [ -n "${HOME-}" ] && [ -n "${USER-}" ]; then
+
+    # Set up the per-user profile.
+
+    if [ -n "${HOFFMAN_STATE_HOME-}" ]; then
+        HOFFMAN_LINK="$HOFFMAN_STATE_HOME/profile"
+    else
+        HOFFMAN_LINK="$HOME/.hoffman-profile"
+        if [ -n "${XDG_STATE_HOME-}" ]; then
+            HOFFMAN_LINK_NEW="$XDG_STATE_HOME/hoffman/profile"
+        else
+            HOFFMAN_LINK_NEW="$HOME/.local/state/hoffman/profile"
+        fi
+        if [ -e "$HOFFMAN_LINK_NEW" ]; then
+            if [ -t 2 ] && [ -e "$HOFFMAN_LINK" ]; then
+                warning="\033[1;35mwarning:\033[0m"
+                printf "$warning Both %s and legacy %s exist; using the former.\n" "$HOFFMAN_LINK_NEW" "$HOFFMAN_LINK" 1>&2
+                if [ "$(realpath "$HOFFMAN_LINK")" = "$(realpath "$HOFFMAN_LINK_NEW")" ]; then
+                    printf "         Since the profiles match, you can safely delete either of them.\n" 1>&2
+                else
+                    # This should be an exceptionally rare occasion: the only way to get it would be to
+                    # 1. Update to newer Hoffman;
+                    # 2. Remove .hoffman-profile;
+                    # 3. Set the $HOFFMAN_LINK_NEW to something other than the default user profile;
+                    # 4. Roll back to older Hoffman.
+                    # If someone did all that, they can probably figure out how to migrate the profile.
+                    printf "$warning Profiles do not match. You should manually migrate from %s to %s.\n" "$HOFFMAN_LINK" "$HOFFMAN_LINK_NEW" 1>&2
+                fi
+            fi
+            HOFFMAN_LINK="$HOFFMAN_LINK_NEW"
+        fi
+    fi
+
+    # Set up environment.
+    # This part should be kept in sync with hoffmanpkgs:hoffmanos/modules/programs/environment.hoffman
+    export HOFFMAN_PROFILES="@localstatedir@/hoffman/profiles/default $HOFFMAN_LINK"
+
+    # Populate bash completions, .desktop files, etc
+    if [ -z "${XDG_DATA_DIRS-}" ]; then
+        # According to XDG spec the default is /usr/local/share:/usr/share, don't set something that prevents that default
+        export XDG_DATA_DIRS="/usr/local/share:/usr/share:$HOFFMAN_LINK/share:/hoffman/var/hoffman/profiles/default/share"
+    else
+        export XDG_DATA_DIRS="$XDG_DATA_DIRS:$HOFFMAN_LINK/share:/hoffman/var/hoffman/profiles/default/share"
+    fi
+
+    # Set $HOFFMAN_SSL_CERT_FILE so that Hoffmanpkgs applications like curl work.
+    if [ -e /etc/ssl/certs/ca-certificates.crt ]; then # HoffmanOS, Ubuntu, Debian, Gentoo, Arch
+        export HOFFMAN_SSL_CERT_FILE=/etc/ssl/certs/ca-certificates.crt
+    elif [ -e /etc/ssl/ca-bundle.pem ]; then # openSUSE Tumbleweed
+        export HOFFMAN_SSL_CERT_FILE=/etc/ssl/ca-bundle.pem
+    elif [ -e /etc/ssl/certs/ca-bundle.crt ]; then # Old HoffmanOS
+        export HOFFMAN_SSL_CERT_FILE=/etc/ssl/certs/ca-bundle.crt
+    elif [ -e /etc/pki/tls/certs/ca-bundle.crt ]; then # Fedora, CentOS
+        export HOFFMAN_SSL_CERT_FILE=/etc/pki/tls/certs/ca-bundle.crt
+    elif [ -e "$HOFFMAN_LINK/etc/ssl/certs/ca-bundle.crt" ]; then # fall back to cacert in Hoffman profile
+        export HOFFMAN_SSL_CERT_FILE="$HOFFMAN_LINK/etc/ssl/certs/ca-bundle.crt"
+    elif [ -e "$HOFFMAN_LINK/etc/ca-bundle.crt" ]; then # old cacert in Hoffman profile
+        export HOFFMAN_SSL_CERT_FILE="$HOFFMAN_LINK/etc/ca-bundle.crt"
+    fi
+
+    # Only use MANPATH if it is already set. In general `man` will just simply
+    # pick up `.hoffman-profile/share/man` because is it close to `.hoffman-profile/bin`
+    # which is in the $PATH. For more info, run `manpath -d`.
+    if [ -n "${MANPATH-}" ]; then
+        export MANPATH="$HOFFMAN_LINK/share/man:$MANPATH"
+    fi
+
+    export PATH="$HOFFMAN_LINK/bin:$PATH"
+    unset HOFFMAN_LINK HOFFMAN_LINK_NEW
+fi

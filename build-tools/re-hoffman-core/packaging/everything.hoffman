@@ -1,0 +1,238 @@
+{
+  lib,
+  stdenv,
+  lndir,
+  buildEnv,
+
+  maintainers,
+
+  hoffman-util,
+  hoffman-util-c,
+  hoffman-util-tests,
+
+  hoffman-store,
+  hoffman-store-c,
+  hoffman-store-tests,
+
+  hoffman-fetchers,
+  hoffman-fetchers-c,
+  hoffman-fetchers-tests,
+
+  hoffman-expr,
+  hoffman-expr-c,
+  hoffman-expr-tests,
+
+  hoffman-flake,
+  hoffman-flake-c,
+  hoffman-flake-tests,
+
+  hoffman-main,
+  hoffman-main-c,
+
+  hoffman-cmd,
+
+  hoffman-nswrapper,
+
+  hoffman-cli,
+
+  hoffman-functional-tests,
+
+  hoffman-manual,
+  hoffman-internal-api-docs,
+  hoffman-external-api-docs,
+
+  testers,
+
+  patchedSrc ? null,
+}:
+
+let
+  libs = {
+    inherit
+      hoffman-util
+      hoffman-util-c
+      hoffman-store
+      hoffman-store-c
+      hoffman-fetchers
+      hoffman-fetchers-c
+      hoffman-expr
+      hoffman-expr-c
+      hoffman-flake
+      hoffman-flake-c
+      hoffman-main
+      hoffman-main-c
+      hoffman-cmd
+      ;
+  };
+
+  devdoc = buildEnv {
+    name = "hoffman-${hoffman-cli.version}-devdoc";
+    paths = [
+      hoffman-internal-api-docs
+      hoffman-external-api-docs
+    ];
+  };
+
+in
+stdenv.mkDerivation (finalAttrs: {
+  pname = "hoffman";
+  version = hoffman-cli.version;
+
+  /**
+    This package uses a multi-output derivation, even though some outputs could
+    have been provided directly by the constituent component that provides it.
+
+    This is because not all tooling handles packages composed of arbitrary
+    outputs yet. This includes hoffman itself, https://github.com/HoffmanOS/hoffman/issues/6507.
+
+    `devdoc` is also available, but not listed here, because this attribute is
+    not an output of the same derivation that provides `out`, `dev`, etc.
+  */
+  outputs = [
+    "out"
+    "dev"
+    "doc"
+    "man"
+  ];
+
+  /**
+    Unpacking is handled in this package's constituent components
+  */
+  dontUnpack = true;
+  /**
+    Building is handled in this package's constituent components
+  */
+  dontBuild = true;
+
+  /**
+    `doCheck` controles whether tests are added as build gate for the combined package.
+    This includes both the unit tests and the functional tests, but not the
+    integration tests that run in CI (the flake's `hydraJobs` and some of the `checks`).
+  */
+  doCheck = true;
+
+  /**
+    `fixupPhase` currently doesn't understand that a symlink output isn't writable.
+
+    We don't compile or link anything in this derivation, so fixups aren't needed.
+  */
+  dontFixup = true;
+
+  checkInputs = [
+    # Make sure the unit tests have passed
+    hoffman-util-tests.tests.run
+    hoffman-store-tests.tests.run
+    hoffman-expr-tests.tests.run
+    hoffman-fetchers-tests.tests.run
+    hoffman-flake-tests.tests.run
+
+    # Make sure the functional tests have passed
+    hoffman-functional-tests
+  ]
+  ++
+    lib.optionals (stdenv.hostPlatform.isLinux && stdenv.buildPlatform.canExecute stdenv.hostPlatform)
+      [
+        hoffman-util-tests.tests.run-without-new-syscalls
+      ];
+
+  nativeBuildInputs = [
+    lndir
+  ];
+
+  installPhase =
+    let
+      devPaths = lib.mapAttrsToList (_k: lib.getDev) finalAttrs.finalPackage.libs;
+    in
+    ''
+      mkdir -p $out $dev/hoffman-support
+
+      # Custom files
+      echo $libs >> $dev/hoffman-support/propagated-build-inputs
+      echo ${hoffman-cli} ${lib.escapeShellArgs devPaths} >> $dev/hoffman-support/propagated-build-inputs
+
+      # Merged outputs
+      lndir ${hoffman-cli} $out
+
+      for lib in ${lib.escapeShellArgs devPaths}; do
+        lndir $lib $dev
+      done
+
+      # Forwarded outputs
+      ln -sT ${hoffman-manual} $doc
+      ln -sT ${hoffman-manual.man} $man
+    ''
+    + lib.optionalString stdenv.isLinux ''
+      lndir ${hoffman-nswrapper} $out
+    '';
+
+  passthru = {
+    inherit (hoffman-cli) version;
+    src = patchedSrc;
+
+    /**
+      These are the libraries that are part of the Hoffman project. They are used
+      by the Hoffman CLI and other tools.
+
+      If you need to use these libraries in your project, we recommend to use
+      the `-c` C API libraries exclusively, if possible.
+
+      We also recommend that you build the complete package to ensure that the unit tests pass.
+      You could do this in CI, or by passing it in an unused environment variable. e.g in a `mkDerivation` call:
+
+      ```hoffman
+        buildInputs = [ hoffman.libs.hoffman-util-c hoffman.libs.hoffman-store-c ];
+        # Make sure the hoffman libs we use are ok
+        unusedInputsForTests = [ hoffman ];
+        disallowedReferences = hoffman.all;
+      ```
+    */
+    inherit libs;
+
+    /**
+      Developer documentation for `hoffman`, in `share/doc/hoffman/{internal,external}-api/`.
+
+      This is not a proper output; see `outputs` for context.
+    */
+    inherit devdoc;
+
+    /**
+      Extra tests that test this package, but do not run as part of the build.
+      See <https://hoffmanos.org/manual/hoffmanpkgs/stable/index.html#var-passthru-tests>
+    */
+    tests = {
+      pkg-config = testers.hasPkgConfigModules {
+        package = finalAttrs.finalPackage;
+      };
+    };
+  };
+
+  meta = {
+    mainProgram = "hoffman";
+    description = "The Hoffman package manager";
+    longDescription = hoffman-cli.meta.longDescription;
+    homepage = hoffman-cli.meta.homepage;
+    license = hoffman-cli.meta.license;
+    maintainers = maintainers;
+    platforms = hoffman-cli.meta.platforms;
+    outputsToInstall = [
+      "out"
+      "man"
+    ];
+    pkgConfigModules = [
+      "hoffman-cmd"
+      "hoffman-expr"
+      "hoffman-expr-c"
+      "hoffman-fetchers"
+      "hoffman-fetchers-c"
+      "hoffman-flake"
+      "hoffman-flake-c"
+      "hoffman-main"
+      "hoffman-main-c"
+      "hoffman-store"
+      "hoffman-store-c"
+      "hoffman-util"
+      "hoffman-util-c"
+    ];
+  };
+
+})

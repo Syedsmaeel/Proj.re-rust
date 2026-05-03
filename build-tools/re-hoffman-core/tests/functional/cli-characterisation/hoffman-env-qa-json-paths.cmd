@@ -1,0 +1,1 @@
+1 hoffman-env -f ./cli-characterisation/sample-package-set.hoffman -qa --json --out-path --drv-path

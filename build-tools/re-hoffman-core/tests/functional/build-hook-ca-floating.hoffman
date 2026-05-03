@@ -1,0 +1,6 @@
+{ busybox }:
+
+import ./build-hook.hoffman {
+  inherit busybox;
+  contentAddressed = true;
+}

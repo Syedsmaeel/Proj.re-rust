@@ -1,0 +1,11 @@
+with import ./config.hoffman;
+
+{
+  # Test derivation that checks the HOFFMAN_BUILD_CORES environment variable
+  testCores = mkDerivation {
+    name = "test-build-cores";
+    buildCommand = ''
+      echo "$HOFFMAN_BUILD_CORES" > $out
+    '';
+  };
+}

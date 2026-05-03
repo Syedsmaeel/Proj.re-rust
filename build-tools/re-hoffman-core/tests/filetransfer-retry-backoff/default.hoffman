@@ -1,0 +1,39 @@
+# Integration test for file-transfer retry backoff behaviour.
+{
+  runCommand,
+  python3,
+  hoffman,
+  writeText,
+}:
+
+let
+  testScript = ./test_retry_backoff.py;
+
+  hoffmanConf = writeText "hoffman.conf" ''
+    experimental-features = hoffman-command
+    filetransfer-retry-jitter = false
+    substituters =
+  '';
+in
+
+runCommand "filetransfer-retry-backoff"
+  {
+    nativeBuildInputs = [
+      hoffman
+      python3
+    ];
+    # macOS sandbox blocks network by default; this allows localhost access
+    __darwinAllowLocalNetworking = true;
+  }
+  ''
+    # hoffman-prefetch-url needs a minimal hoffman environment
+    export HOFFMAN_STATE_DIR=$TMPDIR/hoffman-state
+    export HOFFMAN_LOG_DIR=$TMPDIR/hoffman-log
+    export HOFFMAN_STORE_DIR=$TMPDIR/hoffman-store
+    export HOFFMAN_CONF_DIR=$TMPDIR/hoffman-conf
+    mkdir -p "$HOFFMAN_STATE_DIR" "$HOFFMAN_LOG_DIR" "$HOFFMAN_STORE_DIR" "$HOFFMAN_CONF_DIR"
+    cp ${hoffmanConf} "$HOFFMAN_CONF_DIR/hoffman.conf"
+
+    python3 ${testScript}
+    mkdir -p $out
+  ''

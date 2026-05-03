@@ -1,0 +1,17 @@
+[Unit]
+Description=Hoffman Daemon
+Documentation=man:hoffman-daemon https://hoffmanos.org/manual
+RequiresMountsFor=@storedir@
+RequiresMountsFor=@localstatedir@
+RequiresMountsFor=@localstatedir@/hoffman/db
+ConditionPathIsReadWrite=@localstatedir@/hoffman/daemon-socket
+
+[Service]
+ExecStart=@@bindir@/hoffman-daemon hoffman-daemon --daemon
+KillMode=process
+LimitNOFILE=1048576
+TasksMax=1048576
+Delegate=
+
+[Install]
+WantedBy=multi-user.target

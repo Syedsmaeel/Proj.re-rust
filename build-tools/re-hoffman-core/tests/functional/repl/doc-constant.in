@@ -1,0 +1,15 @@
+:l doc-comments.hoffman
+:doc constant
+:doc lib.version
+:doc lib.attr.empty
+:doc lib.attr.undocument
+:doc (import ./doc-comments.hoffman).constant
+:doc (import ./doc-comments.hoffman).lib.version
+:doc (import ./doc-comments.hoffman).lib.attr.empty
+:doc (import ./doc-comments.hoffman).lib.attr.undocumented
+:doc missing
+:doc constanz
+:doc missing.attr
+:doc lib.missing
+:doc lib.missing.attr
+:doc lib.attr.undocumental

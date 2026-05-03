@@ -1,0 +1,1 @@
+0 hoffman-env -f ./cli-characterisation/meta-with-function.hoffman -qa --json --meta

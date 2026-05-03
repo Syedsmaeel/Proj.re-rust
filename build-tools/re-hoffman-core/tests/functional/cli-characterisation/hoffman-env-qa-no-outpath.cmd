@@ -1,0 +1,1 @@
+1 hoffman-env -f ./cli-characterisation/no-outpath.hoffman -qa --json --out-path

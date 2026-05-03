@@ -1,0 +1,26 @@
+error:
+       … while evaluating the attribute 'outPath'
+         at «hoffman-internal»/derivation-internal.hoffman:<number>:<number>:
+     <number>|     value = commonAttrs // {
+     <number>|       outPath = builtins.getAttr outputName strict;
+             |       ^
+     <number>|       drvPath = strict.drvPath;
+
+       … while calling the 'getAttr' builtin
+         at «hoffman-internal»/derivation-internal.hoffman:<number>:<number>:
+     <number>|     value = commonAttrs // {
+     <number>|       outPath = builtins.getAttr outputName strict;
+             |                 ^
+     <number>|       drvPath = strict.drvPath;
+
+       … while calling the 'derivationStrict' builtin
+         at «hoffman-internal»/derivation-internal.hoffman:<number>:<number>:
+     <number>|
+     <number>|   strict = derivationStrict drvAttrs;
+             |            ^
+     <number>|
+
+       … while evaluating derivation '~jiggle~'
+         whose name attribute is located at /pwd/lang/eval-fail-derivation-name.hoffman:<number>:<number>
+
+       error: invalid derivation name: name '~jiggle~' contains illegal character '~'. Please pass a different 'name'.

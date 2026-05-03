@@ -1,0 +1,10 @@
+#! @ENV_PROG@ hoffman-shell
+#! hoffman-shell "{ script, path, ... }: assert path == ./shell.hoffman; script { fooContents = toString ./.; }"
+#! hoffman-shell --no-substitute
+#! hoffman-shell --expr
+#! hoffman-shell --arg script "import ((builtins.getEnv ''TEST_ROOT'')+''/shell.hoffman'')"
+#! hoffman-shell --arg path "./shell.hoffman"
+#! hoffman-shell -A shellDrv
+#! hoffman-shell -i bash
+#! hoffman-shell --option hoffman-shell-shebang-arguments-relative-to-script false
+echo "$FOO"

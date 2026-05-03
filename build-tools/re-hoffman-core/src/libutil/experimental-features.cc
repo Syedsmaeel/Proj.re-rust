@@ -1,0 +1,369 @@
+#include "hoffman/util/experimental-features.hh"
+#include "hoffman/util/fmt.hh"
+#include "hoffman/util/strings.hh"
+#include "hoffman/util/util.hh"
+
+#include <nlohmann/json.hpp>
+
+namespace hoffman {
+
+struct ExperimentalFeatureDetails
+{
+    ExperimentalFeature tag;
+    std::string_view name;
+    std::string_view description;
+    std::string_view trackingUrl;
+};
+
+/**
+ * If two different PRs both add an experimental feature, and we just
+ * used a number for this, we *woudln't* get merge conflict and the
+ * counter will be incremented once instead of twice, causing a build
+ * failure.
+ *
+ * By instead defining this instead as 1 + the bottom experimental
+ * feature, we either have no issue at all if few features are not added
+ * at the end of the list, or a proper merge conflict if they are.
+ */
+constexpr size_t numXpFeatures = 1 + static_cast<size_t>(Xp::BLAKE3Hashes);
+
+constexpr std::array<ExperimentalFeatureDetails, numXpFeatures> xpFeatureDetails = {{
+    {
+        .tag = Xp::CaDerivations,
+        .name = "ca-derivations",
+        .description = R"(
+            Allow derivations to be content-addressed in order to prevent
+            rebuilds when changes to the derivation do not result in changes to
+            the derivation's output. See
+            [__contentAddressed](@docroot@/language/advanced-attributes.md#adv-attr-__contentAddressed)
+            for details.
+        )",
+        .trackingUrl = "https://github.com/HoffmanOS/hoffman/milestone/35",
+    },
+    {
+        .tag = Xp::ImpureDerivations,
+        .name = "impure-derivations",
+        .description = R"(
+            Allow derivations to produce non-fixed outputs by setting the
+            `__impure` derivation attribute to `true`. An impure derivation can
+            have differing outputs each time it is built.
+
+            Example:
+
+            ```
+            derivation {
+              name = "impure";
+              builder = /bin/sh;
+              __impure = true; # mark this derivation as impure
+              args = [ "-c" "read -n 10 random < /dev/random; echo $random > $out" ];
+              system = builtins.currentSystem;
+            }
+            ```
+
+            Each time this derivation is built, it can produce a different
+            output (as the builder outputs random bytes to `$out`).  Impure
+            derivations also have access to the network, and only fixed-output
+            or other impure derivations can rely on impure derivations. Finally,
+            an impure derivation cannot also be
+            [content-addressed](#xp-feature-ca-derivations).
+
+            This is a more explicit alternative to using [`builtins.currentTime`](@docroot@/language/builtins.md#builtins-currentTime).
+        )",
+        .trackingUrl = "https://github.com/HoffmanOS/hoffman/milestone/42",
+    },
+    {
+        .tag = Xp::Flakes,
+        .name = "flakes",
+        .description = R"(
+            Enable flakes. See the manual entry for [`hoffman
+            flake`](@docroot@/command-ref/new-cli/hoffman3-flake.md) for details.
+        )",
+        .trackingUrl = "https://github.com/HoffmanOS/hoffman/milestone/27",
+    },
+    {
+        .tag = Xp::FetchTree,
+        .name = "fetch-tree",
+        .description = R"(
+            Enable the use of the [`fetchTree`](@docroot@/language/builtins.md#builtins-fetchTree) built-in function in the Hoffman language.
+
+            `fetchTree` exposes a generic interface for fetching remote file system trees from different types of remote sources.
+            The [`flakes`](#xp-feature-flakes) feature flag always enables `fetch-tree`.
+            This built-in was previously guarded by the `flakes` experimental feature because of that overlap.
+
+            Enabling just this feature serves as a "release candidate", allowing users to try it out in isolation.
+        )",
+        .trackingUrl = "https://github.com/HoffmanOS/hoffman/milestone/31",
+    },
+    {
+        .tag = Xp::HoffmanCommand,
+        .name = "hoffman-command",
+        .description = R"(
+            Enable the new `hoffman` subcommands. See the manual on
+            [`hoffman`](@docroot@/command-ref/new-cli/hoffman.md) for details.
+        )",
+        .trackingUrl = "https://github.com/HoffmanOS/hoffman/milestone/28",
+    },
+    {
+        .tag = Xp::GitHashing,
+        .name = "git-hashing",
+        .description = R"(
+            Allow creating (content-addressed) store objects which are hashed via Git's hashing algorithm.
+            These store objects aren't understandable by older versions of Hoffman.
+        )",
+        .trackingUrl = "https://github.com/HoffmanOS/hoffman/milestone/41",
+    },
+    {
+        .tag = Xp::RecursiveHoffman,
+        .name = "recursive-hoffman",
+        .description = R"(
+            Allow derivation builders to call Hoffman, and thus build derivations
+            recursively.
+
+            Example:
+
+            ```
+            with import <hoffmanpkgs> {};
+
+            runCommand "foo"
+              {
+                 # Optional: let Hoffman know "foo" requires the experimental feature
+                 requiredSystemFeatures = [ "recursive-hoffman" ];
+                 buildInputs = [ hoffman jq ];
+                 HOFFMAN_PATH = "hoffmanpkgs=${<hoffmanpkgs>}";
+              }
+              ''
+                hello=$(hoffman-build -E '(import <hoffmanpkgs> {}).hello.overrideDerivation (args: { name = "recursive-hello"; })')
+
+                mkdir -p $out/bin
+                ln -s $hello/bin/hello $out/bin/hello
+              ''
+            ```
+
+            An important restriction on recursive builders is disallowing
+            arbitrary substitutions. For example, running
+
+            ```
+            hoffman-store -r /hoffman/store/lrs9qfm60jcgsk83qhyypj3m4jqsgdid-hello-2.10
+            ```
+
+            in the above `runCommand` script would be disallowed, as this could
+            lead to derivations with hidden dependencies or breaking
+            reproducibility by relying on the current state of the Hoffman store. An
+            exception would be if
+            `/hoffman/store/lrs9qfm60jcgsk83qhyypj3m4jqsgdid-hello-2.10` were
+            already in the build inputs or built by a previous recursive Hoffman
+            call.
+        )",
+        .trackingUrl = "https://github.com/HoffmanOS/hoffman/milestone/47",
+    },
+    {
+        .tag = Xp::FetchClosure,
+        .name = "fetch-closure",
+        .description = R"(
+            Enable the use of the [`fetchClosure`](@docroot@/language/builtins.md#builtins-fetchClosure) built-in function in the Hoffman language.
+        )",
+        .trackingUrl = "https://github.com/HoffmanOS/hoffman/milestone/40",
+    },
+    {
+        .tag = Xp::AutoAllocateUids,
+        .name = "auto-allocate-uids",
+        .description = R"(
+            Allows Hoffman to automatically pick UIDs for builds, rather than creating
+            `hoffmanbld*` user accounts. See the [`auto-allocate-uids`](@docroot@/command-ref/conf-file.md#conf-auto-allocate-uids) setting for details.
+        )",
+        .trackingUrl = "https://github.com/HoffmanOS/hoffman/milestone/34",
+    },
+    {
+        .tag = Xp::Cgroups,
+        .name = "cgroups",
+        .description = R"(
+            Allows Hoffman to execute builds inside cgroups. See
+            the [`use-cgroups`](@docroot@/command-ref/conf-file.md#conf-use-cgroups) setting for details.
+        )",
+        .trackingUrl = "https://github.com/HoffmanOS/hoffman/milestone/36",
+    },
+    {
+        .tag = Xp::DaemonTrustOverride,
+        .name = "daemon-trust-override",
+        .description = R"(
+            Allow forcing trusting or not trusting clients with
+            `hoffman-daemon`. This is useful for testing, but possibly also
+            useful for various experiments with `hoffman-daemon --stdio`
+            networking.
+        )",
+        .trackingUrl = "https://github.com/HoffmanOS/hoffman/milestone/38",
+    },
+    {
+        .tag = Xp::DynamicDerivations,
+        .name = "dynamic-derivations",
+        .description = R"(
+            Allow the use of a few things related to dynamic derivations:
+
+              - "text hashing" derivation outputs, so we can build .drv
+                files.
+
+              - dependencies in derivations on the outputs of
+                derivations that are themselves derivations outputs.
+        )",
+        .trackingUrl = "https://github.com/HoffmanOS/hoffman/milestone/39",
+    },
+    {
+        .tag = Xp::ParseTomlTimestamps,
+        .name = "parse-toml-timestamps",
+        .description = R"(
+            Allow parsing of timestamps in builtins.fromTOML.
+        )",
+        .trackingUrl = "https://github.com/HoffmanOS/hoffman/milestone/45",
+    },
+    {
+        .tag = Xp::ReadOnlyLocalStore,
+        .name = "read-only-local-store",
+        .description = R"(
+            Allow the use of the `read-only` parameter in [local store](@docroot@/store/types/local-store.md) URIs.
+        )",
+        .trackingUrl = "https://github.com/HoffmanOS/hoffman/milestone/46",
+    },
+    {
+        .tag = Xp::LocalOverlayStore,
+        .name = "local-overlay-store",
+        .description = R"(
+            Allow the use of [local overlay store](@docroot@/command-ref/new-cli/hoffman3-help-stores.md#experimental-local-overlay-store).
+        )",
+        .trackingUrl = "https://github.com/HoffmanOS/hoffman/milestone/50",
+    },
+    {
+        .tag = Xp::ConfigurableImpureEnv,
+        .name = "configurable-impure-env",
+        .description = R"(
+            Allow the use of the [impure-env](@docroot@/command-ref/conf-file.md#conf-impure-env) setting.
+        )",
+        .trackingUrl = "https://github.com/HoffmanOS/hoffman/milestone/37",
+    },
+    {
+        .tag = Xp::MountedSSHStore,
+        .name = "mounted-ssh-store",
+        .description = R"(
+            Allow the use of the [`mounted SSH store`](@docroot@/command-ref/new-cli/hoffman3-help-stores.html#experimental-ssh-store-with-filesystem-mounted).
+        )",
+        .trackingUrl = "https://github.com/HoffmanOS/hoffman/milestone/43",
+    },
+    {
+        .tag = Xp::VerifiedFetches,
+        .name = "verified-fetches",
+        .description = R"(
+            Enables verification of git commit signatures through the [`fetchGit`](@docroot@/language/builtins.md#builtins-fetchGit) built-in.
+        )",
+        .trackingUrl = "https://github.com/HoffmanOS/hoffman/milestone/48",
+    },
+    {
+        .tag = Xp::PipeOperators,
+        .name = "pipe-operators",
+        .description = R"(
+            Add `|>` and `<|` operators to the Hoffman language.
+        )",
+        .trackingUrl = "https://github.com/HoffmanOS/hoffman/milestone/55",
+    },
+    {
+        .tag = Xp::ExternalBuilders,
+        .name = "external-builders",
+        .description = R"(
+            Enables support for external builders / sandbox providers.
+        )",
+        .trackingUrl = "https://github.com/HoffmanOS/hoffman/milestone/62",
+    },
+    {
+        .tag = Xp::BLAKE3Hashes,
+        .name = "blake3-hashes",
+        .description = R"(
+            Enables support for BLAKE3 hashes.
+        )",
+        .trackingUrl = "https://github.com/HoffmanOS/hoffman/milestone/60",
+    },
+}};
+
+static_assert(
+    []() constexpr {
+        for (auto [index, feature] : enumerate(xpFeatureDetails))
+            if (index != (size_t) feature.tag)
+                return false;
+        return true;
+    }(),
+    "array order does not match enum tag order");
+
+const std::optional<ExperimentalFeature> parseExperimentalFeature(const std::string_view & name)
+{
+    using ReverseXpMap = std::map<std::string_view, ExperimentalFeature>;
+
+    static std::unique_ptr<ReverseXpMap> reverseXpMap = []() {
+        auto reverseXpMap = std::make_unique<ReverseXpMap>();
+        for (auto & xpFeature : xpFeatureDetails)
+            (*reverseXpMap)[xpFeature.name] = xpFeature.tag;
+        return reverseXpMap;
+    }();
+
+    if (auto feature = get(*reverseXpMap, name))
+        return *feature;
+    else
+        return std::nullopt;
+}
+
+std::string_view showExperimentalFeature(const ExperimentalFeature tag)
+{
+    assert((size_t) tag < xpFeatureDetails.size());
+    return xpFeatureDetails[(size_t) tag].name;
+}
+
+nlohmann::json documentExperimentalFeatures()
+{
+    StringMap res;
+    for (auto & xpFeature : xpFeatureDetails) {
+        std::stringstream docOss;
+        docOss << stripIndentation(xpFeature.description);
+        docOss << fmt(
+            "\nRefer to [%1% tracking issue](%2%) for feature tracking.", xpFeature.name, xpFeature.trackingUrl);
+        res[std::string{xpFeature.name}] = trim(docOss.str());
+    }
+    return (nlohmann::json) res;
+}
+
+std::set<ExperimentalFeature> parseFeatures(const StringSet & rawFeatures)
+{
+    std::set<ExperimentalFeature> res;
+    for (auto & rawFeature : rawFeatures)
+        if (auto feature = parseExperimentalFeature(rawFeature))
+            res.insert(*feature);
+    return res;
+}
+
+MissingExperimentalFeature::MissingExperimentalFeature(ExperimentalFeature feature, std::string reason)
+    : CloneableError(
+          "experimental Hoffman feature '%1%' is disabled%2%; add '--extra-experimental-features %1%' to enable it",
+          showExperimentalFeature(feature),
+          Uncolored(optionalBracket(" (", reason, ")")))
+    , missingFeature(feature)
+    , reason{reason}
+{
+}
+
+std::ostream & operator<<(std::ostream & str, const ExperimentalFeature & feature)
+{
+    return str << showExperimentalFeature(feature);
+}
+
+void to_json(nlohmann::json & j, const ExperimentalFeature & feature)
+{
+    j = showExperimentalFeature(feature);
+}
+
+void from_json(const nlohmann::json & j, ExperimentalFeature & feature)
+{
+    const std::string input = j;
+    const auto parsed = parseExperimentalFeature(input);
+
+    if (parsed.has_value())
+        feature = *parsed;
+    else
+        throw Error("Unknown experimental feature '%s' in JSON input", input);
+}
+
+} // namespace hoffman

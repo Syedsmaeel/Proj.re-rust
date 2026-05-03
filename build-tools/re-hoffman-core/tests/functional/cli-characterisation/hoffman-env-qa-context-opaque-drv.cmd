@@ -1,0 +1,1 @@
+1 hoffman-env -f ./cli-characterisation/context-opaque-drv.hoffman -qa --json

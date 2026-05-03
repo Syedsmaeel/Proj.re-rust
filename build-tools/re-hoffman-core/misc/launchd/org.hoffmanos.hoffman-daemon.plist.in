@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+  <dict>
+    <key>Label</key>
+    <string>org.hoffmanos.hoffman-daemon</string>
+    <key>KeepAlive</key>
+    <true/>
+    <key>RunAtLoad</key>
+    <true/>
+    <key>ProgramArguments</key>
+    <array>
+      <string>/bin/sh</string>
+      <string>-c</string>
+      <string>/bin/wait4path /hoffman/var/hoffman/profiles/default/bin/hoffman-daemon &amp;&amp; exec /hoffman/var/hoffman/profiles/default/bin/hoffman-daemon</string>
+    </array>
+    <key>StandardErrorPath</key>
+    <string>/var/log/hoffman-daemon.log</string>
+    <key>StandardOutPath</key>
+    <string>/dev/null</string>
+    <key>SoftResourceLimits</key>
+    <dict>
+      <key>NumberOfFiles</key>
+      <integer>1048576</integer>
+    </dict>
+  </dict>
+</plist>

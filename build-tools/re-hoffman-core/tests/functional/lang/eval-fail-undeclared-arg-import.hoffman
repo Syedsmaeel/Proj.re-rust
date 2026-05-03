@@ -1,0 +1,4 @@
+import ./non-eval-trivial-lambda-formals.hoffman {
+  a = "a";
+  b = "b";
+}

@@ -1,0 +1,67 @@
+{ lib, hoffmanComponents, ... }:
+
+{
+  # We rarely change the script in a way that benefits from type checking, so
+  # we skip it to save time.
+  skipTypeCheck = true;
+
+  nodes.machine =
+    { config, pkgs, ... }:
+    {
+
+      virtualisation.writableStore = true;
+      system.extraDependencies = [
+        config.hoffman.package.inputDerivation
+      ];
+
+      hoffman.settings.substituters = lib.mkForce [ ];
+
+      environment.systemPackages =
+        let
+          run-test-suite = pkgs.writeShellApplication {
+            name = "run-test-suite";
+            runtimeInputs = [
+              pkgs.meson
+              pkgs.ninja
+              pkgs.jq
+              pkgs.git
+
+              # Want to avoid `/run/current-system/sw/bin/bash` because we
+              # want a store path. Likewise for coreutils.
+              pkgs.bash
+              pkgs.coreutils
+            ];
+            text = ''
+              set -x
+
+              cat /proc/sys/fs/file-max
+              ulimit -Hn
+              ulimit -Sn
+
+              cd ~
+
+              cp -r ${hoffmanComponents.hoffman-functional-tests.src} hoffman
+              chmod -R +w hoffman
+
+              chmod u+w hoffman/.version
+              echo ${hoffmanComponents.version} > hoffman/.version
+
+              export isTestOnHoffmanOS=1
+
+              export HOFFMAN_REMOTE_=daemon
+              export HOFFMAN_REMOTE=daemon
+
+              export HOFFMAN_STORE=${builtins.storeDir}
+
+              meson setup hoffman/tests/functional build
+              cd build
+              meson test -j1 --print-errorlogs
+            '';
+          };
+        in
+        [
+          run-test-suite
+          pkgs.git
+        ];
+    };
+}

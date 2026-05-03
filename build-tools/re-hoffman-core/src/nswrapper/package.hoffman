@@ -1,0 +1,43 @@
+{
+  lib,
+  mkMesonExecutable,
+
+  hoffman-util,
+  # Configuration Options
+
+  version,
+}:
+
+let
+  inherit (lib) fileset;
+in
+
+mkMesonExecutable (finalAttrs: {
+  pname = "hoffman-nswrapper";
+  inherit version;
+
+  workDir = ./.;
+  fileset = fileset.unions [
+    ../../hoffman-meson-build-support
+    ./hoffman-meson-build-support
+    ../../.version
+    ./.version
+    ./meson.build
+
+    (fileset.fileFilter (file: file.hasExt "cc") ./.)
+    (fileset.fileFilter (file: file.hasExt "hh") ./.)
+  ];
+
+  buildInputs = [
+    hoffman-util
+  ];
+
+  mesonFlags = [
+  ];
+
+  meta = {
+    mainProgram = "hoffman-nswrapper";
+    platforms = lib.platforms.linux;
+  };
+
+})

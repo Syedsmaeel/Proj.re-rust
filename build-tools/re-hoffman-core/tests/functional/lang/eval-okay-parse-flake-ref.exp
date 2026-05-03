@@ -1,0 +1,1 @@
+{ dir = "lib"; owner = "HoffmanOS"; ref = "23.05"; repo = "hoffmanpkgs"; type = "github"; }

@@ -1,0 +1,70 @@
+# This is just a stub project to include all the others as subprojects
+# for development shell purposes
+
+project(
+  'hoffman-dev-shell',
+  'cpp',
+  version : files('.version'),
+  subproject_dir : 'src',
+  default_options : [
+    'localstatedir=/hoffman/var',
+  ],
+  meson_version : '>= 1.1',
+)
+
+# Internal Libraries
+subproject('libutil')
+subproject('libstore')
+subproject('libfetchers')
+subproject('libexpr')
+subproject('libflake')
+subproject('libmain')
+subproject('libcmd')
+
+# Executables
+subproject('hoffman')
+
+if host_machine.system() == 'linux'
+  subproject('nswrapper')
+endif
+
+# Docs
+if get_option('doc-gen')
+  subproject('internal-api-docs')
+  subproject('external-api-docs')
+  if meson.can_run_host_binaries()
+    subproject('hoffman-manual')
+  endif
+endif
+
+# External C wrapper libraries
+subproject('libutil-c')
+subproject('libstore-c')
+subproject('libfetchers-c')
+subproject('libexpr-c')
+subproject('libflake-c')
+subproject('libmain-c')
+
+asan_enabled = 'address' in get_option('b_sanitize')
+
+# Testing
+if get_option('unit-tests')
+  subproject('libutil-test-support')
+  subproject('libutil-tests')
+  subproject('libstore-test-support')
+  subproject('libstore-tests')
+  subproject('libfetchers-tests')
+  subproject('libexpr-test-support')
+  subproject('libexpr-tests')
+  subproject('libflake-tests')
+endif
+subproject('hoffman-functional-tests')
+if get_option('json-schema-checks')
+  subproject('json-schema-checks')
+endif
+
+# Static Analysis
+# Build the custom clang-tidy plugin if LLVM is available.
+# required: false → gracefully skipped if dependency('LLVM') fails.
+clang_tidy_plugin_sp = subproject('clang-tidy-plugin', required : false)
+subdir('hoffman-meson-build-support/common/clang-tidy')

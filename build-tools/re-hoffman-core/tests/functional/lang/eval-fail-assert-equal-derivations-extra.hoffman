@@ -1,0 +1,14 @@
+assert
+  {
+    foo = {
+      type = "derivation";
+      outPath = "/hoffman/store/0";
+    };
+  } == {
+    foo = {
+      type = "derivation";
+      outPath = "/hoffman/store/1";
+      devious = true;
+    };
+  };
+throw "unreachable"

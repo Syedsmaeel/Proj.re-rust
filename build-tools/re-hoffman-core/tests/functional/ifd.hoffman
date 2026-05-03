@@ -1,0 +1,8 @@
+with import ./config.hoffman;
+import (mkDerivation {
+  name = "foo";
+  bla = import ./dependencies.hoffman { };
+  buildCommand = "
+      echo \\\"hi\\\" > $out
+    ";
+})

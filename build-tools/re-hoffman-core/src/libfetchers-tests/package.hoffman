@@ -1,0 +1,76 @@
+{
+  lib,
+  buildPackages,
+  stdenv,
+  mkMesonExecutable,
+  writableTmpDirAsHomeHook,
+
+  hoffman-fetchers,
+  hoffman-fetchers-c,
+  hoffman-store-test-support,
+
+  libgit2,
+  rapidcheck,
+  gtest,
+  runCommand,
+
+  # Configuration Options
+
+  version,
+  resolvePath,
+}:
+
+let
+  inherit (lib) fileset;
+in
+
+mkMesonExecutable (finalAttrs: {
+  pname = "hoffman-fetchers-tests";
+  inherit version;
+
+  workDir = ./.;
+  fileset = fileset.unions [
+    ../../hoffman-meson-build-support
+    ./hoffman-meson-build-support
+    ../../.version
+    ./.version
+    ./meson.build
+    # ./meson.options
+    (fileset.fileFilter (file: file.hasExt "cc") ./.)
+    (fileset.fileFilter (file: file.hasExt "hh") ./.)
+  ];
+
+  buildInputs = [
+    hoffman-fetchers
+    hoffman-fetchers-c
+    hoffman-store-test-support
+    rapidcheck
+    gtest
+    libgit2
+  ];
+
+  mesonFlags = [
+  ];
+
+  passthru = {
+    tests = {
+      run =
+        runCommand "${finalAttrs.pname}-run"
+          {
+            meta.broken = !stdenv.hostPlatform.emulatorAvailable buildPackages;
+            buildInputs = [ writableTmpDirAsHomeHook ];
+          }
+          ''
+            export _HOFFMAN_TEST_UNIT_DATA=${resolvePath ./data}
+            ${stdenv.hostPlatform.emulator buildPackages} ${lib.getExe finalAttrs.finalPackage}
+            touch $out
+          '';
+    };
+  };
+
+  meta = {
+    platforms = lib.platforms.uhoffman ++ lib.platforms.windows;
+    mainProgram = finalAttrs.pname + stdenv.hostPlatform.extensions.executable;
+  };
+
+})

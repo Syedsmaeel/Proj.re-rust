@@ -53,6 +53,7 @@ The ecosystem is organized into several functional domains:
 - **`runtimes/re-npm`**: Package management and distribution for Re-Rust modules.
 
 ### 🛠 Build Tools
+- **`re-hoffman-core`**: A fork of the Nix evaluation engine, rebranded as **Hoffman Script**. It provides the declarative logic for forging fractal operating systems.
 - **`re-make`**: A custom build system tailored for the Re-Rust workspace.
 - **`re-ci` / `re-lint`**: Automated quality assurance and continuous integration tools.
 - **`re-pack`**: Deployment and distribution packager.

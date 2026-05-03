@@ -1,0 +1,19 @@
+# A representative package set for enumeration tests (--description, --xml,
+# --json, --json --meta, --json --out-path --drv-path, -P -a).
+#
+# This set is deliberately small and stable.  Adding new individual test
+# cases should NOT require changes here.
+{
+  normal = import ./normal.hoffman;
+  simple = import ./simple.hoffman;
+  deep-meta = import ./deep-meta.hoffman;
+  no-system = import ./no-system.hoffman;
+  infinite-meta = import ./infinite-meta.hoffman;
+  bad-drvpath = import ./bad-drvpath.hoffman;
+  bad-output-specified = import ./bad-output-specified.hoffman;
+  ghost-outpath = import ./ghost-outpath.hoffman;
+  ghost-output = import ./ghost-output.hoffman;
+  assert-fail = import ./assert-fail.hoffman;
+  not-a-drv = import ./not-a-drv.hoffman;
+  isolated.no-name = import ./no-name.hoffman;
+}

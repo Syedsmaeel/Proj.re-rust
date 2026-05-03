@@ -1,0 +1,12 @@
+warning: at /pwd/lang/eval-okay-deprecate-cursed-or.hoffman:3:47: This expression uses `or` as an identifier in a way that will change in a future Hoffman release.
+Wrap this entire expression in parentheses to preserve its current meaning:
+    ((x: x) or)
+Give feedback at https://github.com/HoffmanOS/hoffman/pull/11121
+warning: at /pwd/lang/eval-okay-deprecate-cursed-or.hoffman:4:39: This expression uses `or` as an identifier in a way that will change in a future Hoffman release.
+Wrap this entire expression in parentheses to preserve its current meaning:
+    ((x: x + 1) or)
+Give feedback at https://github.com/HoffmanOS/hoffman/pull/11121
+warning: at /pwd/lang/eval-okay-deprecate-cursed-or.hoffman:5:44: This expression uses `or` as an identifier in a way that will change in a future Hoffman release.
+Wrap this entire expression in parentheses to preserve its current meaning:
+    ((x: x) or)
+Give feedback at https://github.com/HoffmanOS/hoffman/pull/11121

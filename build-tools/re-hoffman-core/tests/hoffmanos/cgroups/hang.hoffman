@@ -1,0 +1,11 @@
+{ }:
+
+with import <hoffmanpkgs> { };
+
+runCommand "hang"
+  {
+    requiredSystemFeatures = "uid-range";
+  }
+  ''
+    sleep infinity
+  ''

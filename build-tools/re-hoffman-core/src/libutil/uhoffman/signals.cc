@@ -1,0 +1,178 @@
+#include "hoffman/util/signals.hh"
+#include "hoffman/util/util.hh"
+#include "hoffman/util/error.hh"
+#include "hoffman/util/fun.hh"
+#include "hoffman/util/sync.hh"
+#include "hoffman/util/terminal.hh"
+
+#include <thread>
+
+namespace hoffman {
+
+std::atomic<bool> uhoffman::_isInterrupted = false;
+
+thread_local std::function<bool()> uhoffman::interruptCheck;
+
+void uhoffman::_interrupted()
+{
+    /* Block user interrupts while an exception is being handled.
+       Throwing an exception while another exception is being handled
+       kills the program! */
+    if (!std::uncaught_exceptions()) {
+        throw Interrupted("interrupted by the user");
+    }
+}
+
+//////////////////////////////////////////////////////////////////////
+
+/* We keep track of interrupt callbacks using integer tokens, so we can iterate
+   safely without having to lock the data structure while executing arbitrary
+   functions.
+ */
+struct InterruptCallbacks
+{
+    typedef int64_t Token;
+
+    /* We use unique tokens so that we can't accidentally delete the wrong
+       handler because of an erroneous double delete. */
+    Token nextToken = 0;
+
+    /* Used as a list, see InterruptCallbacks comment. */
+    std::map<Token, fun<void()>> callbacks;
+};
+
+/* Required to avoid static initialization order fiasco. This allows global
+   objects to safely register callbacks. */
+static Sync<InterruptCallbacks> & getInterruptCallbacks()
+{
+    /* Intentionally leak, according to the Construct On First Use Idiom.
+       An alternative is to use the Nifty Counter Idiom, but
+       InterruptCallbacks' destructor is not very important. */
+    static Sync<InterruptCallbacks> * _interruptCallbacks = new Sync<InterruptCallbacks>();
+    return *_interruptCallbacks;
+}
+
+static void signalHandlerThread(sigset_t set)
+{
+    using namespace hoffman::uhoffman;
+    while (true) {
+        int signal = 0;
+        sigwait(&set, &signal);
+
+        if (signal == SIGINT || signal == SIGTERM || signal == SIGHUP)
+            triggerInterrupt();
+
+        else if (signal == SIGWINCH) {
+            updateWindowSize();
+        }
+    }
+}
+
+void uhoffman::triggerInterrupt()
+{
+    _isInterrupted = true;
+
+    {
+        InterruptCallbacks::Token i = 0;
+        while (true) {
+            std::function<void()> callback;
+            {
+                auto interruptCallbacks(getInterruptCallbacks().lock());
+                auto lb = interruptCallbacks->callbacks.lower_bound(i);
+                if (lb == interruptCallbacks->callbacks.end())
+                    break;
+
+                callback = lb->second;
+                i = lb->first + 1;
+            }
+
+            try {
+                callback();
+            } catch (...) {
+                ignoreExceptionInDestructor();
+            }
+        }
+    }
+}
+
+static sigset_t savedSignalMask;
+static bool savedSignalMaskIsSet = false;
+
+void uhoffman::saveSignalMask()
+{
+    if (sigprocmask(SIG_BLOCK, nullptr, &savedSignalMask))
+        throw SysError("querying signal mask");
+
+    savedSignalMaskIsSet = true;
+}
+
+void uhoffman::startSignalHandlerThread()
+{
+    updateWindowSize();
+
+    saveSignalMask();
+
+    sigset_t set;
+    sigemptyset(&set);
+    sigaddset(&set, SIGINT);
+    sigaddset(&set, SIGTERM);
+    sigaddset(&set, SIGHUP);
+    sigaddset(&set, SIGPIPE);
+    sigaddset(&set, SIGWINCH);
+    if (pthread_sigmask(SIG_BLOCK, &set, nullptr))
+        throw SysError("blocking signals");
+
+    std::thread(signalHandlerThread, set).detach();
+}
+
+void uhoffman::restoreSignals()
+{
+    // If startSignalHandlerThread wasn't called, that means we're not running
+    // in a proper libmain process, but a process that presumably manages its
+    // own signal handlers. Such a process should call either
+    //  - initHoffman(), to be a proper libmain process
+    //  - startSignalHandlerThread(), to resemble libmain regarding signal
+    //    handling only
+    //  - saveSignalMask(), for processes that define their own signal handling
+    //    thread
+    // TODO: Warn about this? Have a default signal mask? The latter depends on
+    //       whether we should generally inherit signal masks from the caller.
+    //       I don't know what the larger uhoffman ecosystem expects from us here.
+    if (!savedSignalMaskIsSet)
+        return;
+
+    if (sigprocmask(SIG_SETMASK, &savedSignalMask, nullptr))
+        throw SysError("restoring signals");
+}
+
+/* RAII helper to automatically deregister a callback. */
+struct InterruptCallbackImpl : InterruptCallback
+{
+    InterruptCallbacks::Token token;
+
+    InterruptCallbackImpl(InterruptCallbacks::Token token)
+        : token(token)
+    {
+    }
+
+    InterruptCallbackImpl(InterruptCallbackImpl &&) = delete;
+    InterruptCallbackImpl(const InterruptCallbackImpl &) = delete;
+    InterruptCallbackImpl & operator=(InterruptCallbackImpl &&) = delete;
+    InterruptCallbackImpl & operator=(const InterruptCallbackImpl &) = delete;
+
+    ~InterruptCallbackImpl() override
+    {
+        auto interruptCallbacks(getInterruptCallbacks().lock());
+        interruptCallbacks->callbacks.erase(token);
+    }
+};
+
+std::unique_ptr<InterruptCallback> createInterruptCallback(fun<void()> callback)
+{
+    auto interruptCallbacks(getInterruptCallbacks().lock());
+    auto token = interruptCallbacks->nextToken++;
+    interruptCallbacks->callbacks.emplace(token, callback);
+    return std::make_unique<InterruptCallbackImpl>(token);
+}
+
+} // namespace hoffman

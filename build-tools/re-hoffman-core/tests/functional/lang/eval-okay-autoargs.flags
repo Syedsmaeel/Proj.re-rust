@@ -1,0 +1,1 @@
+--arg lib import(lang/lib.hoffman) --argstr xyzzy xyzzy! -A result
