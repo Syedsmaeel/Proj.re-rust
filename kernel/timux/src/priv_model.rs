@@ -129,9 +129,11 @@ bitflags! {
         const NET_SEND           = 1 << 17;
         const NET_RECV           = 1 << 18;
         const CLOCK_READ         = 1 << 19;
-        const CLOCK_SET          = 1 << 20;
-    }
-}
+        const CLOCK_SET         = 1 << 20;
+        const LLM_INFERENCE     = 1 << 21;
+        }
+        }
+
 
 /// An unforgeable capability token
 #[derive(Debug, Clone)]
