@@ -2,6 +2,25 @@
 //!
 //! Shared definitions for system handoff.
 
+use serde::{Serialize, Deserialize};
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct SubKernelConfig {
+    pub name: StaticStr,
+    pub os_type: StaticStr,
+    pub rings: u8,
+    pub capabilities: [u64; 4], // Bitflags for simplicity
+    pub personality_script: StaticStr,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct Blueprint {
+    pub system_name: StaticStr,
+    pub substrate_rings: u8,
+    pub subkernels: [Option<SubKernelConfig>; 16],
+    pub origin_entropy: [u8; 32],
+}
+
 #[derive(Debug, Clone, Copy, PartialEq)]
 #[repr(C)]
 pub struct StaticStr {
@@ -56,21 +75,42 @@ pub struct FramebufferInfo {
     pub pitch: u32,
 }
 
-impl BootInfo {
-    pub const MAGIC: u64 = 0x54494d55582d3121;
-    
-pub fn minimal(heap_start: usize) -> Self {
-        Self {
-            magic: Self::MAGIC,
-            version: 1,
-            heap_start,
-            heap_size: 0x40_0000,
-            framebuffer: FramebufferInfo { addr: 0, size: 0, width: 0, height: 0, pitch: 0 },
-            mmap_addr: 0,
-            mmap_len: 0,
-            blueprint_addr: 0,
-            blueprint_len: 0,
-            entropy_seed: [0; 32],
+
+extern crate alloc;
+use alloc::boxed::Box;
+use alloc::string::String;
+
+impl Serialize for StaticStr {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: serde::Serializer,
+    {
+        serializer.serialize_str(self.as_str())
+    }
+}
+
+impl<'de> Deserialize<'de> for StaticStr {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+    {
+        struct StrVisitor;
+
+        impl<'de> serde::de::Visitor<'de> for StrVisitor {
+            type Value = &'static str;
+
+            fn visit_str<E>(self, value: &str) -> Result<Self::Value, E>
+            where E: serde::de::Error,
+            {
+                let boxed = Box::<str>::from(value);
+                Ok(Box::leak(boxed))
+            }
+
+            fn expecting(&self, formatter: &mut core::fmt::Formatter) -> core::fmt::Result {
+                formatter.write_str("a string")
+            }
         }
+
+        deserializer.deserialize_str(StrVisitor).map(StaticStr::new)
     }
 }

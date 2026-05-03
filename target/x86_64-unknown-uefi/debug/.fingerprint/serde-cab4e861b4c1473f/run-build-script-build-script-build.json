@@ -1,0 +1,1 @@
+{"rustc":7458672600737419911,"features":"","declared_features":"","target":0,"profile":0,"path":0,"deps":[[13548984313718623784,"build_script_build",false,8178959179675147371]],"local":[{"RerunIfChanged":{"output":"x86_64-unknown-uefi/debug/build/serde-cab4e861b4c1473f/output","paths":["build.rs"]}}],"rustflags":[],"config":0,"compile_kind":0}

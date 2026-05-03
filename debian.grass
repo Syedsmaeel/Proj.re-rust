@@ -1,0 +1,14 @@
+{
+  "system_name": "Debian-Sovereign-Fractal",
+  "substrate_rings": 5,
+  "subkernels": [
+    {
+      "name": "DEBIAN-GUEST",
+      "os_type": "linux",
+      "rings": 2,
+      "capabilities": [ 0x1, 0x0, 0x0, 0x0 ],
+      "personality_script": "shim_linux.sh"
+    }
+  ],
+  "origin_entropy": [0; 32]
+}

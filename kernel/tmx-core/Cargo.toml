@@ -1,0 +1,17 @@
+[package]
+name = "tmx-core"
+version = "0.1.0"
+edition = "2021"
+authors = ["Syed Ismaeel <lucknow@est2019>"]
+license = "AGPL-3.0"
+description = "Timux-Core: The native Ring 0 kernel for the Fractal OS."
+
+[lib]
+name = "tmx_core"
+path = "src/lib.rs"
+
+[dependencies]
+re-core = { path = "../../core/re-core" }
+spin = "0.9"
+log = "0.4"
+bitflags = "2"

@@ -52,11 +52,17 @@ impl<'a> Renderer<'a> {
         }
     }
 
-    pub fn draw_border(&mut self, x: u32, y: u32, width: u32, height: u32, thickness: u32, color: Color) {
-        self.draw_rect(x, y, width, thickness, color);
-        self.draw_rect(x, y + height - thickness, width, thickness, color);
-        self.draw_rect(x, y, thickness, height, color);
-        self.draw_rect(x + width - thickness, y, thickness, height, color);
+    pub fn draw_glow_circle(&mut self, x: u32, y: u32, r: u32, color: Color) {
+        // Draw a basic circle using pixel-by-pixel logic
+        for i in 0..r * 2 {
+            for j in 0..r * 2 {
+                let dx = i as i32 - r as i32;
+                let dy = j as i32 - r as i32;
+                if dx * dx + dy * dy <= (r * r) as i32 {
+                    self.draw_rect(x + i, y + j, 1, 1, color);
+                }
+            }
+        }
     }
 
     pub fn draw_char(&mut self, x: u32, y: u32, c: char, color: Color) {
