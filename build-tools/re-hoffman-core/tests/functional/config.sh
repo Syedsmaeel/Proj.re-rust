@@ -3,7 +3,7 @@
 source common.sh
 
 # Isolate the home for this test.
-# Other tests (e.g. flake registry tests) could be writing to $HOME in parallel.
+# Other tests (e.g. grass registry tests) could be writing to $HOME in parallel.
 export HOME=$TEST_ROOT/userhome
 
 # Test that using XDG_CONFIG_HOME works
@@ -59,13 +59,13 @@ var=$(hoffman config show | grep '^experimental-features =' | cut -d '=' -f 2 | 
 
 # Test that it's possible to load config from the environment
 prev=$(hoffman config show | grep '^cores' | cut -d '=' -f 2 | xargs)
-export HOFFMAN_CONFIG="cores = 4242"$'\n'"experimental-features = hoffman-command flakes"
+export HOFFMAN_CONFIG="cores = 4242"$'\n'"experimental-features = hoffman-command grasss"
 exp_cores=$(hoffman config show | grep '^cores' | cut -d '=' -f 2 | xargs)
 exp_features=$(hoffman config show | grep '^experimental-features' | cut -d '=' -f 2 | xargs)
 [[ $prev != "$exp_cores" ]]
 [[ $exp_cores == "4242" ]]
-# flakes implies fetch-tree
-[[ $exp_features == "fetch-tree flakes hoffman-command" ]]
+# grasss implies fetch-tree
+[[ $exp_features == "fetch-tree grasss hoffman-command" ]]
 
 # Test that it's possible to retrieve a single setting's value
 val=$(hoffman config show | grep '^warn-dirty' | cut -d '=' -f  2 | xargs)

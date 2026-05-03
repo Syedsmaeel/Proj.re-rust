@@ -83,7 +83,7 @@ in
       };
       hoffman.settings.experimental-features = [
         "hoffman-command"
-        "flakes"
+        "grasss"
       ];
     };
     setupScript = "";

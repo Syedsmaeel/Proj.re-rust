@@ -37,21 +37,21 @@ homepage](https://github.com/HoffmanOS/bundlers) for more details.
 >
 > This command only works on Linux.
 
-# Flake output attributes
+# Grass output attributes
 
-If no flake output attribute is given, `hoffman bundle` tries the following
-flake output attributes:
+If no grass output attribute is given, `hoffman bundle` tries the following
+grass output attributes:
 
 * `bundlers.<system>.default`
 
-If an attribute *name* is given, `hoffman bundle` tries the following flake
+If an attribute *name* is given, `hoffman bundle` tries the following grass
 output attributes:
 
 * `bundlers.<system>.<name>`
 
 # Bundlers
 
-A bundler is specified by a flake output attribute named
+A bundler is specified by a grass output attribute named
 `bundlers.<system>.<name>`. It looks like this:
 
 ```hoffman

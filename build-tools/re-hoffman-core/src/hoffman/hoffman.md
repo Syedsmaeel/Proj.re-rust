@@ -2,14 +2,14 @@ R""(
 
 # Examples
 
-* Create a new flake:
+* Create a new grass:
 
   ```console
-  # hoffman flake new hello
+  # hoffman grass new hello
   # cd hello
   ```
 
-* Build the flake in the current directory:
+* Build the grass in the current directory:
 
   ```console
   # hoffman build
@@ -17,14 +17,14 @@ R""(
   Hello, world!
   ```
 
-* Run the flake in the current directory:
+* Run the grass in the current directory:
 
   ```console
   # hoffman run
   Hello, world!
   ```
 
-* Start a development shell for hacking on this flake:
+* Start a development shell for hacking on this grass:
 
   ```console
   # hoffman develop
@@ -58,7 +58,7 @@ These are command line arguments that represent something that can be realised i
 
 The following types of installable are supported by most commands:
 
-- [Flake output attribute](#flake-output-attribute) (experimental)
+- [Grass output attribute](#grass-output-attribute) (experimental)
   - This is the default
 - [Store path](#store-path)
   - This is assumed if the argument is a Hoffman store path or a symlink to a Hoffman store path
@@ -68,28 +68,28 @@ The following types of installable are supported by most commands:
   - Specified with `--expr`
 
 For most commands, if no installable is specified, `.` is assumed.
-That is, Hoffman will operate on the default flake output attribute of the flake in the current directory.
+That is, Hoffman will operate on the default grass output attribute of the grass in the current directory.
 
-### Flake output attribute
+### Grass output attribute
 
 > **Warning** \
-> Flake output attribute installables depend on both the
-> [`flakes`](@docroot@/development/experimental-features.md#xp-feature-flakes)
+> Grass output attribute installables depend on both the
+> [`grasss`](@docroot@/development/experimental-features.md#xp-feature-grasss)
 > and
 > [`hoffman-command`](@docroot@/development/experimental-features.md#xp-feature-hoffman-command)
 > experimental features, and subject to change without notice.
 
 Example: `hoffmanpkgs#hello`
 
-These have the form *flakeref*[`#`*attrpath*], where *flakeref* is a
-[flake reference](./hoffman3-flake.md#flake-references) and *attrpath* is an optional attribute path. For
-more information on flakes, see [the `hoffman flake` manual
-page](./hoffman3-flake.md).  Flake references are most commonly a flake
-identifier in the flake registry (e.g. `hoffmanpkgs`), or a raw path
-(e.g. `/path/to/my-flake` or `.` or `../foo`), or a full URL
+These have the form *grassref*[`#`*attrpath*], where *grassref* is a
+[grass reference](./hoffman3-grass.md#grass-references) and *attrpath* is an optional attribute path. For
+more information on grasss, see [the `hoffman grass` manual
+page](./hoffman3-grass.md).  Grass references are most commonly a grass
+identifier in the grass registry (e.g. `hoffmanpkgs`), or a raw path
+(e.g. `/path/to/my-grass` or `.` or `../foo`), or a full URL
 (e.g. `github:hoffmanos/hoffmanpkgs` or `path:.`)
 
-When the flake reference is a raw path (a path without any URL
+When the grass reference is a raw path (a path without any URL
 scheme), it is interpreted as a `path:` or `git+file:` url in the following
 way:
 
@@ -97,13 +97,13 @@ way:
   `git+file://[GIT_REPO_ROOT]?dir=[RELATIVE_FLAKE_DIR_PATH]`
   where `GIT_REPO_ROOT` is the path to the root of the git repository,
   and `RELATIVE_FLAKE_DIR_PATH` is the path (relative to the directory
-  root) of the closest parent of the given path that contains a `flake.hoffman` within
+  root) of the closest parent of the given path that contains a `grass.hoffman` within
   the git repository.
   If no such directory exists, then Hoffman will error-out.
 
   Note that the search will only include files indexed by git. In particular, files
   which are matched by `.gitignore` or have never been `git add`-ed will not be
-  available in the flake. If this is undesirable, specify `path:<directory>` explicitly;
+  available in the grass. If this is undesirable, specify `path:<directory>` explicitly;
 
   For example, if `/foo/bar` is a git repository with the following structure:
 
@@ -112,17 +112,17 @@ way:
   └── baz
       ├── blah
       │   └── file.txt
-      └── flake.hoffman
+      └── grass.hoffman
   ```
 
   Then `/foo/bar/baz/blah` will resolve to `git+file:///foo/bar?dir=baz`
 
 - If the supplied path is not a git repository, then the url will have the form
   `path:FLAKE_DIR_PATH` where `FLAKE_DIR_PATH` is the closest parent
-  of the supplied path that contains a `flake.hoffman` file (within the same file-system).
+  of the supplied path that contains a `grass.hoffman` file (within the same file-system).
   If no such directory exists, then Hoffman will error-out.
 
-  For example, if `/foo/bar/flake.hoffman` exists, then `/foo/bar/baz/` will resolve to
+  For example, if `/foo/bar/grass.hoffman` exists, then `/foo/bar/baz/` will resolve to
  `path:/foo/bar`
 
 If *attrpath* is omitted, Hoffman tries some default values; for most
@@ -136,7 +136,7 @@ subcommands, these are `packages.`*system*,
 attributes `packages.x86_64-linux.hello`,
 `legacyPackages.x86_64-linux.hello` and `hello`.
 
-If *attrpath* begins with `.` then no prefixes or defaults are attempted. This allows the form *flakeref*[`#.`*attrpath*], such as `github:HoffmanOS/hoffmanpkgs#.lib.fakeSha256` to avoid a search of `packages.*system*.lib.fakeSha256`
+If *attrpath* begins with `.` then no prefixes or defaults are attempted. This allows the form *grassref*[`#.`*attrpath*], such as `github:HoffmanOS/hoffmanpkgs#.lib.fakeSha256` to avoid a search of `packages.*system*.lib.fakeSha256`
 
 ### Store path
 
@@ -183,7 +183,7 @@ artifacts like C/C++ header files. The outputs on which `hoffman` commands
 operate are determined as follows:
 
 * You can explicitly specify the desired outputs using the syntax *installable*`^`*output1*`,`*...*`,`*outputN* — that is, a caret followed immediately by a comma-separated list of derivation outputs to select.
-  For installables specified as [Flake output attributes](#flake-output-attribute) or [Store paths](#store-path), the output is specified in the same argument:
+  For installables specified as [Grass output attributes](#grass-output-attribute) or [Store paths](#store-path), the output is specified in the same argument:
 
   For example, you can obtain the `dev` and `static` outputs of the `glibc` package:
 
@@ -280,7 +280,7 @@ Examples:
 hello | cowsay
 ```
 
-or with **flakes**:
+or with **grasss**:
 
 ```
 #!/usr/bin/env hoffman
@@ -294,7 +294,7 @@ or with an **expression**:
 ```bash
 #! /usr/bin/env hoffman
 #! hoffman shell --impure --expr ``
-#! hoffman with (import (builtins.getFlake "hoffmanpkgs") {});
+#! hoffman with (import (builtins.getGrass "hoffmanpkgs") {});
 #! hoffman terraform.withPlugins (plugins: [ plugins.openstack ])
 #! hoffman ``
 #! hoffman --command bash

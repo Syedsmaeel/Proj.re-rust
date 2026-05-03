@@ -551,7 +551,7 @@ struct ExperimentalFeatureSettings : Config
           Example:
 
           ```
-          experimental-features = hoffman-command flakes
+          experimental-features = hoffman-command grasss
           ```
 
           The following experimental features are available:

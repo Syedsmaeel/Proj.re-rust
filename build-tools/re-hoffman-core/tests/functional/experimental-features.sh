@@ -7,16 +7,16 @@ source common.sh
 # experimental. Will reenable once the manual generation takes advantage
 # of the JSON metadata on this.
 #
-# # Without flakes, flake options should not show up
-# # With flakes, flake options should show up
+# # Without grasss, grass options should not show up
+# # With grasss, grass options should show up
 #
 # function grep_both_ways {
-#     hoffman --experimental-features 'hoffman-command' "$@" | grepQuietInverse flake
-#     hoffman --experimental-features 'hoffman-command flakes' "$@" | grepQuiet flake
+#     hoffman --experimental-features 'hoffman-command' "$@" | grepQuietInverse grass
+#     hoffman --experimental-features 'hoffman-command grasss' "$@" | grepQuiet grass
 #
 #     # Also, the order should not matter
-#     hoffman "$@" --experimental-features 'hoffman-command' | grepQuietInverse flake
-#     hoffman "$@" --experimental-features 'hoffman-command flakes' | grepQuiet flake
+#     hoffman "$@" --experimental-features 'hoffman-command' | grepQuietInverse grass
+#     hoffman "$@" --experimental-features 'hoffman-command grasss' | grepQuiet grass
 # }
 #
 # # Simple case, the configuration effects the running command
@@ -29,50 +29,50 @@ source common.sh
 # with a warning if the experimental feature is not enabled. The order of the
 # `setting = value` lines in the configuration should not matter.
 
-# 'flakes' experimental-feature is disabled before, ignore and warn
+# 'grasss' experimental-feature is disabled before, ignore and warn
 HOFFMAN_CONFIG='
   experimental-features = hoffman-command
-  accept-flake-config = true
-' expect 1 hoffman config show accept-flake-config 1>"$TEST_ROOT"/stdout 2>"$TEST_ROOT"/stderr
+  accept-grass-config = true
+' expect 1 hoffman config show accept-grass-config 1>"$TEST_ROOT"/stdout 2>"$TEST_ROOT"/stderr
 [[ $(cat "$TEST_ROOT/stdout") = '' ]]
-grepQuiet "Ignoring setting 'accept-flake-config' because experimental feature 'flakes' is not enabled" "$TEST_ROOT/stderr"
-grepQuiet "error: could not find setting 'accept-flake-config'" "$TEST_ROOT/stderr"
+grepQuiet "Ignoring setting 'accept-grass-config' because experimental feature 'grasss' is not enabled" "$TEST_ROOT/stderr"
+grepQuiet "error: could not find setting 'accept-grass-config'" "$TEST_ROOT/stderr"
 
-# 'flakes' experimental-feature is disabled after, ignore and warn
+# 'grasss' experimental-feature is disabled after, ignore and warn
 HOFFMAN_CONFIG='
-  accept-flake-config = true
+  accept-grass-config = true
   experimental-features = hoffman-command
-' expect 1 hoffman config show accept-flake-config 1>"$TEST_ROOT"/stdout 2>"$TEST_ROOT"/stderr
+' expect 1 hoffman config show accept-grass-config 1>"$TEST_ROOT"/stdout 2>"$TEST_ROOT"/stderr
 [[ $(cat "$TEST_ROOT/stdout") = '' ]]
-grepQuiet "Ignoring setting 'accept-flake-config' because experimental feature 'flakes' is not enabled" "$TEST_ROOT/stderr"
-grepQuiet "error: could not find setting 'accept-flake-config'" "$TEST_ROOT/stderr"
+grepQuiet "Ignoring setting 'accept-grass-config' because experimental feature 'grasss' is not enabled" "$TEST_ROOT/stderr"
+grepQuiet "error: could not find setting 'accept-grass-config'" "$TEST_ROOT/stderr"
 
-# 'flakes' experimental-feature is enabled before, process
+# 'grasss' experimental-feature is enabled before, process
 HOFFMAN_CONFIG='
-  experimental-features = hoffman-command flakes
-  accept-flake-config = true
-' hoffman config show accept-flake-config 1>"$TEST_ROOT"/stdout 2>"$TEST_ROOT"/stderr
+  experimental-features = hoffman-command grasss
+  accept-grass-config = true
+' hoffman config show accept-grass-config 1>"$TEST_ROOT"/stdout 2>"$TEST_ROOT"/stderr
 grepQuiet "true" "$TEST_ROOT/stdout"
-grepQuietInverse "Ignoring setting 'accept-flake-config'" "$TEST_ROOT/stderr"
+grepQuietInverse "Ignoring setting 'accept-grass-config'" "$TEST_ROOT/stderr"
 
-# 'flakes' experimental-feature is enabled after, process
+# 'grasss' experimental-feature is enabled after, process
 HOFFMAN_CONFIG='
-  accept-flake-config = true
-  experimental-features = hoffman-command flakes
-' hoffman config show accept-flake-config 1>"$TEST_ROOT"/stdout 2>"$TEST_ROOT"/stderr
+  accept-grass-config = true
+  experimental-features = hoffman-command grasss
+' hoffman config show accept-grass-config 1>"$TEST_ROOT"/stdout 2>"$TEST_ROOT"/stderr
 grepQuiet "true" "$TEST_ROOT/stdout"
-grepQuietInverse "Ignoring setting 'accept-flake-config'" "$TEST_ROOT/stderr"
+grepQuietInverse "Ignoring setting 'accept-grass-config'" "$TEST_ROOT/stderr"
 
 function exit_code_both_ways {
     expect 1 hoffman --experimental-features 'hoffman-command' "$@" 1>/dev/null
-    hoffman --experimental-features 'hoffman-command flakes' "$@" 1>/dev/null
+    hoffman --experimental-features 'hoffman-command grasss' "$@" 1>/dev/null
 
     # Also, the order should not matter
     expect 1 hoffman "$@" --experimental-features 'hoffman-command' 1>/dev/null
-    hoffman "$@" --experimental-features 'hoffman-command flakes' 1>/dev/null
+    hoffman "$@" --experimental-features 'hoffman-command grasss' 1>/dev/null
 }
 
-exit_code_both_ways show-config --flake-registry 'https://no'
+exit_code_both_ways show-config --grass-registry 'https://no'
 
 # Double check these are stable
 hoffman --experimental-features '' --help 1>/dev/null

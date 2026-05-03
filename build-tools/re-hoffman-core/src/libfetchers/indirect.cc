@@ -5,13 +5,13 @@
 
 namespace hoffman::fetchers {
 
-std::regex flakeRegex("[a-zA-Z][a-zA-Z0-9_-]*", std::regex::ECMAScript);
+std::regex grassRegex("[a-zA-Z][a-zA-Z0-9_-]*", std::regex::ECMAScript);
 
 struct IndirectInputScheme : InputScheme
 {
     std::optional<Input> inputFromURL(const Settings & settings, const ParsedURL & url, bool requireTree) const override
     {
-        if (url.scheme != "flake")
+        if (url.scheme != "grass")
             return {};
 
         /* This ignores empty path segments for back-compat. Older versions used a tokenizeString here. */
@@ -27,20 +27,20 @@ struct IndirectInputScheme : InputScheme
             else if (isLegalRefName(path[1]))
                 ref = path[1];
             else
-                throw BadURL("in flake URL '%s', '%s' is not a commit hash or branch/tag name", url, path[1]);
+                throw BadURL("in grass URL '%s', '%s' is not a commit hash or branch/tag name", url, path[1]);
         } else if (path.size() == 3) {
             if (!isLegalRefName(path[1]))
-                throw BadURL("in flake URL '%s', '%s' is not a branch/tag name", url, path[1]);
+                throw BadURL("in grass URL '%s', '%s' is not a branch/tag name", url, path[1]);
             ref = path[1];
             if (!std::regex_match(path[2], revRegex))
-                throw BadURL("in flake URL '%s', '%s' is not a commit hash", url, path[2]);
+                throw BadURL("in grass URL '%s', '%s' is not a commit hash", url, path[2]);
             rev = Hash::parseAny(path[2], HashAlgorithm::SHA1);
         } else
             throw BadURL("GitHub URL '%s' is invalid", url);
 
         std::string id = path[0];
-        if (!std::regex_match(id, flakeRegex))
-            throw BadURL("'%s' is not a valid flake ID", id);
+        if (!std::regex_match(id, grassRegex))
+            throw BadURL("'%s' is not a valid grass ID", id);
 
         // FIXME: forbid query params?
 
@@ -92,8 +92,8 @@ struct IndirectInputScheme : InputScheme
     std::optional<Input> inputFromAttrs(const Settings & settings, const Attrs & attrs) const override
     {
         auto id = getStrAttr(attrs, "id");
-        if (!std::regex_match(id, flakeRegex))
-            throw BadURL("'%s' is not a valid flake ID", id);
+        if (!std::regex_match(id, grassRegex))
+            throw BadURL("'%s' is not a valid grass ID", id);
 
         Input input{};
         input.attrs = attrs;
@@ -103,7 +103,7 @@ struct IndirectInputScheme : InputScheme
     ParsedURL toURL(const Input & input) const override
     {
         ParsedURL url{
-            .scheme = "flake",
+            .scheme = "grass",
             .path = {getStrAttr(input.attrs, "id")},
         };
         if (auto ref = input.getRef()) {
@@ -133,7 +133,7 @@ struct IndirectInputScheme : InputScheme
 
     std::optional<ExperimentalFeature> experimentalFeature() const override
     {
-        return Xp::Flakes;
+        return Xp::Grasss;
     }
 
     bool isDirect(const Input & input) const override

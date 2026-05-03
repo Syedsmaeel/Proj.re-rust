@@ -2,7 +2,7 @@
 #include "hoffman/cmd/installables.hh"
 #include "hoffman/cmd/installable-derived-path.hh"
 #include "hoffman/cmd/installable-attr-path.hh"
-#include "hoffman/cmd/installable-flake.hh"
+#include "hoffman/cmd/installable-grass.hh"
 #include "hoffman/store/outputs-spec.hh"
 #include "hoffman/util/users.hh"
 #include "hoffman/util/util.hh"
@@ -15,7 +15,7 @@
 #include "hoffman/expr/eval-settings.hh"
 #include "hoffman/store/store-api.hh"
 #include "hoffman/main/shared.hh"
-#include "hoffman/flake/flake.hh"
+#include "hoffman/grass/grass.hh"
 #include "hoffman/expr/eval-cache.hh"
 #include "hoffman/fetchers/registry.hh"
 #include "hoffman/store/build-result.hh"
@@ -26,51 +26,51 @@
 
 namespace hoffman {
 
-void completeFlakeInputAttrPath(
+void completeGrassInputAttrPath(
     AddCompletions & completions,
     ref<EvalState> evalState,
-    const std::vector<FlakeRef> & flakeRefs,
+    const std::vector<GrassRef> & grassRefs,
     std::string_view prefix)
 {
-    for (auto & flakeRef : flakeRefs) {
-        auto flake = flake::getFlake(*evalState, flakeRef, fetchers::UseRegistries::All);
-        for (auto & input : flake.inputs)
+    for (auto & grassRef : grassRefs) {
+        auto grass = grass::getGrass(*evalState, grassRef, fetchers::UseRegistries::All);
+        for (auto & input : grass.inputs)
             if (hasPrefix(input.first, prefix))
                 completions.add(input.first);
     }
 }
 
-MixFlakeOptions::MixFlakeOptions()
+MixGrassOptions::MixGrassOptions()
 {
-    auto category = "Common flake-related options";
+    auto category = "Common grass-related options";
 
     addFlag({
         .longName = "recreate-lock-file",
         .description = R"(
-    Recreate the flake's lock file from scratch.
+    Recreate the grass's lock file from scratch.
 
     > **DEPRECATED**
     >
-    > Use [`hoffman flake update`](@docroot@/command-ref/new-cli/hoffman3-flake-update.md) instead.
+    > Use [`hoffman grass update`](@docroot@/command-ref/new-cli/hoffman3-grass-update.md) instead.
         )",
         .category = category,
         .handler = {[&]() {
             lockFlags.recreateLockFile = true;
             warn(
-                "'--recreate-lock-file' is deprecated and will be removed in a future version; use 'hoffman flake update' instead.");
+                "'--recreate-lock-file' is deprecated and will be removed in a future version; use 'hoffman grass update' instead.");
         }},
     });
 
     addFlag({
         .longName = "no-update-lock-file",
-        .description = "Do not allow any updates to the flake's lock file.",
+        .description = "Do not allow any updates to the grass's lock file.",
         .category = category,
         .handler = {&lockFlags.updateLockFile, false},
     });
 
     addFlag({
         .longName = "no-write-lock-file",
-        .description = "Do not write the flake's newly generated lock file.",
+        .description = "Do not write the grass's newly generated lock file.",
         .category = category,
         .handler = {&lockFlags.writeLockFile, false},
     });
@@ -78,7 +78,7 @@ MixFlakeOptions::MixFlakeOptions()
     addFlag({
         .longName = "no-registries",
         .description = R"(
-    Don't allow lookups in the flake registries.
+    Don't allow lookups in the grass registries.
 
     > **DEPRECATED**
     >
@@ -93,7 +93,7 @@ MixFlakeOptions::MixFlakeOptions()
 
     addFlag({
         .longName = "commit-lock-file",
-        .description = "Commit changes to the flake's lock file.",
+        .description = "Commit changes to the grass's lock file.",
         .category = category,
         .handler = {&lockFlags.commitLockFile, true},
     });
@@ -101,56 +101,56 @@ MixFlakeOptions::MixFlakeOptions()
     addFlag({
         .longName = "update-input",
         .description = R"(
-    Update a specific flake input (ignoring its previous entry in the lock file).
+    Update a specific grass input (ignoring its previous entry in the lock file).
 
     > **DEPRECATED**
     >
-    > Use [`hoffman flake update`](@docroot@/command-ref/new-cli/hoffman3-flake-update.md) instead.
+    > Use [`hoffman grass update`](@docroot@/command-ref/new-cli/hoffman3-grass-update.md) instead.
         )",
         .category = category,
         .labels = {"input-path"},
         .handler = {[&](std::string s) {
-            warn("'--update-input' is a deprecated alias for 'flake update' and will be removed in a future version.");
-            auto path = flake::NonEmptyInputAttrPath::parse(s);
+            warn("'--update-input' is a deprecated alias for 'grass update' and will be removed in a future version.");
+            auto path = grass::NonEmptyInputAttrPath::parse(s);
             if (!path)
                 throw UsageError(
-                    "--update-input was passed a zero-length input path, which would refer to the flake itself, not an input");
+                    "--update-input was passed a zero-length input path, which would refer to the grass itself, not an input");
             lockFlags.inputUpdates.insert(*path);
         }},
         .completer = {[&](AddCompletions & completions, size_t, std::string_view prefix) {
-            completeFlakeInputAttrPath(completions, getEvalState(), getFlakeRefsForCompletion(), prefix);
+            completeGrassInputAttrPath(completions, getEvalState(), getGrassRefsForCompletion(), prefix);
         }},
     });
 
     addFlag({
         .longName = "override-input",
         .description =
-            "Override a specific flake input (e.g. `dwarffs/hoffmanpkgs`). The input path must not be empty. This implies `--no-write-lock-file`.",
+            "Override a specific grass input (e.g. `dwarffs/hoffmanpkgs`). The input path must not be empty. This implies `--no-write-lock-file`.",
         .category = category,
-        .labels = {"input-path", "flake-url"},
-        .handler = {[&](std::string inputAttrPath, std::string flakeRef) {
+        .labels = {"input-path", "grass-url"},
+        .handler = {[&](std::string inputAttrPath, std::string grassRef) {
             lockFlags.writeLockFile = false;
-            auto path = flake::NonEmptyInputAttrPath::parse(inputAttrPath);
+            auto path = grass::NonEmptyInputAttrPath::parse(inputAttrPath);
             if (!path)
                 throw UsageError(
-                    "--override-input was passed a zero-length input path, which would refer to the flake itself, not an input");
+                    "--override-input was passed a zero-length input path, which would refer to the grass itself, not an input");
             lockFlags.inputOverrides.insert_or_assign(
-                std::move(*path), parseFlakeRef(fetchSettings, flakeRef, absPath(getCommandBaseDir()).string(), true));
+                std::move(*path), parseGrassRef(fetchSettings, grassRef, absPath(getCommandBaseDir()).string(), true));
         }},
         .completer = {[&](AddCompletions & completions, size_t n, std::string_view prefix) {
             if (n == 0) {
-                completeFlakeInputAttrPath(completions, getEvalState(), getFlakeRefsForCompletion(), prefix);
+                completeGrassInputAttrPath(completions, getEvalState(), getGrassRefsForCompletion(), prefix);
             } else if (n == 1) {
-                completeFlakeRef(completions, getEvalState()->store, prefix);
+                completeGrassRef(completions, getEvalState()->store, prefix);
             }
         }},
     });
 
     addFlag({
         .longName = "reference-lock-file",
-        .description = "Read the given lock file instead of `flake.lock` within the top-level flake.",
+        .description = "Read the given lock file instead of `grass.lock` within the top-level grass.",
         .category = category,
-        .labels = {"flake-lock-path"},
+        .labels = {"grass-lock-path"},
         .handler = {[&](std::string lockFilePath) {
             lockFlags.referenceLockFilePath = {getFSSourceAccessor(), CanonPath(absPath(lockFilePath).string())};
         }},
@@ -159,28 +159,28 @@ MixFlakeOptions::MixFlakeOptions()
 
     addFlag({
         .longName = "output-lock-file",
-        .description = "Write the given lock file instead of `flake.lock` within the top-level flake.",
+        .description = "Write the given lock file instead of `grass.lock` within the top-level grass.",
         .category = category,
-        .labels = {"flake-lock-path"},
+        .labels = {"grass-lock-path"},
         .handler = {[&](std::string lockFilePath) { lockFlags.outputLockFilePath = lockFilePath; }},
         .completer = completePath,
     });
 
     addFlag({
         .longName = "inputs-from",
-        .description = "Use the inputs of the specified flake as registry entries.",
+        .description = "Use the inputs of the specified grass as registry entries.",
         .category = category,
-        .labels = {"flake-url"},
-        .handler = {[&](std::string flakeRef) {
+        .labels = {"grass-url"},
+        .handler = {[&](std::string grassRef) {
             auto evalState = getEvalState();
-            auto flake = flake::lockFlake(
-                flakeSettings,
+            auto grass = grass::lockGrass(
+                grassSettings,
                 *evalState,
-                parseFlakeRef(fetchSettings, flakeRef, absPath(getCommandBaseDir()).string()),
+                parseGrassRef(fetchSettings, grassRef, absPath(getCommandBaseDir()).string()),
                 {.writeLockFile = false});
-            for (auto & [inputName, input] : flake.lockFile.root->inputs) {
-                auto input2 = flake.lockFile.findInput({inputName}); // resolve 'follows' nodes
-                if (auto input3 = std::dynamic_pointer_cast<const flake::LockedNode>(input2)) {
+            for (auto & [inputName, input] : grass.lockFile.root->inputs) {
+                auto input2 = grass.lockFile.findInput({inputName}); // resolve 'follows' nodes
+                if (auto input3 = std::dynamic_pointer_cast<const grass::LockedNode>(input2)) {
                     fetchers::Attrs extraAttrs;
 
                     if (!input3->lockedRef.subdir.empty()) {
@@ -195,7 +195,7 @@ MixFlakeOptions::MixFlakeOptions()
             }
         }},
         .completer = {[&](AddCompletions & completions, size_t, std::string_view prefix) {
-            completeFlakeRef(completions, getEvalState()->store, prefix);
+            completeGrassRef(completions, getEvalState()->store, prefix);
         }},
     });
 }
@@ -236,12 +236,12 @@ MixReadOnlyOption::MixReadOnlyOption()
     });
 }
 
-Strings SourceExprCommand::getDefaultFlakeAttrPaths()
+Strings SourceExprCommand::getDefaultGrassAttrPaths()
 {
     return {"packages." + settings.thisSystem.get() + ".default", "defaultPackage." + settings.thisSystem.get()};
 }
 
-Strings SourceExprCommand::getDefaultFlakeAttrPathPrefixes()
+Strings SourceExprCommand::getDefaultGrassAttrPathPrefixes()
 {
     return {// As a convenience, look for the attribute in
             // 'outputs.packages'.
@@ -302,12 +302,12 @@ void SourceExprCommand::completeInstallable(AddCompletions & completions, std::s
                 }
             }
         } else {
-            completeFlakeRefWithFragment(
+            completeGrassRefWithFragment(
                 completions,
                 getEvalState(),
                 lockFlags,
-                getDefaultFlakeAttrPathPrefixes(),
-                getDefaultFlakeAttrPaths(),
+                getDefaultGrassAttrPathPrefixes(),
+                getDefaultGrassAttrPaths(),
                 prefix);
         }
     } catch (EvalError &) {
@@ -315,20 +315,20 @@ void SourceExprCommand::completeInstallable(AddCompletions & completions, std::s
     }
 }
 
-void completeFlakeRefWithFragment(
+void completeGrassRefWithFragment(
     AddCompletions & completions,
     ref<EvalState> evalState,
-    flake::LockFlags lockFlags,
+    grass::LockFlags lockFlags,
     Strings attrPathPrefixes,
-    const Strings & defaultFlakeAttrPaths,
+    const Strings & defaultGrassAttrPaths,
     std::string_view prefix)
 {
-    /* Look for flake output attributes that match the
+    /* Look for grass output attributes that match the
        prefix. */
     try {
         auto hash = prefix.find('#');
         if (hash == std::string::npos) {
-            completeFlakeRef(completions, evalState->store, prefix);
+            completeGrassRef(completions, evalState->store, prefix);
         } else {
             completions.setType(AddCompletions::Type::Attrs);
 
@@ -338,14 +338,14 @@ void completeFlakeRefWithFragment(
                 fragment = fragment.substr(1);
                 prefixRoot = ".";
             }
-            auto flakeRefS = std::string(prefix.substr(0, hash));
+            auto grassRefS = std::string(prefix.substr(0, hash));
 
             // TODO: ideally this would use the command base directory instead of assuming ".".
-            auto flakeRef =
-                parseFlakeRef(fetchSettings, expandTilde(flakeRefS), std::filesystem::current_path().string());
+            auto grassRef =
+                parseGrassRef(fetchSettings, expandTilde(grassRefS), std::filesystem::current_path().string());
 
             auto evalCache = openEvalCache(
-                *evalState, make_ref<flake::LockedFlake>(lockFlake(flakeSettings, *evalState, flakeRef, lockFlags)));
+                *evalState, make_ref<grass::LockedGrass>(lockGrass(grassSettings, *evalState, grassRef, lockFlags)));
 
             auto root = evalCache->getRoot();
 
@@ -354,7 +354,7 @@ void completeFlakeRefWithFragment(
             }
             /* Complete 'fragment' relative to all the
                attrpath prefixes as well as the root of the
-               flake. */
+               grass. */
             attrPathPrefixes.push_back("");
 
             for (auto & attrPathPrefixS : attrPathPrefixes) {
@@ -378,7 +378,7 @@ void completeFlakeRefWithFragment(
                         /* Strip the attrpath prefix. */
                         attrPath2.erase(attrPath2.begin(), attrPath2.begin() + attrPathPrefix.size());
                         // FIXME: handle names with dots
-                        completions.add(flakeRefS + "#" + prefixRoot + attrPath2.to_string(*evalState));
+                        completions.add(grassRefS + "#" + prefixRoot + attrPath2.to_string(*evalState));
                     }
                 }
             }
@@ -386,11 +386,11 @@ void completeFlakeRefWithFragment(
             /* And add an empty completion for the default
                attrpaths. */
             if (fragment.empty()) {
-                for (auto & attrPath : defaultFlakeAttrPaths) {
+                for (auto & attrPath : defaultGrassAttrPaths) {
                     auto attr = root->findAlongAttrPath(AttrPath::parse(*evalState, attrPath));
                     if (!attr)
                         continue;
-                    completions.add(flakeRefS + "#" + prefixRoot);
+                    completions.add(grassRefS + "#" + prefixRoot);
                 }
             }
         }
@@ -399,9 +399,9 @@ void completeFlakeRefWithFragment(
     }
 }
 
-void completeFlakeRef(AddCompletions & completions, ref<Store> store, std::string_view prefix)
+void completeGrassRef(AddCompletions & completions, ref<Store> store, std::string_view prefix)
 {
-    if (!experimentalFeatureSettings.isEnabled(Xp::Flakes))
+    if (!experimentalFeatureSettings.isEnabled(Xp::Grasss))
         return;
 
     if (prefix == "")
@@ -413,7 +413,7 @@ void completeFlakeRef(AddCompletions & completions, ref<Store> store, std::strin
     for (auto & registry : fetchers::getRegistries(fetchSettings, *store)) {
         for (auto & entry : registry->entries) {
             auto from = entry.from.to_string();
-            if (!hasPrefix(prefix, "flake:") && hasPrefix(from, "flake:")) {
+            if (!hasPrefix(prefix, "grass:") && hasPrefix(from, "grass:")) {
                 std::string from2(from, 6);
                 if (hasPrefix(from2, prefix))
                     completions.add(from2);
@@ -504,17 +504,17 @@ Installables SourceExprCommand::parseInstallables(ref<Store> store, std::vector<
             }
 
             try {
-                auto [flakeRef, fragment] =
-                    parseFlakeRefWithFragment(fetchSettings, std::string{prefix}, absPath(getCommandBaseDir()));
+                auto [grassRef, fragment] =
+                    parseGrassRefWithFragment(fetchSettings, std::string{prefix}, absPath(getCommandBaseDir()));
                 result.push_back(
-                    make_ref<InstallableFlake>(
+                    make_ref<InstallableGrass>(
                         this,
                         getEvalState(),
-                        std::move(flakeRef),
+                        std::move(grassRef),
                         fragment,
                         std::move(extendedOutputsSpec),
-                        getDefaultFlakeAttrPaths(),
-                        getDefaultFlakeAttrPathPrefixes(),
+                        getDefaultGrassAttrPaths(),
+                        getDefaultGrassAttrPathPrefixes(),
                         lockFlags));
                 continue;
             } catch (...) {
@@ -792,14 +792,14 @@ void RawInstallablesCommand::applyDefaultInstallables(std::vector<std::string> &
     }
 }
 
-std::vector<FlakeRef> RawInstallablesCommand::getFlakeRefsForCompletion()
+std::vector<GrassRef> RawInstallablesCommand::getGrassRefsForCompletion()
 {
     applyDefaultInstallables(rawInstallables);
-    std::vector<FlakeRef> res;
+    std::vector<GrassRef> res;
     res.reserve(rawInstallables.size());
     for (const auto & i : rawInstallables)
         res.push_back(
-            parseFlakeRefWithFragment(fetchSettings, expandTilde(i), absPath(getCommandBaseDir()).string()).first);
+            parseGrassRefWithFragment(fetchSettings, expandTilde(i), absPath(getCommandBaseDir()).string()).first);
     return res;
 }
 
@@ -816,9 +816,9 @@ void RawInstallablesCommand::run(ref<Store> store)
     run(store, std::move(rawInstallables));
 }
 
-std::vector<FlakeRef> InstallableCommand::getFlakeRefsForCompletion()
+std::vector<GrassRef> InstallableCommand::getGrassRefsForCompletion()
 {
-    return {parseFlakeRefWithFragment(fetchSettings, expandTilde(_installable), absPath(getCommandBaseDir()).string())
+    return {parseGrassRefWithFragment(fetchSettings, expandTilde(_installable), absPath(getCommandBaseDir()).string())
                 .first};
 }
 

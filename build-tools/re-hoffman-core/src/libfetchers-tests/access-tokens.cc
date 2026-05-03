@@ -15,7 +15,7 @@ protected:
 public:
     void SetUp() override
     {
-        experimentalFeatureSettings.experimentalFeatures.get().insert(Xp::Flakes);
+        experimentalFeatureSettings.experimentalFeatures.get().insert(Xp::Grasss);
     }
 
     void TearDown() override {}

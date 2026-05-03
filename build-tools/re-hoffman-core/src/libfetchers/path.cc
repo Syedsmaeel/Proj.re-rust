@@ -182,7 +182,7 @@ struct PathInputScheme : InputScheme
 
     std::optional<ExperimentalFeature> experimentalFeature() const override
     {
-        return Xp::Flakes;
+        return Xp::Grasss;
     }
 };
 

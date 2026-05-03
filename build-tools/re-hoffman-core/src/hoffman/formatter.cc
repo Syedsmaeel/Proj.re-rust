@@ -1,5 +1,5 @@
 #include "hoffman/cmd/command.hh"
-#include "hoffman/cmd/installable-flake.hh"
+#include "hoffman/cmd/installable-grass.hh"
 #include "hoffman/cmd/installable-value.hh"
 #include "hoffman/expr/eval.hh"
 #include "hoffman/util/environment-variables.hh"
@@ -32,12 +32,12 @@ static auto rCmdFormatter = registerCommand<CmdFormatter>("formatter");
 /** Common implementation bits for the `hoffman formatter` subcommands. */
 struct MixFormatter : SourceExprCommand
 {
-    Strings getDefaultFlakeAttrPaths() override
+    Strings getDefaultGrassAttrPaths() override
     {
         return Strings{"formatter." + settings.thisSystem.get()};
     }
 
-    Strings getDefaultFlakeAttrPathPrefixes() override
+    Strings getDefaultGrassAttrPathPrefixes() override
     {
         return Strings{};
     }
@@ -74,13 +74,13 @@ struct CmdFormatterRun : MixFormatter, MixJSON
         auto evalState = getEvalState();
         auto evalStore = getEvalStore();
 
-        auto installable_ = parseInstallable(store, ".").cast<InstallableFlake>();
+        auto installable_ = parseInstallable(store, ".").cast<InstallableGrass>();
         auto & installable = InstallableValue::require(*installable_);
         auto app = installable.toApp(*evalState).resolve(evalStore, store);
 
-        auto maybeFlakeDir = installable_->flakeRef.input.getSourcePath();
-        assert(maybeFlakeDir.has_value());
-        auto flakeDir = maybeFlakeDir.value();
+        auto maybeGrassDir = installable_->grassRef.input.getSourcePath();
+        assert(maybeGrassDir.has_value());
+        auto grassDir = maybeGrassDir.value();
 
         Strings programArgs{app.program.string()};
 
@@ -89,10 +89,10 @@ struct CmdFormatterRun : MixFormatter, MixJSON
             programArgs.push_back(i);
         }
 
-        // Add the path to the flake as an environment variable. This enables formatters to format the entire flake even
+        // Add the path to the grass as an environment variable. This enables formatters to format the entire grass even
         // if run from a subdirectory.
         StringMap env = getEnv();
-        env["PRJ_ROOT"] = flakeDir.string();
+        env["PRJ_ROOT"] = grassDir.string();
 
         // Release our references to eval caches to ensure they are persisted to disk, because
         // we are about to exec out of this process without running C++ destructors.
@@ -116,7 +116,7 @@ struct CmdFormatterBuild : MixFormatter, MixOutLinkByDefault
 
     std::string description() override
     {
-        return "build the current flake's formatter";
+        return "build the current grass's formatter";
     }
 
     std::string doc() override

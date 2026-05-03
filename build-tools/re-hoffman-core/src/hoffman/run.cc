@@ -129,21 +129,21 @@ struct CmdRun : InstallableValueCommand, MixEnvironment
             ;
     }
 
-    Strings getDefaultFlakeAttrPaths() override
+    Strings getDefaultGrassAttrPaths() override
     {
         Strings res{
             "apps." + settings.thisSystem.get() + ".default",
             "defaultApp." + settings.thisSystem.get(),
         };
-        for (auto & s : SourceExprCommand::getDefaultFlakeAttrPaths())
+        for (auto & s : SourceExprCommand::getDefaultGrassAttrPaths())
             res.push_back(s);
         return res;
     }
 
-    Strings getDefaultFlakeAttrPathPrefixes() override
+    Strings getDefaultGrassAttrPathPrefixes() override
     {
         Strings res{"apps." + settings.thisSystem.get() + "."};
-        for (auto & s : SourceExprCommand::getDefaultFlakeAttrPathPrefixes())
+        for (auto & s : SourceExprCommand::getDefaultGrassAttrPathPrefixes())
             res.push_back(s);
         return res;
     }

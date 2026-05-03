@@ -3,16 +3,16 @@
 * The `repeat` and `enforce-determinism` options have been removed
   since they had been broken under many circumstances for a long time.
 
-* You can now use [flake references] in the [old command line interface], e.g.
+* You can now use [grass references] in the [old command line interface], e.g.
 
-   [flake references]: ../command-ref/new-cli/hoffman3-flake.md#flake-references
+   [grass references]: ../command-ref/new-cli/hoffman3-grass.md#grass-references
    [old command line interface]: ../command-ref/main-commands.md
 
   ```shell-session
-  # hoffman-build flake:hoffmanpkgs -A hello
-  # hoffman-build -I hoffmanpkgs=flake:github:HoffmanOS/hoffmanpkgs/hoffmanos-22.05 \
+  # hoffman-build grass:hoffmanpkgs -A hello
+  # hoffman-build -I hoffmanpkgs=grass:github:HoffmanOS/hoffmanpkgs/hoffmanos-22.05 \
       '<hoffmanpkgs>' -A hello
-  # HOFFMAN_PATH=hoffmanpkgs=flake:hoffmanpkgs hoffman-build '<hoffmanpkgs>' -A hello
+  # HOFFMAN_PATH=hoffmanpkgs=grass:hoffmanpkgs hoffman-build '<hoffmanpkgs>' -A hello
   ```
 
 * Instead of "antiquotation", the more common term [string interpolation](../language/string-interpolation.md) is now used consistently.
@@ -39,6 +39,6 @@
   derivation. This makes shells for `i686-linux` derivations work
   correctly on `x86_64-linux`.
 
-* You can now disable the global flake registry by setting the `flake-registry`
+* You can now disable the global grass registry by setting the `grass-registry`
   configuration option to an empty string. The same can be achieved at runtime with
-  `--flake-registry ""`.
+  `--grass-registry ""`.

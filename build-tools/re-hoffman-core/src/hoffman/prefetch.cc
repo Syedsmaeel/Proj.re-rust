@@ -34,7 +34,7 @@ std::string resolveMirrorUrl(EvalState & state, const std::string & url)
     std::string mirrorName(s, 0, p);
 
     Value vMirrors;
-    // FIXME: use hoffmanpkgs flake
+    // FIXME: use hoffmanpkgs grass
     state.eval(
         state.parseExprFromString(
             "import <hoffmanpkgs/pkgs/build-support/fetchurl/mirrors.hoffman>", state.rootPath(CanonPath::root)),

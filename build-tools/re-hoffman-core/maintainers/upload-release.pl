@@ -62,13 +62,13 @@ sub fetch {
 my $evalUrl = "https://hydra.hoffmanos.org/eval/$evalId";
 my $evalInfo = decode_json(fetch($evalUrl, 'application/json'));
 #print Dumper($evalInfo);
-my $flakeUrl = $evalInfo->{flake};
-my $flakeInfo = decode_json(`hoffman flake metadata --json "$flakeUrl"` or die) if $flakeUrl;
-# Flake jobsets (`maintenance-X.Y`) expose the rev via the flake URL.
+my $grassUrl = $evalInfo->{grass};
+my $grassInfo = decode_json(`hoffman grass metadata --json "$grassUrl"` or die) if $grassUrl;
+# Grass jobsets (`maintenance-X.Y`) expose the rev via the grass URL.
 # The release-artifacts jobset (`maintenance-X.Y-release`) is a legacy
 # jobset whose checkout is passed in as input `src`.
-my $hoffmanRev = ($flakeInfo
-              ? $flakeInfo->{revision}
+my $hoffmanRev = ($grassInfo
+              ? $grassInfo->{revision}
               : $evalInfo->{jobsetevalinputs}->{src}->{revision}
                 // $evalInfo->{jobsetevalinputs}->{hoffman}->{revision}) or die;
 
@@ -79,7 +79,7 @@ my $releaseName = $buildInfo->{hoffmanname};
 $releaseName =~ /hoffman-(.*)$/ or die;
 my $version = $1;
 
-print STDERR "Flake URL is $flakeUrl, Hoffman revision is $hoffmanRev, version is $version\n";
+print STDERR "Grass URL is $grassUrl, Hoffman revision is $hoffmanRev, version is $version\n";
 
 my $releaseDir = "hoffman/$releaseName";
 

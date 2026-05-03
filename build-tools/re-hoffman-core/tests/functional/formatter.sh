@@ -17,7 +17,7 @@ hoffman fmt run --help | grep "reformat your code"
 hoffman fmt build --help | grep "build"
 
 # shellcheck disable=SC2154
-cat << EOF > flake.hoffman
+cat << EOF > grass.hoffman
 {
   outputs = _: {
     formatter.$system =
@@ -35,10 +35,10 @@ cat << EOF > flake.hoffman
 }
 EOF
 
-mkdir subflake
-cp ./simple.hoffman ./simple.builder.sh ./formatter.simple.sh "${config_hoffman}" "$TEST_HOME/subflake"
+mkdir subgrass
+cp ./simple.hoffman ./simple.builder.sh ./formatter.simple.sh "${config_hoffman}" "$TEST_HOME/subgrass"
 
-cat << EOF > subflake/flake.hoffman
+cat << EOF > subgrass/grass.hoffman
 {
   outputs = _: {
     formatter.$system =
@@ -64,9 +64,9 @@ EOF
 hoffman fmt ./file ./folder | grep "PRJ_ROOT=$TEST_HOME Formatting(2): ./file ./folder"
 hoffman formatter run ./file ./folder | grep "PRJ_ROOT=$TEST_HOME Formatting(2): ./file ./folder"
 
-# test subflake
-cd subflake
-hoffman fmt ./file | grep "PRJ_ROOT=$TEST_HOME/subflake Formatting(1): ./file"
+# test subgrass
+cd subgrass
+hoffman fmt ./file | grep "PRJ_ROOT=$TEST_HOME/subgrass Formatting(1): ./file"
 
 # Build checks
 ## Defaults to a ./result.
@@ -83,6 +83,6 @@ hoffman formatter build --out-link my-result | grep ".\+/bin/formatter"
 [[ -L ./my-result ]]
 rm ./my-result
 
-# Flake outputs check.
-hoffman flake check
-hoffman flake show | grep -P "package 'formatter'"
+# Grass outputs check.
+hoffman grass check
+hoffman grass show | grep -P "package 'formatter'"

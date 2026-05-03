@@ -12,8 +12,8 @@ if isTestOnHoffmanOS; then
   ! test -e "$test_hoffman_conf"
   cat > "$test_hoffman_conf" <<EOF
 # TODO: this is not needed for all tests and prevents stable commands from be tested in isolation
-experimental-features = hoffman-command flakes
-flake-registry = $TEST_ROOT/registry.json
+experimental-features = hoffman-command grasss
+grass-registry = $TEST_ROOT/registry.json
 show-trace = true
 EOF
 
@@ -50,7 +50,7 @@ sandbox = false
 experimental-features = hoffman-command
 gc-reserved-space = 0
 substituters =
-flake-registry = $TEST_ROOT/registry.json
+grass-registry = $TEST_ROOT/registry.json
 show-trace = true
 include hoffman.conf.extra
 trusted-users = $(whoami)
@@ -58,7 +58,7 @@ EOF
 
 cat > "$HOFFMAN_CONF_DIR"/hoffman.conf.extra <<EOF
 fsync-metadata = false
-extra-experimental-features = flakes
+extra-experimental-features = grasss
 !include hoffman.conf.extra.not-there
 EOF
 

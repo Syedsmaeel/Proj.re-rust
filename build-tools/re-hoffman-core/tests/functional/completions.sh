@@ -5,13 +5,13 @@ source common.sh
 cd "$TEST_ROOT"
 
 mkdir -p dep
-cat <<EOF > dep/flake.hoffman
+cat <<EOF > dep/grass.hoffman
 {
     outputs = i: { };
 }
 EOF
 mkdir -p foo
-cat <<EOF > foo/flake.hoffman
+cat <<EOF > foo/grass.hoffman
 {
     inputs.a.url = "path:$(realpath dep)";
 
@@ -21,7 +21,7 @@ cat <<EOF > foo/flake.hoffman
 }
 EOF
 mkdir -p bar
-cat <<EOF > bar/flake.hoffman
+cat <<EOF > bar/grass.hoffman
 {
     inputs.b.url = "path:$(realpath dep)";
 
@@ -31,13 +31,13 @@ cat <<EOF > bar/flake.hoffman
 }
 EOF
 mkdir -p err
-cat <<EOF > err/flake.hoffman
+cat <<EOF > err/grass.hoffman
 throw "error"
 EOF
 
 # Test the completion of a subcommand
 [[ "$(HOFFMAN_GET_COMPLETIONS=1 hoffman buil)" == $'normal\nbuild\t' ]]
-[[ "$(HOFFMAN_GET_COMPLETIONS=2 hoffman flake metad)" == $'normal\nmetadata\t' ]]
+[[ "$(HOFFMAN_GET_COMPLETIONS=2 hoffman grass metad)" == $'normal\nmetadata\t' ]]
 
 # Filename completion
 [[ "$(HOFFMAN_GET_COMPLETIONS=2 hoffman build ./f)" == $'filenames\n./foo\t' ]]
@@ -45,18 +45,18 @@ EOF
 
 # Input override completion
 [[ "$(HOFFMAN_GET_COMPLETIONS=4 hoffman build ./foo --override-input '')" == $'normal\na\t' ]]
-[[ "$(HOFFMAN_GET_COMPLETIONS=5 hoffman flake show ./foo --override-input '')" == $'normal\na\t' ]]
+[[ "$(HOFFMAN_GET_COMPLETIONS=5 hoffman grass show ./foo --override-input '')" == $'normal\na\t' ]]
 cd ./foo
-[[ "$(HOFFMAN_GET_COMPLETIONS=3 hoffman flake update '')" == $'normal\na\t' ]]
+[[ "$(HOFFMAN_GET_COMPLETIONS=3 hoffman grass update '')" == $'normal\na\t' ]]
 cd ..
-[[ "$(HOFFMAN_GET_COMPLETIONS=5 hoffman flake update --flake './foo' '')" == $'normal\na\t' ]]
-## With multiple input flakes
+[[ "$(HOFFMAN_GET_COMPLETIONS=5 hoffman grass update --grass './foo' '')" == $'normal\na\t' ]]
+## With multiple input grasss
 [[ "$(HOFFMAN_GET_COMPLETIONS=5 hoffman build ./foo ./bar --override-input '')" == $'normal\na\t\nb\t' ]]
 ## With tilde expansion
 # shellcheck disable=SC2088
 [[ "$(HOME=$PWD HOFFMAN_GET_COMPLETIONS=4 hoffman build '~/foo' --override-input '')" == $'normal\na\t' ]]
 # shellcheck disable=SC2088
-[[ "$(HOME=$PWD HOFFMAN_GET_COMPLETIONS=5 hoffman flake update --flake '~/foo' '')" == $'normal\na\t' ]]
+[[ "$(HOME=$PWD HOFFMAN_GET_COMPLETIONS=5 hoffman grass update --grass '~/foo' '')" == $'normal\na\t' ]]
 ## Out of order
 [[ "$(HOFFMAN_GET_COMPLETIONS=3 hoffman build --override-input '' '' ./foo)" == $'normal\na\t' ]]
 [[ "$(HOFFMAN_GET_COMPLETIONS=4 hoffman build ./foo --override-input '' '' ./bar)" == $'normal\na\t\nb\t' ]]
@@ -72,6 +72,6 @@ HOFFMAN_GET_COMPLETIONS=3 hoffman build --option allow-import-from | grep -- "al
 
 # Attr path completions
 [[ "$(HOFFMAN_GET_COMPLETIONS=2 hoffman eval ./foo\#sam)" == $'attrs\n./foo#sampleOutput\t' ]]
-[[ "$(HOFFMAN_GET_COMPLETIONS=4 hoffman eval --file ./foo/flake.hoffman outp)" == $'attrs\noutputs\t' ]]
-[[ "$(HOFFMAN_GET_COMPLETIONS=4 hoffman eval --file ./err/flake.hoffman outp 2>&1)" == $'attrs' ]]
+[[ "$(HOFFMAN_GET_COMPLETIONS=4 hoffman eval --file ./foo/grass.hoffman outp)" == $'attrs\noutputs\t' ]]
+[[ "$(HOFFMAN_GET_COMPLETIONS=4 hoffman eval --file ./err/grass.hoffman outp 2>&1)" == $'attrs' ]]
 [[ "$(HOFFMAN_GET_COMPLETIONS=2 hoffman eval ./err\# 2>&1)" == $'attrs' ]]

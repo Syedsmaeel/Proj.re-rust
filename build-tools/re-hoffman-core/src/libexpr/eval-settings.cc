@@ -53,7 +53,7 @@ Strings EvalSettings::parseHoffmanPath(const std::string & s)
 
         if (*p == ':') {
             auto prefix = std::string(start2, s.end());
-            if (EvalSettings::isPseudoUrl(prefix) || hasPrefix(prefix, "flake:")) {
+            if (EvalSettings::isPseudoUrl(prefix) || hasPrefix(prefix, "grass:")) {
                 ++p;
                 while (p != s.end() && *p != ':')
                     ++p;

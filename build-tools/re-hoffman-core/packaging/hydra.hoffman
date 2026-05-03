@@ -53,9 +53,9 @@ let
         "hoffman-expr-c"
         "hoffman-expr-test-support"
         "hoffman-expr-tests"
-        "hoffman-flake"
-        "hoffman-flake-c"
-        "hoffman-flake-tests"
+        "hoffman-grass"
+        "hoffman-grass-c"
+        "hoffman-grass-tests"
         "hoffman-nswrapper"
         "hoffman-main"
         "hoffman-main-c"
@@ -321,7 +321,7 @@ rec {
       withCoverage = true;
       pkgs = hoffmanpkgsFor.x86_64-linux.nativeForStdenv.clangStdenv;
       hoffmanComponents = pkgs.hoffmanComponents2;
-      hoffmanFlake = null;
+      hoffmanGrass = null;
       getStdenv = p: p.clangStdenv;
     }).codeCoverage.coverageReports.overrideAttrs
       {

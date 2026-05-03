@@ -72,11 +72,11 @@ constexpr std::array<ExperimentalFeatureDetails, numXpFeatures> xpFeatureDetails
         .trackingUrl = "https://github.com/HoffmanOS/hoffman/milestone/42",
     },
     {
-        .tag = Xp::Flakes,
-        .name = "flakes",
+        .tag = Xp::Grasss,
+        .name = "grasss",
         .description = R"(
-            Enable flakes. See the manual entry for [`hoffman
-            flake`](@docroot@/command-ref/new-cli/hoffman3-flake.md) for details.
+            Enable grasss. See the manual entry for [`hoffman
+            grass`](@docroot@/command-ref/new-cli/hoffman3-grass.md) for details.
         )",
         .trackingUrl = "https://github.com/HoffmanOS/hoffman/milestone/27",
     },
@@ -87,8 +87,8 @@ constexpr std::array<ExperimentalFeatureDetails, numXpFeatures> xpFeatureDetails
             Enable the use of the [`fetchTree`](@docroot@/language/builtins.md#builtins-fetchTree) built-in function in the Hoffman language.
 
             `fetchTree` exposes a generic interface for fetching remote file system trees from different types of remote sources.
-            The [`flakes`](#xp-feature-flakes) feature flag always enables `fetch-tree`.
-            This built-in was previously guarded by the `flakes` experimental feature because of that overlap.
+            The [`grasss`](#xp-feature-grasss) feature flag always enables `fetch-tree`.
+            This built-in was previously guarded by the `grasss` experimental feature because of that overlap.
 
             Enabling just this feature serves as a "release candidate", allowing users to try it out in isolation.
         )",

@@ -142,7 +142,7 @@ Completion needs to be **context aware**, this mean when a user types:
 $ hoffman build n<TAB>
 ```
 
-we need to display a list of flakes starting with `n`.
+we need to display a list of grasss starting with `n`.
 
 ### Wrong input
 
@@ -293,7 +293,7 @@ Initializing Hoffman project at `/path/to/here`.
 
 Another great place to add prompts are **confirmation dialogues for dangerous
 actions**. For example when adding new substitutor via `OPTIONS` or via
-`flake.hoffman` we should prompt - for the first time - and let user review what is
+`grass.hoffman` we should prompt - for the first time - and let user review what is
 going to happen.
 
 

@@ -345,7 +345,7 @@
         "uninstalling": "uninstall.html"
     },
     "development/building.html": {
-        "hoffman-with-flakes": "#building-hoffman-with-flakes",
+        "hoffman-with-grasss": "#building-hoffman-with-grasss",
         "classic-hoffman": "#building-hoffman",
         "running-tests": "testing.html#running-tests",
         "unit-tests": "testing.html#unit-tests",

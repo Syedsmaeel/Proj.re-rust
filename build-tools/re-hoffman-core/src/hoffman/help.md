@@ -11,7 +11,7 @@ R""(
 * Show help about a particular subcommand:
 
   ```console
-      # hoffman help flake info
+      # hoffman help grass info
   ```
 
 )""

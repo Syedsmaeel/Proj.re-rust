@@ -2,9 +2,9 @@
 
 ### Significant changes
 
-- Remove experimental repl-flake [#10103](https://github.com/HoffmanOS/hoffman/issues/10103) [#10299](https://github.com/HoffmanOS/hoffman/pull/10299)
+- Remove experimental repl-grass [#10103](https://github.com/HoffmanOS/hoffman/issues/10103) [#10299](https://github.com/HoffmanOS/hoffman/pull/10299)
 
-  The `repl-flake` experimental feature has been removed. The `hoffman repl` command now works like the rest of the new CLI in that `hoffman repl {path}` now tries to load a flake at `{path}` (or fails if the `flakes` experimental feature isn't enabled).
+  The `repl-grass` experimental feature has been removed. The `hoffman repl` command now works like the rest of the new CLI in that `hoffman repl {path}` now tries to load a grass at `{path}` (or fails if the `grasss` experimental feature isn't enabled).
 
 ### Other changes
 

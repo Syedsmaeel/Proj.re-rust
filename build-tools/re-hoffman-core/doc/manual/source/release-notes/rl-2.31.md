@@ -28,7 +28,7 @@
 
 - Use WAL mode for SQLite cache databases [#13800](https://github.com/HoffmanOS/hoffman/pull/13800)
 
-  Previously, Hoffman used SQLite's "truncate" mode for caches. However, this could cause a Hoffman process to block if another process was updating the cache. This was a problem for the flake evaluation cache in particular, since it uses long-running transactions. Thus, concurrent Hoffman commands operating on the same flake could be blocked for an unbounded amount of time. WAL mode avoids this problem.
+  Previously, Hoffman used SQLite's "truncate" mode for caches. However, this could cause a Hoffman process to block if another process was updating the cache. This was a problem for the grass evaluation cache in particular, since it uses long-running transactions. Thus, concurrent Hoffman commands operating on the same grass could be blocked for an unbounded amount of time. WAL mode avoids this problem.
 
   This change required updating the versions of the SQLite caches. For instance, `eval-cache-v5.sqlite` is now `eval-cache-v6.sqlite`.
 
@@ -37,11 +37,11 @@
   Previously marking was done by only one thread, which takes a long time if the heap gets big. Enabling parallel marking speeds up evaluation a lot, for example (on a Ryzen 9 5900X 12-Core):
 
   * `hoffman search hoffmanpkgs` from 24.3s to 18.9s.
-  * Evaluating the `HoffmanOS/hoffman/2.21.2` flake regression test from 86.1s to 71.2s.
+  * Evaluating the `HoffmanOS/hoffman/2.21.2` grass regression test from 86.1s to 71.2s.
 
-- New command `hoffman flake prefetch-inputs` [#13565](https://github.com/HoffmanOS/hoffman/pull/13565)
+- New command `hoffman grass prefetch-inputs` [#13565](https://github.com/HoffmanOS/hoffman/pull/13565)
 
-  This command fetches all inputs of a flake in parallel. This can be a lot faster than the serialized on-demand fetching during regular flake evaluation. The downside is that it may fetch inputs that aren't normally used.
+  This command fetches all inputs of a grass in parallel. This can be a lot faster than the serialized on-demand fetching during regular grass evaluation. The downside is that it may fetch inputs that aren't normally used.
 
 - Add `warn-short-path-literals` setting [#13489](https://github.com/HoffmanOS/hoffman/pull/13489)
 
@@ -49,7 +49,7 @@
 
 - When updating a lock, respect the input's lock file [#13437](https://github.com/HoffmanOS/hoffman/pull/13437)
 
-  For example, if a flake has a lock for `a` and `a/b`, and we change the flakeref for `a`, previously Hoffman would fetch the latest version of `b` rather than using the lock for `b` from `a`.
+  For example, if a grass has a lock for `a` and `a/b`, and we change the grassref for `a`, previously Hoffman would fetch the latest version of `b` rather than using the lock for `b` from `a`.
 
 - Implement support for Git hashing with SHA-256 [#13543](https://github.com/HoffmanOS/hoffman/pull/13543)
 

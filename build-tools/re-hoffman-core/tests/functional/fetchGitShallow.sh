@@ -9,9 +9,9 @@ requireGit
 createGitRepo "$TEST_ROOT/shallow-parent"
 
 # Add several commits to have history
-echo "{ outputs = _: {}; }" > "$TEST_ROOT/shallow-parent/flake.hoffman"
+echo "{ outputs = _: {}; }" > "$TEST_ROOT/shallow-parent/grass.hoffman"
 echo "" > "$TEST_ROOT/shallow-parent/file.txt"
-git -C "$TEST_ROOT/shallow-parent" add file.txt flake.hoffman
+git -C "$TEST_ROOT/shallow-parent" add file.txt grass.hoffman
 git -C "$TEST_ROOT/shallow-parent" commit -m "First commit"
 
 echo "second" > "$TEST_ROOT/shallow-parent/file.txt"

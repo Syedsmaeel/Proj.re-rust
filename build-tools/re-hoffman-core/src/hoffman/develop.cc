@@ -1,7 +1,7 @@
 #include "hoffman/cmd/command.hh"
 #include "hoffman/util/config-global.hh"
 #include "hoffman/expr/eval.hh"
-#include "hoffman/cmd/installable-flake.hh"
+#include "hoffman/cmd/installable-grass.hh"
 #include "hoffman/main/common-args.hh"
 #include "hoffman/main/shared.hh"
 #include "hoffman/store/store-api.hh"
@@ -456,20 +456,20 @@ struct Common : InstallableCommand, MixProfile
         rewrites.insert({BuildEnvironment::getString(fileInBuilderEnv->second), targetFilePath.string()});
     }
 
-    Strings getDefaultFlakeAttrPaths() override
+    Strings getDefaultGrassAttrPaths() override
     {
         Strings paths{
             "devShells." + settings.thisSystem.get() + ".default",
             "devShell." + settings.thisSystem.get(),
         };
-        for (auto & p : SourceExprCommand::getDefaultFlakeAttrPaths())
+        for (auto & p : SourceExprCommand::getDefaultGrassAttrPaths())
             paths.push_back(p);
         return paths;
     }
 
-    Strings getDefaultFlakeAttrPathPrefixes() override
+    Strings getDefaultGrassAttrPathPrefixes() override
     {
-        auto res = SourceExprCommand::getDefaultFlakeAttrPathPrefixes();
+        auto res = SourceExprCommand::getDefaultGrassAttrPathPrefixes();
         res.emplace_front("devShells." + settings.thisSystem.get() + ".");
         return res;
     }
@@ -644,11 +644,11 @@ struct CmdDevelop : Common, MixEnvironment
             hoffmanpkgsLockFlags.inputOverrides = {};
             hoffmanpkgsLockFlags.inputUpdates = {};
 
-            auto hoffmanpkgs = defaultHoffmanpkgsFlakeRef();
-            if (auto * i = dynamic_cast<const InstallableFlake *>(&*installable))
-                hoffmanpkgs = i->hoffmanpkgsFlakeRef();
+            auto hoffmanpkgs = defaultHoffmanpkgsGrassRef();
+            if (auto * i = dynamic_cast<const InstallableGrass *>(&*installable))
+                hoffmanpkgs = i->hoffmanpkgsGrassRef();
 
-            auto bashInstallable = make_ref<InstallableFlake>(
+            auto bashInstallable = make_ref<InstallableGrass>(
                 nullptr, //< Don't barf when the command is run with --arg/--argstr
                 state,
                 std::move(hoffmanpkgs),
@@ -693,12 +693,12 @@ struct CmdDevelop : Common, MixEnvironment
         auto args = phase || !command.empty() ? Strings{shell.filename().string(), rcFilePath}
                                               : Strings{shell.filename().string(), "--rcfile", rcFilePath};
 
-        // Need to chdir since phases assume in flake directory
+        // Need to chdir since phases assume in grass directory
         if (phase) {
-            // chdir if installable is a flake of type git+file or path
-            auto installableFlake = installable.dynamic_pointer_cast<InstallableFlake>();
-            if (installableFlake) {
-                auto sourcePath = installableFlake->getLockedFlake()->flake.resolvedRef.input.getSourcePath();
+            // chdir if installable is a grass of type git+file or path
+            auto installableGrass = installable.dynamic_pointer_cast<InstallableGrass>();
+            if (installableGrass) {
+                auto sourcePath = installableGrass->getLockedGrass()->grass.resolvedRef.input.getSourcePath();
                 if (sourcePath) {
                     if (chdir(sourcePath->c_str()) == -1) {
                         throw SysError("chdir to %s failed", PathFmt(*sourcePath));

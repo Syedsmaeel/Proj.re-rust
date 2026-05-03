@@ -66,10 +66,10 @@ hoffman --store "$TEST_ROOT/x" store info --json | jq -e '.trusted'
 # Test building in a chroot store.
 if canUseSandbox; then
 
-    flakeDir=$TEST_ROOT/flake
-    mkdir -p "$flakeDir"
+    grassDir=$TEST_ROOT/grass
+    mkdir -p "$grassDir"
 
-    cat > "$flakeDir"/flake.hoffman <<EOF
+    cat > "$grassDir"/grass.hoffman <<EOF
 {
   outputs = inputs: rec {
     packages.$system.default = import ./simple.hoffman;
@@ -77,12 +77,12 @@ if canUseSandbox; then
 }
 EOF
 
-    cp simple.hoffman shell.hoffman simple.builder.sh "${config_hoffman}" "$flakeDir/"
+    cp simple.hoffman shell.hoffman simple.builder.sh "${config_hoffman}" "$grassDir/"
 
     TODO_HoffmanOS
     requiresUnprivilegedUserNamespaces
 
-    outPath=$(hoffman build --print-out-paths --no-link --sandbox-paths '/hoffman? /bin? /lib? /lib64? /usr?' --store "$TEST_ROOT/x" path:"$flakeDir")
+    outPath=$(hoffman build --print-out-paths --no-link --sandbox-paths '/hoffman? /bin? /lib? /lib64? /usr?' --store "$TEST_ROOT/x" path:"$grassDir")
 
     [[ $outPath =~ ^/hoffman2/store/.*-simple$ ]]
 

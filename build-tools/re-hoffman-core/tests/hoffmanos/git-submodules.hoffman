@@ -24,7 +24,7 @@
         {
           programs.ssh.extraConfig = "ConnectTimeout 30";
           environment.systemPackages = [ pkgs.git ];
-          hoffman.extraOptions = "experimental-features = hoffman-command flakes";
+          hoffman.extraOptions = "experimental-features = hoffman-command grasss";
         };
     };
 
@@ -73,7 +73,7 @@
           git -C foo commit -m 'Add submodule'
         """)
 
-        client.succeed("hoffman --flake-registry \"\" flake prefetch 'git+file:///tmp/foo?submodules=1&ref=master'")
+        client.succeed("hoffman --grass-registry \"\" grass prefetch 'git+file:///tmp/foo?submodules=1&ref=master'")
       '';
   };
 }

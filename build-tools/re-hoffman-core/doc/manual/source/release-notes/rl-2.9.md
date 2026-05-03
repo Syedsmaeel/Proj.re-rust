@@ -42,6 +42,6 @@
   `meta.outputsToInstall` attribute if it exists, or all outputs
   otherwise.
 
-* `builtins.fetchTree` (and flake inputs) can now be used to fetch
+* `builtins.fetchTree` (and grass inputs) can now be used to fetch
   plain files over the `http(s)` and `file` protocols in addition to
   directory tarballs.

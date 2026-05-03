@@ -1,7 +1,7 @@
 # These overrides are applied to the dependencies of the Hoffman components.
 
 {
-  # Flake inputs; used for sources
+  # Grass inputs; used for sources
   inputs,
 
   # The raw Hoffmanpkgs, not affected by this scope

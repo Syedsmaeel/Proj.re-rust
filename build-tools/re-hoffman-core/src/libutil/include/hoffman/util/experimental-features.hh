@@ -19,7 +19,7 @@ namespace hoffman {
 enum struct ExperimentalFeature {
     CaDerivations,
     ImpureDerivations,
-    Flakes,
+    Grasss,
     FetchTree,
     HoffmanCommand,
     GitHashing,

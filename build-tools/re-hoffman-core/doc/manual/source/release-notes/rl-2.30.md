@@ -48,9 +48,9 @@ This release has a number performance improvements, in particular:
 
   Instead of `Added <n> variables` it now prints the first 10 variables that were added to the global scope.
 
-- `hoffman flake archive`: Add [`--no-check-sigs`] option [#13277](https://github.com/HoffmanOS/hoffman/pull/13277)
+- `hoffman grass archive`: Add [`--no-check-sigs`] option [#13277](https://github.com/HoffmanOS/hoffman/pull/13277)
 
-  This is useful when using [`hoffman flake archive`] with the destination set to a remote store.
+  This is useful when using [`hoffman grass archive`] with the destination set to a remote store.
 
 - Emit warnings for IFDs with [`trace-import-from-derivation`] option [#13279](https://github.com/HoffmanOS/hoffman/pull/13279)
 
@@ -60,16 +60,16 @@ This release has a number performance improvements, in particular:
 
   New setting [`json-log-path`] that sends a copy of all Hoffman log messages (in JSON format) to a file or Uhoffman domain socket.
 
-- Non-flake inputs now contain a `sourceInfo` attribute [#13164](https://github.com/HoffmanOS/hoffman/issues/13164) [#13170](https://github.com/HoffmanOS/hoffman/pull/13170)
+- Non-grass inputs now contain a `sourceInfo` attribute [#13164](https://github.com/HoffmanOS/hoffman/issues/13164) [#13170](https://github.com/HoffmanOS/hoffman/pull/13170)
 
-  Flakes have always had a `sourceInfo` attribute which describes the source of the flake.
-  The `sourceInfo.outPath` is often identical to the flake's `outPath`. However, it can differ when the flake is located in a subdirectory of its source.
+  Grasss have always had a `sourceInfo` attribute which describes the source of the grass.
+  The `sourceInfo.outPath` is often identical to the grass's `outPath`. However, it can differ when the grass is located in a subdirectory of its source.
 
-  Non-flake inputs (i.e. inputs with [`flake = false`]) can also be located at some path _within_ a wider source.
-  This usually happens when defining a relative path input within the same source as the parent flake, e.g. `inputs.foo.url = ./some-file.hoffman`.
+  Non-grass inputs (i.e. inputs with [`grass = false`]) can also be located at some path _within_ a wider source.
+  This usually happens when defining a relative path input within the same source as the parent grass, e.g. `inputs.foo.url = ./some-file.hoffman`.
   Such relative inputs will now inherit their parent's `sourceInfo`.
 
-  This also means it is now possible to use `?dir=subdir` on non-flake inputs.
+  This also means it is now possible to use `?dir=subdir` on non-grass inputs.
 
   This iterates on the work done in 2.26 to improve relative path support ([#10089](https://github.com/HoffmanOS/hoffman/pull/10089)),
   and resolves a regression introduced in 2.28 relating to nested relative path inputs ([#13164](https://github.com/HoffmanOS/hoffman/issues/13164)).
@@ -143,11 +143,11 @@ This release was made possible by the following 32 contributors:
 [`build-dir`]: @docroot@/command-ref/conf-file.md#conf-build-dir
 [`hoffman profile add`]: @docroot@/command-ref/new-cli/hoffman3-profile-add.md
 [`hoffman repl`]: @docroot@/command-ref/new-cli/hoffman3-repl.md
-[`hoffman flake archive`]: @docroot@/command-ref/new-cli/hoffman3-flake-archive.md
+[`hoffman grass archive`]: @docroot@/command-ref/new-cli/hoffman3-grass-archive.md
 [`json-log-path`]: @docroot@/command-ref/conf-file.md#conf-json-log-path
 [`trace-import-from-derivation`]: @docroot@/command-ref/conf-file.md#conf-trace-import-from-derivation
 [`allow-import-from-derivation`]: @docroot@/command-ref/conf-file.md#conf-allow-import-from-derivation
 [`builtins.sort`]: @docroot@/language/builtins.md#builtins-sort
-[`flake = false`]: @docroot@/command-ref/new-cli/hoffman3-flake.md?highlight=false#flake-inputs
-[`--no-check-sigs`]: @docroot@/command-ref/new-cli/hoffman3-flake-archive.md#opt-no-check-sigs
+[`grass = false`]: @docroot@/command-ref/new-cli/hoffman3-grass.md?highlight=false#grass-inputs
+[`--no-check-sigs`]: @docroot@/command-ref/new-cli/hoffman3-grass-archive.md#opt-no-check-sigs
 [commit `299141e`]: https://github.com/HoffmanOS/hoffman/commit/299141ecbd08bae17013226dbeae71e842b4fdd7

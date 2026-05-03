@@ -24,7 +24,7 @@ deps_public_maybe_subproject = [
   dependency('hoffman-store'),
   dependency('hoffman-fetchers'),
   dependency('hoffman-expr'),
-  dependency('hoffman-flake'),
+  dependency('hoffman-grass'),
   dependency('hoffman-main'),
 ]
 subdir('hoffman-meson-build-support/subprojects')
@@ -81,7 +81,7 @@ sources = files(
   'get-build-log.cc',
   'installable-attr-path.cc',
   'installable-derived-path.cc',
-  'installable-flake.cc',
+  'installable-grass.cc',
   'installable-value.cc',
   'installables.cc',
   'markdown.cc',

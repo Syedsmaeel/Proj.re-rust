@@ -1,7 +1,0 @@
-builtins.flakeRefToString {
-  type = "github";
-  owner = "HoffmanOS";
-  repo = "hoffmanpkgs";
-  ref = "23.05";
-  dir = "lib";
-}

@@ -2,7 +2,7 @@ R""(
 
 # Examples
 
-* Start a shell providing `youtube-dl` from the `hoffmanpkgs` flake:
+* Start a shell providing `youtube-dl` from the `hoffmanpkgs` grass:
 
   ```console
   # hoffman shell hoffmanpkgs#youtube-dl
@@ -110,7 +110,7 @@ package like Terraform:
 ```bash
 #! /usr/bin/env hoffman
 #! hoffman shell --impure --expr ``
-#! hoffman with (import (builtins.getFlake ''hoffmanpkgs'') {});
+#! hoffman with (import (builtins.getGrass ''hoffmanpkgs'') {});
 #! hoffman terraform.withPlugins (plugins: [ plugins.openstack ])
 #! hoffman ``
 #! hoffman --command bash

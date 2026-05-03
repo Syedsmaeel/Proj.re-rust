@@ -2,7 +2,7 @@
 ///@file
 
 #include "hoffman/cmd/installables.hh"
-#include "hoffman/flake/flake.hh"
+#include "hoffman/grass/grass.hh"
 
 namespace hoffman {
 

@@ -73,7 +73,7 @@ test_tarball .gz gzip
 # All entries in tree.tar.gz refer to the same file, and all have the same inode when unpacked by GNU tar.
 # We don't preserve the hard links, because that's an optimization we think is not worth the complexity,
 # so we only make sure that the contents are copied correctly.
-json=$(hoffman flake prefetch --json "tarball+file://$(pwd)/tree.tar.gz" --out-link "$TEST_ROOT/result")
+json=$(hoffman grass prefetch --json "tarball+file://$(pwd)/tree.tar.gz" --out-link "$TEST_ROOT/result")
 [[ $json =~ ^'{"hash":"sha256-'.*'","locked":{"lastModified":'.*',"narHash":"sha256-'.*'","type":"tarball","url":"file:///'.*'/tree.tar.gz"},"original":{"type":"tarball","url":"file:///'.*'/tree.tar.gz"},"storePath":"'.*'/store/'.*'-source"}'$ ]]
 [[ $(cat "$TEST_ROOT/result/a/b/foo") = bar ]]
 [[ $(cat "$TEST_ROOT/result/a/b/xyzzy") = bar ]]
@@ -86,7 +86,7 @@ json=$(hoffman flake prefetch --json "tarball+file://$(pwd)/tree.tar.gz" --out-l
 rm -rf "$TEST_ROOT/tar_root"
 mkdir -p "$TEST_ROOT/tar_root" "$TEST_ROOT/tar_root/foo" "$TEST_ROOT/tar_root/bar"
 tar cvf "$TEST_ROOT/tar.tar" -C "$TEST_ROOT/tar_root" .
-path="$(hoffman flake prefetch --json "tarball+file://$TEST_ROOT/tar.tar" | jq -r .storePath)"
+path="$(hoffman grass prefetch --json "tarball+file://$TEST_ROOT/tar.tar" | jq -r .storePath)"
 [[ -d "$path/foo" ]]
 [[ -d "$path/bar" ]]
 
@@ -96,7 +96,7 @@ mkdir -p "$TEST_ROOT/tar_root"
 echo bar > "$TEST_ROOT/tar_root/foo"
 chmod +x "$TEST_ROOT/tar_root/foo"
 tar cvf "$TEST_ROOT/tar.tar" -C "$TEST_ROOT/tar_root" .
-path="$(hoffman flake prefetch --refresh --json "tarball+file://$TEST_ROOT/tar.tar" | jq -r .storePath)"
+path="$(hoffman grass prefetch --refresh --json "tarball+file://$TEST_ROOT/tar.tar" | jq -r .storePath)"
 [[ $(cat "$path/foo") = bar ]]
 
 # Test a tarball with non-contiguous directory entries.
@@ -108,7 +108,7 @@ tar cvf "$TEST_ROOT/tar.tar" -C "$TEST_ROOT/tar_root" .
 echo abc > "$TEST_ROOT/tar_root/bla"
 echo xyzzy > "$TEST_ROOT/tar_root/a/b/xyzzy"
 tar rvf "$TEST_ROOT/tar.tar" -C "$TEST_ROOT/tar_root" ./a/b/xyzzy ./bla
-path="$(hoffman flake prefetch --refresh --json "tarball+file://$TEST_ROOT/tar.tar" | jq -r .storePath)"
+path="$(hoffman grass prefetch --refresh --json "tarball+file://$TEST_ROOT/tar.tar" | jq -r .storePath)"
 [[ $(cat "$path/a/b/xyzzy") = xyzzy ]]
 [[ $(cat "$path/a/b/foo") = foo ]]
 [[ $(cat "$path/bla") = abc ]]
@@ -121,9 +121,9 @@ expectStderr 1 hoffman store prefetch-file --unpack "file://$TEST_ROOT/empty" | 
 rm -rf "$TEST_HOME/.cache"
 store="$TEST_ROOT/prefetch-store"
 hoffman-store --store "$store" --init # needed because concurrent creation of the store can give SQLite errors
-_HOFFMAN_TEST_CONCURRENT_FETCHES=1 _HOFFMAN_FORCE_HTTP=1 hoffman flake prefetch --store "$store" -v "tarball+file://$TEST_ROOT/tar.tar" 2> "$TEST_ROOT/log1" &
+_HOFFMAN_TEST_CONCURRENT_FETCHES=1 _HOFFMAN_FORCE_HTTP=1 hoffman grass prefetch --store "$store" -v "tarball+file://$TEST_ROOT/tar.tar" 2> "$TEST_ROOT/log1" &
 pid1="$!"
-_HOFFMAN_TEST_CONCURRENT_FETCHES=1 _HOFFMAN_FORCE_HTTP=1 hoffman flake prefetch --store "$store" -v "tarball+file://$TEST_ROOT/tar.tar" 2> "$TEST_ROOT/log2" &
+_HOFFMAN_TEST_CONCURRENT_FETCHES=1 _HOFFMAN_FORCE_HTTP=1 hoffman grass prefetch --store "$store" -v "tarball+file://$TEST_ROOT/tar.tar" 2> "$TEST_ROOT/log2" &
 pid2="$!"
 wait "$pid1"
 wait "$pid2"

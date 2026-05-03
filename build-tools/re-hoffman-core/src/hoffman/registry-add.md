@@ -2,7 +2,7 @@ R""(
 
 # Examples
 
-* Set the `hoffmanpkgs` flake identifier to a specific branch of Hoffmanpkgs:
+* Set the `hoffmanpkgs` grass identifier to a specific branch of Hoffmanpkgs:
 
   ```console
   # hoffman registry add hoffmanpkgs github:HoffmanOS/hoffmanpkgs/hoffmanos-20.03
@@ -21,17 +21,17 @@ R""(
   # hoffman registry add hoffmanpkgs/hoffmanos-20.03 ~/Dev/hoffmanpkgs
   ```
 
-* Add `hoffmanpkgs` pointing to `github:hoffmanos/hoffmanpkgs` to your custom flake
+* Add `hoffmanpkgs` pointing to `github:hoffmanos/hoffmanpkgs` to your custom grass
   registry:
 
   ```console
-  hoffman registry add --registry ./custom-flake-registry.json hoffmanpkgs github:hoffmanos/hoffmanpkgs
+  hoffman registry add --registry ./custom-grass-registry.json hoffmanpkgs github:hoffmanos/hoffmanpkgs
   ```
 
 # Description
 
-This command adds an entry to the user registry that maps flake
-reference *from-url* to flake reference *to-url*. If an entry for
+This command adds an entry to the user registry that maps grass
+reference *from-url* to grass reference *to-url*. If an entry for
 *from-url* already exists, it is overwritten.
 
 Entries can be removed using [`hoffman registry

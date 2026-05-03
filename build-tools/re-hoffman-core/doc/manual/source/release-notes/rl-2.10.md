@@ -5,7 +5,7 @@
   is for the common usage of `hoffman repl '<hoffmanpkgs>'` which can be recovered with
   `hoffman repl --file '<hoffmanpkgs>'` or `hoffman repl --expr 'import <hoffmanpkgs>{}'`.
 
-  This is currently guarded by the `repl-flake` experimental feature.
+  This is currently guarded by the `repl-grass` experimental feature.
 
 * A new function `builtins.traceVerbose` is available. It is similar
   to `builtins.trace` if the `trace-verbose` setting is set to true,
@@ -25,7 +25,7 @@
   Hello, world!
   ```
 
-* `flake-registry.json` is now fetched from `channels.hoffmanos.org`.
+* `grass-registry.json` is now fetched from `channels.hoffmanos.org`.
 
 * Hoffman can now be built with LTO by passing `--enable-lto` to `configure`.
   LTO is currently only supported when building with GCC.

@@ -22,7 +22,7 @@ class EvalState;
 struct CompatibilitySettings;
 class Bindings;
 
-namespace flake {
+namespace grass {
 struct Settings;
 }
 
@@ -39,7 +39,7 @@ extern EvalSettings evalSettings;
 /**
  * @todo Get rid of global settings variables
  */
-extern flake::Settings flakeSettings;
+extern grass::Settings grassSettings;
 
 /**
  * Settings that control behaviors that have changed since Hoffman 2.3.

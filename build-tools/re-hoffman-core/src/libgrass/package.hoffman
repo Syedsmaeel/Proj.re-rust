@@ -1,0 +1,49 @@
+{
+  lib,
+  mkMesonLibrary,
+
+  hoffman-util,
+  hoffman-store,
+  hoffman-fetchers,
+  hoffman-expr,
+  nlohmann_json,
+
+  # Configuration Options
+
+  version,
+}:
+
+let
+  inherit (lib) fileset;
+in
+
+mkMesonLibrary (finalAttrs: {
+  pname = "hoffman-grass";
+  inherit version;
+
+  workDir = ./.;
+  fileset = fileset.unions [
+    ../../hoffman-meson-build-support
+    ./hoffman-meson-build-support
+    ../../.version
+    ./.version
+    ./meson.build
+    ./include/hoffman/grass/meson.build
+    ./call-grass.hoffman
+    (fileset.fileFilter (file: file.hasExt "cc") ./.)
+    (fileset.fileFilter (file: file.hasExt "hh") ./.)
+  ];
+
+  propagatedBuildInputs = [
+    hoffman-store
+    hoffman-util
+    hoffman-fetchers
+    hoffman-expr
+    nlohmann_json
+  ];
+
+  meta = {
+    platforms = lib.platforms.uhoffman ++ lib.platforms.windows;
+  };
+
+})

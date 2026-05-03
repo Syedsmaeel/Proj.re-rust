@@ -45,15 +45,15 @@ git -C "$repo" -c "user.signingkey=$key2File" commit -S -m 'second commit'
 
 [[ $(hoffman eval --impure --raw --expr "builtins.readFile (builtins.fetchGit { url = \"file://$repo\"; publicKeys = [{key = \"$publicKey1\";} {type = \"ssh-rsa\"; key = \"$publicKey2\";}]; } + \"/text\")") = 'hello world' ]]
 
-# Flake input test
-flakeDir="$TEST_ROOT/flake"
-mkdir -p "$flakeDir"
-cat > "$flakeDir/flake.hoffman" <<EOF
+# Grass input test
+grassDir="$TEST_ROOT/grass"
+mkdir -p "$grassDir"
+cat > "$grassDir/grass.hoffman" <<EOF
 {
   inputs.test = {
     type = "git";
     url = "file://$repo";
-    flake = false;
+    grass = false;
     publicKeys = [
       { type = "ssh-rsa"; key = "$publicKey2"; }
     ];
@@ -62,22 +62,22 @@ cat > "$flakeDir/flake.hoffman" <<EOF
   outputs = { test, ... }: { test = test.outPath; };
 }
 EOF
-hoffman build --out-link "$flakeDir/result" "$flakeDir#test"
-[[ $(cat "$flakeDir/result/text") = 'hello world' ]]
+hoffman build --out-link "$grassDir/result" "$grassDir#test"
+[[ $(cat "$grassDir/result/text") = 'hello world' ]]
 
-cat > "$flakeDir/flake.hoffman" <<EOF
+cat > "$grassDir/grass.hoffman" <<EOF
 {
   inputs.test = {
     type = "git";
     url = "file://$repo";
-    flake = false;
+    grass = false;
     publicKey= "$publicKey1";
   };
 
   outputs = { test, ... }: { test = test.outPath; };
 }
 EOF
-out=$(hoffman build "$flakeDir#test" 2>&1) || status=$?
+out=$(hoffman build "$grassDir#test" 2>&1) || status=$?
 
 [[ $status == 1 ]]
 [[ $out == *'No principal matched.'* ]]

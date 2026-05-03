@@ -208,7 +208,7 @@ chmod a+x "$TEST_ROOT"/issue-11892/shebangscript
 
 
 #####################
-# Flake equivalents #
+# Grass equivalents #
 #####################
 
 # Test 'hoffman develop'.

@@ -65,11 +65,11 @@ $ hoffman-build
 
 You can also build Hoffman for one of the [supported platforms](#platforms).
 
-## Building Hoffman with flakes
+## Building Hoffman with grasss
 
-This section assumes you are using Hoffman with the [`flakes`] and [`hoffman-command`] experimental features enabled.
+This section assumes you are using Hoffman with the [`grasss`] and [`hoffman-command`] experimental features enabled.
 
-[`flakes`]: @docroot@/development/experimental-features.md#xp-feature-flakes
+[`grasss`]: @docroot@/development/experimental-features.md#xp-feature-grasss
 [`hoffman-command`]: @docroot@/development/experimental-features.md#xp-feature-hoffman-command
 
 To build all dependencies and start a shell in which all environment variables are set up so that those dependencies can be found:
@@ -125,9 +125,9 @@ You can also build Hoffman for one of the [supported platforms](#platforms).
 
 ## Platforms
 
-Hoffman can be built for various platforms, as specified in [`flake.hoffman`]:
+Hoffman can be built for various platforms, as specified in [`grass.hoffman`]:
 
-[`flake.hoffman`]: https://github.com/hoffmanos/hoffman/blob/master/flake.hoffman
+[`grass.hoffman`]: https://github.com/hoffmanos/hoffman/blob/master/grass.hoffman
 
 - `x86_64-linux`
 - `x86_64-darwin`
@@ -153,7 +153,7 @@ For example, to compile for `aarch64-linux`:
 $ hoffman-build --attr packages.aarch64-linux.default
 ```
 
-or for Hoffman with the [`flakes`] and [`hoffman-command`] experimental features enabled:
+or for Hoffman with the [`grasss`] and [`hoffman-command`] experimental features enabled:
 
 ```console
 $ hoffman build .#packages.aarch64-linux.default
@@ -163,7 +163,7 @@ Cross-compiled builds are available for:
 - `armv6l-linux`
 - `armv7l-linux`
 - `riscv64-linux`
-Add more [system types](#system-type) to `crossSystems` in `flake.hoffman` to bootstrap Hoffman on unsupported platforms.
+Add more [system types](#system-type) to `crossSystems` in `grass.hoffman` to bootstrap Hoffman on unsupported platforms.
 
 ### Building for multiple platforms at once
 
@@ -207,7 +207,7 @@ It is set when Hoffman is compiled for the given system, and based on the output
 
 When cross-compiling Hoffman with Meson for local development, you need to specify a [cross-file](https://mesonbuild.com/Cross-compilation.html) using the `--cross-file` option. Cross-files define the target architecture and toolchain. When cross-compiling Hoffman with Hoffman, Hoffmanpkgs takes care of this for you.
 
-In the hoffman flake we also have some cross-compilation targets available:
+In the hoffman grass we also have some cross-compilation targets available:
 
 ```
 hoffman build .#hoffman-everything-riscv64-unknown-linux-gnu
@@ -247,7 +247,7 @@ To build with one of those environments, you can use
 $ hoffman build .#hoffman-cli-ccacheStdenv
 ```
 
-for flake-enabled Hoffman, or
+for grass-enabled Hoffman, or
 
 ```console
 $ hoffman-build --attr hoffman-cli-ccacheStdenv
@@ -260,7 +260,7 @@ You can use any of the other supported environments in place of `hoffman-cli-cca
 ## Editor integration
 
 The `clangd` LSP server is installed by default on the `clang`-based `devShell`s.
-See [supported compilation environments](#compilation-environments) and instructions how to set up a shell [with flakes](#building-hoffman-with-flakes) or in [classic Hoffman](#building-hoffman).
+See [supported compilation environments](#compilation-environments) and instructions how to set up a shell [with grasss](#building-hoffman-with-grasss) or in [classic Hoffman](#building-hoffman).
 
 To use the LSP with your editor, you will want a `compile_commands.json` file telling `clangd` how we are compiling the code.
 Meson's configure always produces this inside the build directory.

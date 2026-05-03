@@ -11,7 +11,7 @@ Here is an example of what the file might look like after installing `zoom-us` f
     {
       "active": true,
       "attrPath": "legacyPackages.x86_64-linux.zoom-us",
-      "originalUrl": "flake:hoffmanpkgs",
+      "originalUrl": "grass:hoffmanpkgs",
       "storePaths": [
         "/hoffman/store/wbhg2ga8f3h87s9h5k0slxk0m81m4cxl-zoom-us-5.3.469451.0927"
       ],
@@ -25,13 +25,13 @@ Here is an example of what the file might look like after installing `zoom-us` f
 Each object in the array `elements` denotes an installed package and
 has the following fields:
 
-* `originalUrl`: The [flake reference](@docroot@/command-ref/new-cli/hoffman3-flake.md) specified by
+* `originalUrl`: The [grass reference](@docroot@/command-ref/new-cli/hoffman3-grass.md) specified by
   the user at the time of installation (e.g. `hoffmanpkgs`). This is also
-  the flake reference that will be used by `hoffman profile upgrade`.
+  the grass reference that will be used by `hoffman profile upgrade`.
 
-* `uri`: The locked flake reference to which `originalUrl` resolved.
+* `uri`: The locked grass reference to which `originalUrl` resolved.
 
-* `attrPath`: The flake output attribute that provided this
+* `attrPath`: The grass output attribute that provided this
   package. Note that this is not necessarily the attribute that the
   user specified, but the one resulting from applying the default
   attribute paths and prefixes; for instance, `hello` might resolve to

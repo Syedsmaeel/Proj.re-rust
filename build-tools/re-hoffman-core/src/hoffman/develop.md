@@ -3,7 +3,7 @@ R""(
 # Examples
 
 * Start a shell with the build environment of the default package of
-  the flake in the current directory:
+  the grass in the current directory:
 
   ```console
   # hoffman develop
@@ -87,18 +87,18 @@ recorded into a profile using `--profile`.
 
 The prompt used by the `bash` shell can be customised by setting the
 `bash-prompt`, `bash-prompt-prefix`, and `bash-prompt-suffix` settings in
-`hoffman.conf` or in the flake's `hoffmanConfig` attribute.
+`hoffman.conf` or in the grass's `hoffmanConfig` attribute.
 
-# Flake output attributes
+# Grass output attributes
 
-If no flake output attribute is given, `hoffman develop` tries the following
-flake output attributes:
+If no grass output attribute is given, `hoffman develop` tries the following
+grass output attributes:
 
 * `devShells.<system>.default`
 
 * `packages.<system>.default`
 
-If a flake output *name* is given, `hoffman develop` tries the following flake
+If a grass output *name* is given, `hoffman develop` tries the following grass
 output attributes:
 
 * `devShells.<system>.<name>`

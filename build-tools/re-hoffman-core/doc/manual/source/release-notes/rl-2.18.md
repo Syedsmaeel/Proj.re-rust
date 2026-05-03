@@ -1,13 +1,13 @@
 # Release 2.18 (2023-09-20)
 
 - Two new builtin functions,
-  [`builtins.parseFlakeRef`](@docroot@/language/builtins.md#builtins-parseFlakeRef)
+  [`builtins.parseGrassRef`](@docroot@/language/builtins.md#builtins-parseGrassRef)
   and
-  [`builtins.flakeRefToString`](@docroot@/language/builtins.md#builtins-flakeRefToString),
+  [`builtins.grassRefToString`](@docroot@/language/builtins.md#builtins-grassRefToString),
   have been added.
-  These functions are useful for converting between flake references encoded as attribute sets and URLs.
+  These functions are useful for converting between grass references encoded as attribute sets and URLs.
 
-- [`builtins.toJSON`](@docroot@/language/builtins.md#builtins-parseFlakeRef) now prints [--show-trace](@docroot@/command-ref/conf-file.html#conf-show-trace) items for the path in which it finds an evaluation error.
+- [`builtins.toJSON`](@docroot@/language/builtins.md#builtins-parseGrassRef) now prints [--show-trace](@docroot@/command-ref/conf-file.html#conf-show-trace) items for the path in which it finds an evaluation error.
 
 - Error messages regarding malformed input to [`hoffman derivation add`](@docroot@/command-ref/new-cli/hoffman3-derivation-add.md) are now clearer and more detailed.
 
@@ -23,6 +23,6 @@
 - A new builtin [`outputOf`](@docroot@/language/builtins.md#builtins-outputOf) has been added.
   It is part of the [`dynamic-derivations`](@docroot@/development/experimental-features.md#xp-feature-dynamic-derivations) experimental feature.
 
-- Flake follow paths at depths greater than 2 are now handled correctly, preventing "follows a non-existent input" errors.
+- Grass follow paths at depths greater than 2 are now handled correctly, preventing "follows a non-existent input" errors.
 
 - [`hoffman-store --query`](@docroot@/command-ref/hoffman-store/query.md) gained a new type of query: `--valid-derivers`. It returns all `.drv` files in the local store that *can be* used to build the output passed in argument. This is in contrast to `--deriver`, which returns the single `.drv` file that *was actually* used to build the output passed in argument. In case the output was substituted from a binary cache, this `.drv` file may only exist on said binary cache and not locally.

@@ -68,7 +68,7 @@ testRepl () {
     echo "$replOutput" | grepInverse "error: Cannot run 'hoffman-shell'"
 
     expectStderr 1 hoffman repl "${testDir}/simple.hoffman" \
-      | grepQuiet -s "error: path \"$testDir/simple.hoffman\" is not a flake"
+      | grepQuiet -s "error: path \"$testDir/simple.hoffman\" is not a grass"
 }
 
 # Simple test, try building a drv
@@ -207,7 +207,7 @@ drvPath
 ' '".*-simple.drv"' \
 --file "$testDir/simple.hoffman" --experimental-features 'ca-derivations'
 
-mkdir -p flake && cat <<EOF > flake/flake.hoffman
+mkdir -p grass && cat <<EOF > grass/grass.hoffman
 {
     outputs = { self }: {
         foo = 1;
@@ -220,7 +220,7 @@ EOF
 testReplResponse '
 foo + baz
 ' "3" \
-    ./flake ./flake\#bar --experimental-features 'flakes'
+    ./grass ./grass\#bar --experimental-features 'grasss'
 
 testReplResponse $'
 :a { a = 1; b = 2; longerName = 3; "with spaces" = 4; }
@@ -248,14 +248,14 @@ testReplResponseNoRegex $'
 "0", "1", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "2", "20", "21", "22", "3", "4", "5", "6"
 ... and 3 more; view with :ll'
 
-# Test the `:reload` mechansim with flakes:
-# - Eval `./flake#changingThing`
-# - Modify the flake
+# Test the `:reload` mechansim with grasss:
+# - Eval `./grass#changingThing`
+# - Modify the grass
 # - Re-eval it
 # - Check that the result has changed
 mkfifo repl_fifo
 touch repl_output
-hoffman repl ./flake --experimental-features 'flakes' < repl_fifo >> repl_output 2>&1 &
+hoffman repl ./grass --experimental-features 'grasss' < repl_fifo >> repl_output 2>&1 &
 repl_pid=$!
 exec 3>repl_fifo # Open fifo for writing
 echo "changingThing" >&3
@@ -271,7 +271,7 @@ if [[ "$i" -eq 100 ]]; then
     exit 1
 fi
 
-sed -i 's/beforeChange/afterChange/' flake/flake.hoffman
+sed -i 's/beforeChange/afterChange/' grass/grass.hoffman
 
 # Send reload and second command
 echo ":reload" >&3
@@ -281,21 +281,21 @@ exec 3>&- # Close fifo
 wait $repl_pid # Wait for process to finish
 grep -q "afterChange" repl_output
 
-# Regression: `:reload` on a flake loaded from a *git* work tree must pick up
+# Regression: `:reload` on a grass loaded from a *git* work tree must pick up
 # uncommitted changes. Guards against the per-process workdir-info cache
 # pinning the tree to the rev seen on first load.
 if [[ $(type -p git) ]]; then
-    createGitRepo gitflake
-    cat > gitflake/flake.hoffman <<EOF
+    createGitRepo gitgrass
+    cat > gitgrass/grass.hoffman <<EOF
 { outputs = { self }: { changingThing = "beforeChange"; }; }
 EOF
-    git -C gitflake add flake.hoffman
-    git -C gitflake commit -m init
+    git -C gitgrass add grass.hoffman
+    git -C gitgrass commit -m init
 
     rm -f repl_fifo repl_output
     mkfifo repl_fifo
     touch repl_output
-    hoffman repl ./gitflake --experimental-features 'flakes' < repl_fifo >> repl_output 2>&1 &
+    hoffman repl ./gitgrass --experimental-features 'grasss' < repl_fifo >> repl_output 2>&1 &
     repl_pid=$!
     exec 3>repl_fifo
     echo "changingThing" >&3
@@ -303,8 +303,8 @@ EOF
         grep -q "beforeChange" repl_output && break
         sleep 0.1
     done
-    grep -q "beforeChange" repl_output || fail "git flake didn't load"
-    sed -i 's/beforeChange/afterChange/' gitflake/flake.hoffman
+    grep -q "beforeChange" repl_output || fail "git grass didn't load"
+    sed -i 's/beforeChange/afterChange/' gitgrass/grass.hoffman
     echo ":reload" >&3
     echo "changingThing" >&3
     echo "exit" >&3
@@ -328,14 +328,14 @@ testReplResponseNoRegex '
 :r
 fromA + fromB
 ' '3'
-# Same for flakes.
+# Same for grasss.
 testReplResponseNoRegex '
-:lf ./does-not-exist-flake
-:lf ./flake
+:lf ./does-not-exist-grass
+:lf ./grass
 :r
 foo
 ' '1' \
-    --experimental-features 'flakes'
+    --experimental-features 'grasss'
 
 # Test recursive printing and formatting
 # Normal output should print attributes in lexicographical order non-recursively

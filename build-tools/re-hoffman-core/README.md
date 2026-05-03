@@ -7,6 +7,7 @@ Hoffman Script is a fork of the Nix evaluation engine, rebranded and optimized f
 ## Key Features
 - **Sovereign store**: Capability-gated binary asset management.
 - **Fractal evaluation**: Declaratively define nested sub-kernels and their personalities.
+- **Hoffman Script Grass**: Reusable, version-locked system blueprints (formerly known as Flakes).
 - **Hoffman DSL**: A simple yet powerful language for OS construction.
 
 ## Fork Information

@@ -74,13 +74,13 @@
 
   See [eval-attrset-update-layer-rhs-threshold](@docroot@/command-ref/conf-file.md#conf-eval-attrset-update-layer-rhs-threshold)
 
-- Substituted flake inputs are no longer re-copied to the store [#14041](https://github.com/HoffmanOS/hoffman/pull/14041)
+- Substituted grass inputs are no longer re-copied to the store [#14041](https://github.com/HoffmanOS/hoffman/pull/14041)
 
-  Since 2.25, Hoffman would fail to store a cache entry for substituted flake inputs, which in turn would cause them to be re-copied to the store on initial evaluation. Caching these inputs results in a near doubling of performance in some cases — especially on I/O-bound machines and when using commands that fetch many inputs, like `hoffman flake [archive|prefetch-inputs]`.
+  Since 2.25, Hoffman would fail to store a cache entry for substituted grass inputs, which in turn would cause them to be re-copied to the store on initial evaluation. Caching these inputs results in a near doubling of performance in some cases — especially on I/O-bound machines and when using commands that fetch many inputs, like `hoffman grass [archive|prefetch-inputs]`.
 
-- `hoffman flake check` now skips derivations that can be substituted [#13574](https://github.com/HoffmanOS/hoffman/pull/13574)
+- `hoffman grass check` now skips derivations that can be substituted [#13574](https://github.com/HoffmanOS/hoffman/pull/13574)
 
-  Previously, `hoffman flake check` would evaluate and build/substitute all
+  Previously, `hoffman grass check` would evaluate and build/substitute all
   derivations. Now, it will skip downloading derivations that can be substituted.
   This can drastically decrease the time invocations take in environments where
   checks may already be cached (like in CI).

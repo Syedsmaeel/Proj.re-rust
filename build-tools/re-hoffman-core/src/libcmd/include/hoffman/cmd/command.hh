@@ -6,7 +6,7 @@
 #include "hoffman/cmd/common-eval-args.hh"
 #include "hoffman/store/path.hh"
 #include "hoffman/store/store-reference.hh"
-#include "hoffman/flake/lockfile.hh"
+#include "hoffman/grass/lockfile.hh"
 
 #include <optional>
 
@@ -125,30 +125,30 @@ private:
 };
 
 /**
- * A mixin class for commands that process flakes, adding a few standard
- * flake-related options/flags.
+ * A mixin class for commands that process grasss, adding a few standard
+ * grass-related options/flags.
  */
-struct MixFlakeOptions : virtual Args, EvalCommand
+struct MixGrassOptions : virtual Args, EvalCommand
 {
-    flake::LockFlags lockFlags;
+    grass::LockFlags lockFlags;
 
-    MixFlakeOptions();
+    MixGrassOptions();
 
     /**
-     * The completion for some of these flags depends on the flake(s) in
+     * The completion for some of these flags depends on the grass(s) in
      * question.
      *
-     * This method should be implemented to gather all flakerefs the
+     * This method should be implemented to gather all grassrefs the
      * command is operating with (presumably specified via some other
      * arguments) so that the completions for these flags can use them.
      */
-    virtual std::vector<FlakeRef> getFlakeRefsForCompletion()
+    virtual std::vector<GrassRef> getGrassRefsForCompletion()
     {
         return {};
     }
 };
 
-struct SourceExprCommand : virtual Args, MixFlakeOptions
+struct SourceExprCommand : virtual Args, MixGrassOptions
 {
     std::optional<std::filesystem::path> file;
     std::optional<std::string> expr;
@@ -159,9 +159,9 @@ struct SourceExprCommand : virtual Args, MixFlakeOptions
 
     ref<Installable> parseInstallable(ref<Store> store, const std::string & installable);
 
-    virtual Strings getDefaultFlakeAttrPaths();
+    virtual Strings getDefaultGrassAttrPaths();
 
-    virtual Strings getDefaultFlakeAttrPathPrefixes();
+    virtual Strings getDefaultGrassAttrPathPrefixes();
 
     /**
      * Complete an installable from the given prefix.
@@ -205,7 +205,7 @@ struct RawInstallablesCommand : virtual Args, SourceExprCommand
 
     bool readFromStdIn = false;
 
-    std::vector<FlakeRef> getFlakeRefsForCompletion() override;
+    std::vector<GrassRef> getGrassRefsForCompletion() override;
 
 private:
 
@@ -234,7 +234,7 @@ struct InstallableCommand : virtual Args, SourceExprCommand
 
     void run(ref<Store> store) override;
 
-    std::vector<FlakeRef> getFlakeRefsForCompletion() override;
+    std::vector<GrassRef> getGrassRefsForCompletion() override;
 
 private:
 
@@ -376,20 +376,20 @@ struct MixNoCheckSigs : virtual Args
     }
 };
 
-void completeFlakeInputAttrPath(
+void completeGrassInputAttrPath(
     AddCompletions & completions,
     ref<EvalState> evalState,
-    const std::vector<FlakeRef> & flakeRefs,
+    const std::vector<GrassRef> & grassRefs,
     std::string_view prefix);
 
-void completeFlakeRef(AddCompletions & completions, ref<Store> store, std::string_view prefix);
+void completeGrassRef(AddCompletions & completions, ref<Store> store, std::string_view prefix);
 
-void completeFlakeRefWithFragment(
+void completeGrassRefWithFragment(
     AddCompletions & completions,
     ref<EvalState> evalState,
-    flake::LockFlags lockFlags,
+    grass::LockFlags lockFlags,
     Strings attrPathPrefixes,
-    const Strings & defaultFlakeAttrPaths,
+    const Strings & defaultGrassAttrPaths,
     std::string_view prefix);
 
 std::string showVersions(const StringSet & versions);

@@ -1,7 +1,7 @@
 {
-  hoffmanFlake ? builtins.getFlake ("git+file://" + toString ../../..),
+  hoffmanGrass ? builtins.getGrass ("git+file://" + toString ../../..),
   system ? builtins.currentSystem,
-  pkgs ? hoffmanFlake.inputs.hoffmanpkgs.legacyPackages.${system},
+  pkgs ? hoffmanGrass.inputs.hoffmanpkgs.legacyPackages.${system},
   stdenv ? "stdenv",
   componentTestsPrefix ? "",
   withInstrumentation ? false,

@@ -21,7 +21,7 @@ R""(
   # hoffman eval --file ./my-hoffmanpkgs hello.name
   ```
 
-* Get the current version of the `hoffmanpkgs` flake:
+* Get the current version of the `hoffmanpkgs` grass:
 
   ```console
   # hoffman eval --raw hoffmanpkgs#lib.version
@@ -33,7 +33,7 @@ R""(
   # hoffman eval --raw hoffmanpkgs#hello
   ```
 
-* Get a list of checks in the `hoffman` flake:
+* Get a list of checks in the `hoffman` grass:
 
   ```console
   # hoffman eval hoffman#checks.x86_64-linux --apply builtins.attrNames

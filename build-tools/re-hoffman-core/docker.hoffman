@@ -14,7 +14,7 @@
   extraPkgs ? [ ],
   maxLayers ? 70,
   hoffmanConf ? { },
-  flake-registry ? null,
+  grass-registry ? null,
   uid ? 0,
   gid ? 0,
   uname ? "root",
@@ -248,13 +248,13 @@ let
         '';
         inherit manifest;
       };
-      flake-registry-path =
-        if (flake-registry == null) then
+      grass-registry-path =
+        if (grass-registry == null) then
           null
-        else if (builtins.readFileType (toString flake-registry)) == "directory" then
-          "${flake-registry}/flake-registry.json"
+        else if (builtins.readFileType (toString grass-registry)) == "directory" then
+          "${grass-registry}/grass-registry.json"
         else
-          flake-registry;
+          grass-registry;
     in
     runCommand "base-system"
       {
@@ -330,14 +330,14 @@ let
           ln -s ${lib.getExe bashInteractive} $out/bin/sh
 
         ''
-        + (lib.optionalString (flake-registry-path != null) ''
+        + (lib.optionalString (grass-registry-path != null) ''
           hoffmanCacheDir="${userHome}/.cache/hoffman"
           mkdir -p $out$hoffmanCacheDir
-          globalFlakeRegistryPath="$hoffmanCacheDir/flake-registry.json"
-          ln -s ${flake-registry-path} $out$globalFlakeRegistryPath
+          globalGrassRegistryPath="$hoffmanCacheDir/grass-registry.json"
+          ln -s ${grass-registry-path} $out$globalGrassRegistryPath
           mkdir -p $out/hoffman/var/hoffman/gcroots/auto
-          rootName=$(${lib.getExe' hoffman "hoffman"} --extra-experimental-features hoffman-command hash file --type sha1 --base32 <(echo -n $globalFlakeRegistryPath))
-          ln -s $globalFlakeRegistryPath $out/hoffman/var/hoffman/gcroots/auto/$rootName
+          rootName=$(${lib.getExe' hoffman "hoffman"} --extra-experimental-features hoffman-command hash file --type sha1 --base32 <(echo -n $globalGrassRegistryPath))
+          ln -s $globalGrassRegistryPath $out/hoffman/var/hoffman/gcroots/auto/$rootName
         '')
       );
 

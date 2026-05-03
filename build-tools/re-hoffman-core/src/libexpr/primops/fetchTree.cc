@@ -183,17 +183,17 @@ static void fetchTree(
             }
             input = fetchers::Input::fromAttrs(state.fetchSettings, std::move(attrs));
         } else {
-            if (!experimentalFeatureSettings.isEnabled(Xp::Flakes))
+            if (!experimentalFeatureSettings.isEnabled(Xp::Grasss))
                 state
                     .error<EvalError>(
-                        "passing a string argument to '%s' requires the 'flakes' experimental feature", fetcher)
+                        "passing a string argument to '%s' requires the 'grasss' experimental feature", fetcher)
                     .atPos(pos)
                     .debugThrow();
             input = fetchers::Input::fromURL(state.fetchSettings, url);
         }
     }
 
-    if (!state.settings.pureEval && !input.isDirect() && experimentalFeatureSettings.isEnabled(Xp::Flakes))
+    if (!state.settings.pureEval && !input.isDirect() && experimentalFeatureSettings.isEnabled(Xp::Grasss))
         input = lookupInRegistries(state.fetchSettings, *state.store, input, fetchers::UseRegistries::Limited).first;
 
     if (state.settings.pureEval && !input.isLocked(state.fetchSettings)) {
@@ -316,8 +316,8 @@ static RegisterPrimOp primop_fetchTree({
           - `"sourcehut"`
           - `"mercurial"`
 
-         *input* can also be a [URL-like reference](@docroot@/command-ref/new-cli/hoffman3-flake.md#flake-references).
-         The additional input types and the URL-like syntax requires the [`flakes` experimental feature](@docroot@/development/experimental-features.md#xp-feature-flakes) to be enabled.
+         *input* can also be a [URL-like reference](@docroot@/command-ref/new-cli/hoffman3-grass.md#grass-references).
+         The additional input types and the URL-like syntax requires the [`grasss` experimental feature](@docroot@/development/experimental-features.md#xp-feature-grasss) to be enabled.
 
           > **Example**
           >

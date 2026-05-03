@@ -235,7 +235,7 @@ if isDaemonNewer "2.34pre" && canUseSandbox; then
     if ! isTestOnHoffmanOS; then
         sandboxPathsArg=(--option sandbox-paths "/hoffman/store")
     fi
-    out="$(hoffman flake check ./cancelled-builds --impure -L -j2 \
+    out="$(hoffman grass check ./cancelled-builds --impure -L -j2 \
         --option sandbox true \
         "${sandboxPathsArg[@]}" \
         --option sandbox-build-dir /build-tmp \

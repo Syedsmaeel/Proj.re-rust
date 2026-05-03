@@ -32,7 +32,7 @@ mkMesonDerivation (finalAttrs: {
       # to gather comments.
       (cpp ../libexpr-c)
       (cpp ../libfetchers-c)
-      (cpp ../libflake-c)
+      (cpp ../libgrass-c)
       (cpp ../libmain-c)
       (cpp ../libstore-c)
       (cpp ../libutil-c)

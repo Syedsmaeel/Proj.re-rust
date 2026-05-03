@@ -28,7 +28,7 @@ InputCache::CachedResult InputCache::getAccessor(
                 upsert(resolvedInput, *fetched);
             } else {
                 throw Error(
-                    "'%s' is an indirect flake reference, but registry lookups are not allowed",
+                    "'%s' is an indirect grass reference, but registry lookups are not allowed",
                     originalInput.to_string());
             }
         }

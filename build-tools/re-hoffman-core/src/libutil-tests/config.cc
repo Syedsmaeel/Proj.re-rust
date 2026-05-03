@@ -216,7 +216,7 @@ TEST(Config, toJSONOnNonEmptyConfigWithExperimentalSetting)
         "description",
         {},
         true,
-        Xp::Flakes,
+        Xp::Grasss,
     };
     setting.assign("value");
 
@@ -229,7 +229,7 @@ TEST(Config, toJSONOnNonEmptyConfigWithExperimentalSetting)
               "description": "description\n",
               "documentDefault": true,
               "value": "value",
-              "experimentalFeature": "flakes"
+              "experimentalFeature": "grasss"
             }
           })#"_json);
 }

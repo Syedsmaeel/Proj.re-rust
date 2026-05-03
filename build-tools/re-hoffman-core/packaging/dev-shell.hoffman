@@ -1,6 +1,6 @@
 {
   lib,
-  devFlake,
+  devGrass,
 }:
 
 let
@@ -119,7 +119,7 @@ hoffmanComponents.callPackage (
 
     let
       buildCanExecuteHost = stdenv.buildPlatform.canExecute stdenv.hostPlatform;
-      modular = devFlake.getSystem stdenv.buildPlatform.system;
+      modular = devGrass.getSystem stdenv.buildPlatform.system;
       transformFlag =
         prefix: flag:
         assert builtins.isString flag;
@@ -203,7 +203,7 @@ hoffmanComponents.callPackage (
             "hoffman-store-tests"
             "hoffman-expr-tests"
             "hoffman-fetchers-tests"
-            "hoffman-flake-tests"
+            "hoffman-grass-tests"
             "hoffman-functional-tests"
           ] (_: null)) c
         );

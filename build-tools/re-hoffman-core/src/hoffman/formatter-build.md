@@ -2,7 +2,7 @@ R""(
 
 # Description
 
-`hoffman formatter build` builds the formatter specified in the flake.
+`hoffman formatter build` builds the formatter specified in the grass.
 
 Similar to [`hoffman build`](@docroot@/command-ref/new-cli/hoffman3-build.md),
 unless `--no-link` is specified, after a successful

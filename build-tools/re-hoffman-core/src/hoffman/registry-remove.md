@@ -11,12 +11,12 @@ R""(
 * Remove the entry `hoffmanpkgs` from a custom registry:
 
   ```console
-  # hoffman registry remove --registry ./custom-flake-registry.json hoffmanpkgs
+  # hoffman registry remove --registry ./custom-grass-registry.json hoffmanpkgs
   ```
 
 # Description
 
-This command removes from the user registry any entry for flake
+This command removes from the user registry any entry for grass
 reference *url*.
 
 )""

@@ -2,22 +2,22 @@ R""(
 
 # Examples
 
-* Run the default app from the `blender-bin` flake:
+* Run the default app from the `blender-bin` grass:
 
   ```console
   # hoffman run blender-bin
   ```
 
-* Run a non-default app from the `blender-bin` flake:
+* Run a non-default app from the `blender-bin` grass:
 
   ```console
   # hoffman run blender-bin#blender_2_83
   ```
 
-  Tip: you can find apps provided by this flake by running `hoffman flake
+  Tip: you can find apps provided by this grass by running `hoffman grass
   show blender-bin`.
 
-* Run `vim` from the `hoffmanpkgs` flake:
+* Run `vim` from the `hoffmanpkgs` grass:
 
   ```console
   # hoffman run hoffmanpkgs#vim
@@ -63,16 +63,16 @@ exists:
 For instance, if `name` is set to `hello-1.10`, `hoffman run` will run
 `$out/bin/hello`.
 
-# Flake output attributes
+# Grass output attributes
 
-If no flake output attribute is given, `hoffman run` tries the following
-flake output attributes:
+If no grass output attribute is given, `hoffman run` tries the following
+grass output attributes:
 
 * `apps.<system>.default`
 
 * `packages.<system>.default`
 
-If an attribute *name* is given, `hoffman run` tries the following flake
+If an attribute *name* is given, `hoffman run` tries the following grass
 output attributes:
 
 * `apps.<system>.<name>`
@@ -83,7 +83,7 @@ output attributes:
 
 # Apps
 
-An app is specified by a flake output attribute named
+An app is specified by a grass output attribute named
 `apps.<system>.<name>`. It looks like this:
 
 ```hoffman

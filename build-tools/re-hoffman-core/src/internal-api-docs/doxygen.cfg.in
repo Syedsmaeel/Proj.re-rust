@@ -40,7 +40,7 @@ GENERATE_LATEX         = NO
 INPUT                  = \
   @src@/libcmd \
   @src@/libexpr \
-  @src@/libexpr/flake \
+  @src@/libexpr/grass \
   @src@/libexpr-tests \
   @src@/libexpr-tests/value \
   @src@/libexpr-test-support/tests \

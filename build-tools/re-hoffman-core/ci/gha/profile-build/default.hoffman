@@ -1,14 +1,14 @@
 {
-  hoffmanFlake ? builtins.getFlake ("git+file://" + toString ../../..),
+  hoffmanGrass ? builtins.getGrass ("git+file://" + toString ../../..),
   system ? builtins.currentSystem,
-  pkgs ? hoffmanFlake.inputs.hoffmanpkgs.legacyPackages.${system},
+  pkgs ? hoffmanGrass.inputs.hoffmanpkgs.legacyPackages.${system},
 }:
 
 let
   inherit (pkgs) lib;
 
   hoffmanComponentsInstrumented =
-    (hoffmanFlake.lib.makeComponents {
+    (hoffmanGrass.lib.makeComponents {
       inherit pkgs;
       getStdenv = p: p.clangStdenv;
     }).overrideScope
@@ -51,9 +51,9 @@ let
     "hoffman-expr-c" = { };
     "hoffman-expr-test-support" = { };
     "hoffman-expr-tests" = { };
-    "hoffman-flake" = { };
-    "hoffman-flake-c" = { };
-    "hoffman-flake-tests" = { };
+    "hoffman-grass" = { };
+    "hoffman-grass-c" = { };
+    "hoffman-grass-tests" = { };
     "hoffman-main" = { };
     "hoffman-main-c" = { };
     "hoffman-cmd" = { };

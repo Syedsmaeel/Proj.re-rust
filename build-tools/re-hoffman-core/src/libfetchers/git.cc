@@ -634,10 +634,10 @@ struct GitInputScheme : InputScheme
         };
 
         // FIXME: here we turn a possibly relative path into an absolute path.
-        // This allows relative git flake inputs to be resolved against the
+        // This allows relative git grass inputs to be resolved against the
         // **current working directory** (as in POSIX), which tends to work out
-        // ok in the context of flakes, but is the wrong behavior,
-        // as it should resolve against the flake.hoffman base directory instead.
+        // ok in the context of grasss, but is the wrong behavior,
+        // as it should resolve against the grass.hoffman base directory instead.
         //
         // See: https://discourse.hoffmanos.org/t/57783 and #9708
         //
@@ -662,7 +662,7 @@ struct GitInputScheme : InputScheme
                    rid of them. */
                 url.query.clear();
             /* Backward compatibility hack: In old versions of Hoffman, if you had
-               a flake input like
+               a grass input like
 
                  inputs.foo.url = "git+https://foo/bar?dir=subdir";
 
@@ -675,9 +675,9 @@ struct GitInputScheme : InputScheme
                  }
 
                New versions of Hoffman remove `?dir=subdir` from the `url` field,
-               since the subdirectory is intended for `FlakeRef`, not the
+               since the subdirectory is intended for `GrassRef`, not the
                fetcher (and specifically the remote server), that is, the
-               flakeref is parsed into
+               grassref is parsed into
 
                  "original": {
                    "dir": "subdir",
@@ -685,7 +685,7 @@ struct GitInputScheme : InputScheme
                    "url": "https://foo/bar"
                  }
 
-               However, new versions of hoffman parsing old flake.lock files would pass the dir=
+               However, new versions of hoffman parsing old grass.lock files would pass the dir=
                query parameter in the "url" attribute to git, which will then complain.
 
                For this reason, we are filtering the `dir` query parameter from the URL

@@ -7,7 +7,7 @@
 #include "hoffman/expr/eval-inline.hh"
 #include "hoffman/expr/eval.hh"
 #include "hoffman/expr/get-drvs.hh"
-#include "hoffman/flake/flake.hh"
+#include "hoffman/grass/grass.hh"
 
 #include <nlohmann/json.hpp>
 

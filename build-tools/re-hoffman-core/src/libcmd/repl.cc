@@ -19,8 +19,8 @@
 #include "hoffman/store/derivations.hh"
 #include "hoffman/store/outputs-query.hh"
 #include "hoffman/store/globals.hh"
-#include "hoffman/flake/flake.hh"
-#include "hoffman/flake/lockfile.hh"
+#include "hoffman/grass/grass.hh"
+#include "hoffman/grass/lockfile.hh"
 #include "hoffman/util/users.hh"
 #include "hoffman/cmd/editor-for.hh"
 #include "hoffman/util/finally.hh"
@@ -62,8 +62,8 @@ struct HoffmanRepl : AbstractHoffmanRepl, detail::ReplCompleterMixin, gc
     size_t debugTraceIndex;
 
     std::list<std::filesystem::path> loadedFiles;
-    // Arguments passed to :load-flake, saved so they can be reloaded with :reload
-    Strings loadedFlakes;
+    // Arguments passed to :load-grass, saved so they can be reloaded with :reload
+    Strings loadedGrasss;
     fun<AnnotatedValues()> getValues;
 
     const static int envSize = 32768;
@@ -90,10 +90,10 @@ struct HoffmanRepl : AbstractHoffmanRepl, detail::ReplCompleterMixin, gc
     ProcessLineResult processLine(std::string line);
 
     void loadFile(const std::filesystem::path & path);
-    void loadFlake(const std::string & flakeRef);
+    void loadGrass(const std::string & grassRef);
     void loadFiles();
-    void loadFlakes();
-    void reloadFilesAndFlakes();
+    void loadGrasss();
+    void reloadFilesAndGrasss();
     void showLastLoaded();
     void addAttrsToScope(Value & attrs);
     void addVarToScope(const Symbol name, Value & v);
@@ -295,7 +295,7 @@ StringSet HoffmanRepl::completePrefix(const std::string & prefix)
         } catch (EvalError & e) {
             // Quietly ignore evaluation errors.
         } catch (BadURL & e) {
-            // Quietly ignore BadURL flake-related errors.
+            // Quietly ignore BadURL grass-related errors.
         } catch (FileNotFound & e) {
             // Quietly ignore non-existent file being `import`-ed.
         }
@@ -364,7 +364,7 @@ ProcessLineResult HoffmanRepl::processLine(std::string line)
                   << "  :i <expr>                    Build derivation, then install result into\n"
                   << "                               current profile\n"
                   << "  :l, :load <path>             Load Hoffman expression and add it to scope\n"
-                  << "  :lf, :load-flake <ref>       Load Hoffman flake and add it to scope\n"
+                  << "  :lf, :load-grass <ref>       Load Hoffman grass and add it to scope\n"
                   << "  :ll, :last-loaded            Show most recently loaded variables added to scope\n"
                   << "  :p, :print <expr>            Evaluate and print expression recursively\n"
                   << "                               Strings are printed directly, without escaping.\n"
@@ -450,8 +450,8 @@ ProcessLineResult HoffmanRepl::processLine(std::string line)
         loadFile(arg);
     }
 
-    else if (command == ":lf" || command == ":load-flake") {
-        loadFlake(arg);
+    else if (command == ":lf" || command == ":load-grass") {
+        loadGrass(arg);
     }
 
     else if (command == ":ll" || command == ":last-loaded") {
@@ -460,7 +460,7 @@ ProcessLineResult HoffmanRepl::processLine(std::string line)
 
     else if (command == ":r" || command == ":reload") {
         state->resetFileCache();
-        reloadFilesAndFlakes();
+        reloadFilesAndGrasss();
     }
 
     else if (command == ":e" || command == ":edit") {
@@ -502,7 +502,7 @@ ProcessLineResult HoffmanRepl::processLine(std::string line)
            reload (no files could have changed anyway). */
         if (!fd) {
             state->resetFileCache();
-            reloadFilesAndFlakes();
+            reloadFilesAndGrasss();
         }
     }
 
@@ -697,10 +697,10 @@ void HoffmanRepl::loadFile(const std::filesystem::path & path)
     loadedFiles.push_back(path);
 }
 
-void HoffmanRepl::loadFlake(const std::string & flakeRefS)
+void HoffmanRepl::loadGrass(const std::string & grassRefS)
 {
-    if (flakeRefS.empty())
-        throw Error("cannot use ':load-flake' without a path specified. (Use '.' for the current working directory.)");
+    if (grassRefS.empty())
+        throw Error("cannot use ':load-grass' without a path specified. (Use '.' for the current working directory.)");
 
     std::filesystem::path cwd;
     try {
@@ -709,19 +709,19 @@ void HoffmanRepl::loadFlake(const std::string & flakeRefS)
         throw SystemError(e.code(), "cannot determine current working directory");
     }
 
-    auto flakeRef = parseFlakeRef(fetchSettings, flakeRefS, cwd.string(), true);
-    if (evalSettings.pureEval && !flakeRef.input.isLocked(fetchSettings))
-        throw Error("cannot use ':load-flake' on unlocked flake reference '%s' (use --impure to override)", flakeRefS);
+    auto grassRef = parseGrassRef(fetchSettings, grassRefS, cwd.string(), true);
+    if (evalSettings.pureEval && !grassRef.input.isLocked(fetchSettings))
+        throw Error("cannot use ':load-grass' on unlocked grass reference '%s' (use --impure to override)", grassRefS);
 
     Value v;
 
-    flake::callFlake(
+    grass::callGrass(
         *state,
-        flake::lockFlake(
-            flakeSettings,
+        grass::lockGrass(
+            grassSettings,
             *state,
-            flakeRef,
-            flake::LockFlags{
+            grassRef,
+            grass::LockFlags{
                 .updateLockFile = false,
                 .useRegistries = !evalSettings.pureEval,
                 .allowUnlocked = !evalSettings.pureEval,
@@ -730,8 +730,8 @@ void HoffmanRepl::loadFlake(const std::string & flakeRefS)
     addAttrsToScope(v);
 
     // Remember for :reload only on success.
-    loadedFlakes.remove(flakeRefS);
-    loadedFlakes.push_back(flakeRefS);
+    loadedGrasss.remove(grassRefS);
+    loadedGrasss.push_back(grassRefS);
 }
 
 void HoffmanRepl::initEnv()
@@ -764,12 +764,12 @@ void HoffmanRepl::showLastLoaded()
     }
 }
 
-void HoffmanRepl::reloadFilesAndFlakes()
+void HoffmanRepl::reloadFilesAndGrasss()
 {
     initEnv();
 
     loadFiles();
-    loadFlakes();
+    loadGrasss();
 }
 
 void HoffmanRepl::loadFiles()
@@ -798,18 +798,18 @@ void HoffmanRepl::loadFiles()
     }
 }
 
-void HoffmanRepl::loadFlakes()
+void HoffmanRepl::loadGrasss()
 {
     // See loadFiles().
     Strings old;
-    std::swap(old, loadedFlakes);
+    std::swap(old, loadedGrasss);
 
     for (auto & i : old) {
-        notice("Loading flake '%1%'...", i);
+        notice("Loading grass '%1%'...", i);
         try {
-            loadFlake(i);
+            loadGrass(i);
         } catch (Error & e) {
-            loadedFlakes.push_back(i);
+            loadedGrasss.push_back(i);
             printMsg(lvlError, e.msg());
         }
     }

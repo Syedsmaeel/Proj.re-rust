@@ -1,0 +1,16 @@
+error:
+       … while calling the 'seq' builtin
+         at /pwd/lang/eval-fail-grass-ref-to-string-negative-integer.hoffman:4:1:
+            3| in
+            4| builtins.seq n (
+             | ^
+            5|   builtins.grassRefToString {
+
+       … while calling the 'grassRefToString' builtin
+         at /pwd/lang/eval-fail-grass-ref-to-string-negative-integer.hoffman:5:3:
+            4| builtins.seq n (
+            5|   builtins.grassRefToString {
+             |   ^
+            6|     type = "github";
+
+       error: negative value given for grass ref attr repo: -1

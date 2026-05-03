@@ -54,7 +54,7 @@ result-*
 # Mac OS
 .DS_Store
 
-flake-regressions
+grass-regressions
 
 # direnv
 .direnv/

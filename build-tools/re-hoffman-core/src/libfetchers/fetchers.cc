@@ -447,7 +447,7 @@ std::optional<Hash> Input::getRev() const
             hash = Hash::parseAnyPrefixed(*s);
         } catch (BadHash & e) {
             // Default to sha1 for backwards compatibility with existing
-            // usages (e.g. `builtins.fetchTree` calls or flake inputs).
+            // usages (e.g. `builtins.fetchTree` calls or grass inputs).
             hash = Hash::parseAny(*s, HashAlgorithm::SHA1);
         }
     }

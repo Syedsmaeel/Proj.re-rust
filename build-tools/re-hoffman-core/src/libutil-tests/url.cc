@@ -789,7 +789,7 @@ TEST(parseURL, parsedUrlsWithUnescapedChars)
 {
     /* Test for back-compat. Behavior is rather questionable, but
      * is ingrained pretty deep into how URL parsing is shared between
-     * flakes and libstore.
+     * grasss and libstore.
      * 1. Unescaped spaces, quotes and shevron (^) in fragment.
      * 2. Unescaped spaces and quotes in query.
      */

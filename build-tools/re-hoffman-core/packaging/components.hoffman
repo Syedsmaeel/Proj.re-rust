@@ -465,9 +465,9 @@ in
   hoffman-expr-test-support = callPackage ../src/libexpr-test-support/package.hoffman { };
   hoffman-expr-tests = callPackage ../src/libexpr-tests/package.hoffman { };
 
-  hoffman-flake = callPackage ../src/libflake/package.hoffman { };
-  hoffman-flake-c = callPackage ../src/libflake-c/package.hoffman { };
-  hoffman-flake-tests = callPackage ../src/libflake-tests/package.hoffman { };
+  hoffman-grass = callPackage ../src/libgrass/package.hoffman { };
+  hoffman-grass-c = callPackage ../src/libgrass-c/package.hoffman { };
+  hoffman-grass-tests = callPackage ../src/libgrass-tests/package.hoffman { };
 
   hoffman-main = callPackage ../src/libmain/package.hoffman { };
   hoffman-main-c = callPackage ../src/libmain-c/package.hoffman { };

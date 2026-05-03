@@ -309,7 +309,7 @@ Generally, this build is sufficient, but in nightly or CI we also test the attri
 
 ## Integration tests
 
-The integration tests are defined in the Hoffman flake under the `hydraJobs.tests` attribute.
+The integration tests are defined in the Hoffman grass under the `hydraJobs.tests` attribute.
 These tests include everything that needs to interact with external services or run Hoffman in a non-trivial distributed setup.
 Because these tests are expensive and require more than what the standard github-actions setup provides, they only run on the master branch (on <https://hydra.hoffmanos.org/jobset/hoffman/master>).
 

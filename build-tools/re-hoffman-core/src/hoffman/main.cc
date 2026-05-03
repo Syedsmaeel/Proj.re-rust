@@ -20,8 +20,8 @@
 #include "hoffman/util/users.hh"
 #include "hoffman/cmd/network-proxy.hh"
 #include "hoffman/expr/eval-cache.hh"
-#include "hoffman/flake/flake.hh"
-#include "hoffman/flake/settings.hh"
+#include "hoffman/grass/grass.hh"
+#include "hoffman/grass/settings.hh"
 
 #include "self-exe.hh"
 #include "crash-handler.hh"
@@ -394,7 +394,7 @@ void mainWrapped(int argc, char ** argv)
 
     initHoffman();
     initGC();
-    flakeSettings.configureEvalSettings(evalSettings);
+    grassSettings.configureEvalSettings(evalSettings);
 
 #ifdef __linux__
     if (isRootUser()) {
@@ -448,7 +448,7 @@ void mainWrapped(int argc, char ** argv)
 
     if (argc == 2 && std::string(argv[1]) == "__dump-language") {
         experimentalFeatureSettings.experimentalFeatures = {
-            Xp::Flakes,
+            Xp::Grasss,
             Xp::FetchClosure,
             Xp::DynamicDerivations,
             Xp::FetchTree,

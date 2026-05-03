@@ -1,6 +1,6 @@
 # Release 2.6 (2022-01-24)
 
-* The Hoffman CLI now searches for a `flake.hoffman` up until the root of the current
+* The Hoffman CLI now searches for a `grass.hoffman` up until the root of the current
   Git repository or a filesystem boundary rather than just in the current
   directory.
 * The TOML parser used by `builtins.fromTOML` has been replaced by [a
@@ -15,7 +15,7 @@
 * The `commit-lockfile-summary` option can be set to a non-empty
   string to override the commit summary used when committing an updated
   lockfile.  This may be used in conjunction with the `hoffmanConfig`
-  attribute in `flake.hoffman` to better conform to repository
+  attribute in `grass.hoffman` to better conform to repository
   conventions.
 * `docker run -ti hoffmanos/hoffman:master` will place you in the Docker
   container with the latest version of Hoffman from the `master` branch.

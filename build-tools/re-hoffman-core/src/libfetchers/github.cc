@@ -358,7 +358,7 @@ struct GitArchiveInputScheme : InputScheme
 
     std::optional<ExperimentalFeature> experimentalFeature() const override
     {
-        return Xp::Flakes;
+        return Xp::Grasss;
     }
 
     std::optional<std::string> getFingerprint(Store & store, const Input & input) const override

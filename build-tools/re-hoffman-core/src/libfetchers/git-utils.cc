@@ -438,7 +438,7 @@ struct GitRepoImpl : GitRepo, std::enable_shared_from_this<GitRepoImpl>
                     throw Error(
                         "Failed to retrieve the parent of Git commit '%s': %s. "
                         "This may be due to an incomplete repository history. "
-                        "To resolve this, either enable the shallow parameter in your flake URL (?shallow=1) "
+                        "To resolve this, either enable the shallow parameter in your grass URL (?shallow=1) "
                         "or add set the shallow parameter to true in builtins.fetchGit, "
                         "or fetch the complete history for this branch.",
                         *git_commit_id(commit),

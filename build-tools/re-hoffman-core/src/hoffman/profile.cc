@@ -1,17 +1,17 @@
 #include "hoffman/cmd/command.hh"
-#include "hoffman/cmd/installable-flake.hh"
+#include "hoffman/cmd/installable-grass.hh"
 #include "hoffman/main/common-args.hh"
 #include "hoffman/main/shared.hh"
 #include "hoffman/store/store-api.hh"
 #include "hoffman/store/derivations.hh"
 #include "hoffman/util/archive.hh"
 #include "hoffman/store/builtins/buildenv.hh"
-#include "hoffman/flake/flakeref.hh"
+#include "hoffman/grass/grassref.hh"
 #include "hoffman-env/user-env.hh"
 #include "hoffman/store/profiles.hh"
 #include "hoffman/store/names.hh"
 #include "hoffman/util/url.hh"
-#include "hoffman/flake/url-name.hh"
+#include "hoffman/grass/url-name.hh"
 #include "hoffman/fetchers/fetch-settings.hh"
 
 #include <nlohmann/json.hpp>
@@ -24,9 +24,9 @@ namespace hoffman {
 
 struct ProfileElementSource
 {
-    FlakeRef originalRef;
+    GrassRef originalRef;
     // FIXME: record original attrpath.
-    FlakeRef lockedRef;
+    GrassRef lockedRef;
     std::string attrPath;
     ExtendedOutputsSpec outputs;
 
@@ -65,7 +65,7 @@ struct ProfileElement
 
     /**
      * Return a string representing an installable corresponding to the current
-     * element, either a flakeref or a plain store path
+     * element, either a grassref or a plain store path
      */
     StringSet toInstallables(Store & store)
     {
@@ -106,7 +106,7 @@ std::string getNameFromElement(const ProfileElement & element)
 {
     std::optional<std::string> result = std::nullopt;
     if (element.source) {
-        // Seems to be for Flake URLs
+        // Seems to be for Grass URLs
         result = getNameFromURL(parseURL(element.source->to_string(), /*lenient=*/true));
     }
     return result.value_or(element.identifier());
@@ -156,8 +156,8 @@ struct ProfileManifest
                 }
                 if (e.value(sUrl, "") != "") {
                     element.source = ProfileElementSource{
-                        parseFlakeRef(fetchSettings, e[sOriginalUrl]),
-                        parseFlakeRef(fetchSettings, e[sUrl]),
+                        parseGrassRef(fetchSettings, e[sOriginalUrl]),
+                        parseGrassRef(fetchSettings, e[sUrl]),
                         e["attrPath"],
                         e["outputs"].get<ExtendedOutputsSpec>()};
                 }
@@ -375,10 +375,10 @@ struct CmdProfileAdd : InstallablesCommand, MixDefaultProfile
                 continue;
             auto & [res, info] = iter->second;
 
-            if (auto * info2 = dynamic_cast<ExtraPathInfoFlake *>(&*info)) {
+            if (auto * info2 = dynamic_cast<ExtraPathInfoGrass *>(&*info)) {
                 element.source = ProfileElementSource{
-                    .originalRef = info2->flake.originalRef,
-                    .lockedRef = info2->flake.lockedRef,
+                    .originalRef = info2->grass.originalRef,
+                    .lockedRef = info2->grass.lockedRef,
                     .attrPath = info2->value.attrPath,
                     .outputs = info2->value.extendedOutputsSpec,
                 };
@@ -694,7 +694,7 @@ struct CmdProfileUpgrade : virtual SourceExprCommand, MixProfileElementMatchers,
 {
     std::string description() override
     {
-        return "upgrade packages using their most recent flake";
+        return "upgrade packages using their most recent grass";
     }
 
     std::string doc() override
@@ -726,13 +726,13 @@ struct CmdProfileUpgrade : virtual SourceExprCommand, MixProfileElementMatchers,
 
             if (!element.source) {
                 warn(
-                    "Found package '%s', but it was not added from a flake, so it can't be checked for upgrades!",
+                    "Found package '%s', but it was not added from a grass, so it can't be checked for upgrades!",
                     element.identifier());
                 continue;
             }
             if (element.source->originalRef.input.isLocked(getEvalState()->fetchSettings)) {
                 warn(
-                    "Found package '%s', but it was added from a locked flake reference so it can't be upgraded!",
+                    "Found package '%s', but it was added from a locked grass reference so it can't be upgraded!",
                     element.identifier());
                 continue;
             }
@@ -741,10 +741,10 @@ struct CmdProfileUpgrade : virtual SourceExprCommand, MixProfileElementMatchers,
 
             Activity act(*logger, lvlChatty, actUnknown, fmt("checking '%s' for updates", element.source->attrPath));
 
-            auto installable = make_ref<InstallableFlake>(
+            auto installable = make_ref<InstallableGrass>(
                 this,
                 getEvalState(),
-                FlakeRef(element.source->originalRef),
+                GrassRef(element.source->originalRef),
                 "",
                 element.source->outputs,
                 Strings{element.source->attrPath},
@@ -754,24 +754,24 @@ struct CmdProfileUpgrade : virtual SourceExprCommand, MixProfileElementMatchers,
             auto derivedPaths = installable->toDerivedPaths();
             if (derivedPaths.empty())
                 continue;
-            auto * infop = dynamic_cast<ExtraPathInfoFlake *>(&*derivedPaths[0].info);
-            // `InstallableFlake` should use `ExtraPathInfoFlake`.
+            auto * infop = dynamic_cast<ExtraPathInfoGrass *>(&*derivedPaths[0].info);
+            // `InstallableGrass` should use `ExtraPathInfoGrass`.
             assert(infop);
             auto & info = *infop;
 
-            if (info.flake.lockedRef.input.isLocked(getEvalState()->fetchSettings)
-                && element.source->lockedRef == info.flake.lockedRef)
+            if (info.grass.lockedRef.input.isLocked(getEvalState()->fetchSettings)
+                && element.source->lockedRef == info.grass.lockedRef)
                 continue;
 
             printInfo(
-                "upgrading '%s' from flake '%s' to '%s'",
+                "upgrading '%s' from grass '%s' to '%s'",
                 element.source->attrPath,
                 element.source->lockedRef,
-                info.flake.lockedRef);
+                info.grass.lockedRef);
 
             element.source = ProfileElementSource{
-                .originalRef = installable->flakeRef,
-                .lockedRef = info.flake.lockedRef,
+                .originalRef = installable->grassRef,
+                .lockedRef = info.grass.lockedRef,
                 .attrPath = info.value.attrPath,
                 .outputs = installable->extendedOutputsSpec,
             };
@@ -832,9 +832,9 @@ struct CmdProfileList : virtual EvalCommand, virtual StoreCommand, MixDefaultPro
                     element.active ? "" : " " ANSI_RED "(inactive)" ANSI_NORMAL);
                 if (element.source) {
                     logger->cout(
-                        "Flake attribute:    %s%s", element.source->attrPath, element.source->outputs.to_string());
-                    logger->cout("Original flake URL: %s", element.source->originalRef.to_string());
-                    logger->cout("Locked flake URL:   %s", element.source->lockedRef.to_string());
+                        "Grass attribute:    %s%s", element.source->attrPath, element.source->outputs.to_string());
+                    logger->cout("Original grass URL: %s", element.source->originalRef.to_string());
+                    logger->cout("Locked grass URL:   %s", element.source->lockedRef.to_string());
                 }
                 logger->cout(
                     "Store paths:        %s", concatStringsSep(" ", store->printStorePathSet(element.storePaths)));

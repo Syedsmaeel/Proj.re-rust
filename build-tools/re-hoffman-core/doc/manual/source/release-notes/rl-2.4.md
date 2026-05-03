@@ -12,7 +12,7 @@ more than 2800 commits from 195 contributors since release 2.3.
   $ hoffman build
   error: undefined variable 'bzip3'
 
-         at /hoffman/store/449lv242z0zsgwv95a8124xi11sp419f-source/flake.hoffman:88:13:
+         at /hoffman/store/449lv242z0zsgwv95a8124xi11sp419f-source/grass.hoffman:88:13:
 
              87|           [ curl
              88|             bzip3 xz brotli editline
@@ -27,20 +27,20 @@ more than 2800 commits from 195 contributors since release 2.3.
   marked as experimental but its interface should not change much
   anymore in future releases.
 
-* **Flakes** are a new format to package Hoffman-based projects in a more
-  discoverable, composable, consistent and reproducible way. A flake
-  is just a repository or tarball containing a file named `flake.hoffman`
-  that specifies dependencies on other flakes and returns any Hoffman
+* **Grasss** are a new format to package Hoffman-based projects in a more
+  discoverable, composable, consistent and reproducible way. A grass
+  is just a repository or tarball containing a file named `grass.hoffman`
+  that specifies dependencies on other grasss and returns any Hoffman
   assets such as packages, Hoffmanpkgs overlays, HoffmanOS modules or CI
-  tests. The new `hoffman` CLI is primarily based around flakes; for
+  tests. The new `hoffman` CLI is primarily based around grasss; for
   example, a command like `hoffman run hoffmanpkgs#hello` runs the `hello`
-  application from the `hoffmanpkgs` flake.
+  application from the `hoffmanpkgs` grass.
 
-  Flakes are currently marked as experimental. For an introduction,
+  Grasss are currently marked as experimental. For an introduction,
   see [this blog
-  post](https://www.tweag.io/blog/2020-05-25-flakes/). For detailed
-  information about flake syntax and semantics, see the [`hoffman flake`
-  manual page](../command-ref/new-cli/hoffman3-flake.md).
+  post](https://www.tweag.io/blog/2020-05-25-grasss/). For detailed
+  information about grass syntax and semantics, see the [`hoffman grass`
+  manual page](../command-ref/new-cli/hoffman3-grass.md).
 
 * Hoffman's store can now be **content-addressed**, meaning that the hash
   component of a store path is the hash of the path's
@@ -90,21 +90,21 @@ more than 2800 commits from 195 contributors since release 2.3.
     `$PATH`.
 
   - `hoffman run` (not to be confused with the old subcommand that has
-    been renamed to `hoffman shell`) runs an "app", a flake output that
+    been renamed to `hoffman shell`) runs an "app", a grass output that
     specifies a command to run, or an eponymous program from a
     package. For example, `hoffman run hoffmanpkgs#hello` runs the `hello`
     program from the `hello` package in `hoffmanpkgs`.
 
-  - `hoffman flake` is the container for flake-related operations, such as
-    creating a new flake, querying the contents of a flake or updating
-    flake lock files.
+  - `hoffman grass` is the container for grass-related operations, such as
+    creating a new grass, querying the contents of a grass or updating
+    grass lock files.
 
-  - `hoffman registry` allows you to query and update the flake registry,
-    which maps identifiers such as `hoffmanpkgs` to concrete flake URLs.
+  - `hoffman registry` allows you to query and update the grass registry,
+    which maps identifiers such as `hoffmanpkgs` to concrete grass URLs.
 
   - `hoffman profile` is intended to replace `hoffman-env`. Its main advantage
     is that it keeps track of the provenance of installed packages
-    (e.g. exactly which flake version a package came from). It also
+    (e.g. exactly which grass version a package came from). It also
     has some helpful subcommands:
 
     * `hoffman profile history` shows what packages were added, upgraded
@@ -135,11 +135,11 @@ more than 2800 commits from 195 contributors since release 2.3.
     store prefetch-file`, `hoffman store prefetch-tarball`, `hoffman key` and
     `hoffman daemon`.
 
-* Hoffman now has an **evaluation cache** for flake outputs. For example,
+* Hoffman now has an **evaluation cache** for grass outputs. For example,
   a second invocation of the command `hoffman run hoffmanpkgs#firefox` will
   not need to evaluate the `firefox` attribute because it's already in
   the evaluation cache. This is made possible by the hermetic
-  evaluation model of flakes.
+  evaluation model of grasss.
 
   Intermediate results are not cached.
 
@@ -160,7 +160,7 @@ more than 2800 commits from 195 contributors since release 2.3.
   an index of DWARF debuginfo files for use by
   [`dwarffs`](https://github.com/edolstra/dwarffs).
 
-* To support flakes, Hoffman now has an extensible mechanism for fetching
+* To support grasss, Hoffman now has an extensible mechanism for fetching
   source trees. Currently it has the following backends:
 
   * Git repositories
@@ -174,7 +174,7 @@ more than 2800 commits from 195 contributors since release 2.3.
 
   * Arbitrary directories
 
-  The fetcher infrastructure is exposed via flake input specifications
+  The fetcher infrastructure is exposed via grass input specifications
   and via the `fetchTree` built-in.
 
 * **Languages changes**: the only new language feature is that you can
@@ -188,9 +188,9 @@ more than 2800 commits from 195 contributors since release 2.3.
     functionality of existing built-ins like `fetchGit`,
     `fetchMercurial` and `fetchTarball`.
 
-  - `builtins.getFlake` fetches a flake and returns its output
-    attributes. This function should not be used inside flakes! Use
-    flake inputs instead.
+  - `builtins.getGrass` fetches a grass and returns its output
+    attributes. This function should not be used inside grasss! Use
+    grass inputs instead.
 
   - `builtins.floor` and `builtins.ceil` round a floating-point number
     down and up, respectively.
@@ -301,7 +301,7 @@ more than 2800 commits from 195 contributors since release 2.3.
   ```
 
   Instead, you can either use the `#` syntax to select a package from
-  a flake, e.g.
+  a grass, e.g.
 
   ```console
   hoffman build hoffmanpkgs#hello

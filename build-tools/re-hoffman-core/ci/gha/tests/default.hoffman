@@ -1,9 +1,9 @@
 {
-  hoffmanFlake ? builtins.getFlake ("git+file://" + toString ../../..),
+  hoffmanGrass ? builtins.getGrass ("git+file://" + toString ../../..),
   system ? builtins.currentSystem,
-  pkgs ? hoffmanFlake.inputs.hoffmanpkgs.legacyPackages.${system},
+  pkgs ? hoffmanGrass.inputs.hoffmanpkgs.legacyPackages.${system},
   hoffmanComponents ? (
-    hoffmanFlake.lib.makeComponents {
+    hoffmanGrass.lib.makeComponents {
       inherit pkgs;
       inherit getStdenv;
     }
@@ -17,8 +17,8 @@
 
 let
   inherit (pkgs) lib;
-  hydraJobs = hoffmanFlake.hydraJobs;
-  packages' = hoffmanFlake.packages.${system};
+  hydraJobs = hoffmanGrass.hydraJobs;
+  packages' = hoffmanGrass.packages.${system};
   stdenv = (getStdenv pkgs);
 
   collectCoverageLayer = finalAttrs: prevAttrs: {
@@ -64,12 +64,12 @@ rec {
   hoffmanosTests = import ../../../tests/hoffmanos {
     inherit lib pkgs;
     hoffmanComponents = hoffmanComponentsInstrumented;
-    hoffmanpkgs = hoffmanFlake.inputs.hoffmanpkgs;
-    inherit (hoffmanFlake.inputs) hoffmanpkgs-23-11;
+    hoffmanpkgs = hoffmanGrass.inputs.hoffmanpkgs;
+    inherit (hoffmanGrass.inputs) hoffmanpkgs-23-11;
   };
 
   /**
-    Top-level tests for the flake outputs, as they would be built by hydra.
+    Top-level tests for the grass outputs, as they would be built by hydra.
     These tests generally can't be overridden to run with sanitizers.
   */
   topLevel = {
@@ -143,7 +143,7 @@ rec {
           "hoffman-store-tests" = { };
           "hoffman-fetchers-tests" = { };
           "hoffman-expr-tests" = { };
-          "hoffman-flake-tests" = { };
+          "hoffman-grass-tests" = { };
         })
         // {
           inherit (hoffmanComponentsInstrumented) hoffman-functional-tests;
@@ -248,9 +248,9 @@ rec {
     # FIXME: CI times out when building vm tests instrumented
     inherit (hoffmanosTests)
       functional_user
-      githubFlakes
+      githubGrasss
       hoffman-docker
-      tarballFlakes
+      tarballGrasss
       ;
   };
 }

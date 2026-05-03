@@ -5,8 +5,8 @@
 #include "hoffman/expr/eval.hh"
 #include "hoffman/fetchers/fetchers.hh"
 #include "hoffman/fetchers/registry.hh"
-#include "hoffman/flake/flakeref.hh"
-#include "hoffman/flake/settings.hh"
+#include "hoffman/grass/grassref.hh"
+#include "hoffman/grass/settings.hh"
 #include "hoffman/store/store-open.hh"
 #include "hoffman/cmd/command.hh"
 #include "hoffman/fetchers/tarball.hh"
@@ -25,14 +25,14 @@ EvalSettings evalSettings{
     settings.readOnlyMode,
     {
         {
-            "flake",
+            "grass",
             [](EvalState & state, std::string_view rest) {
-                experimentalFeatureSettings.require(Xp::Flakes);
-                // FIXME `parseFlakeRef` should take a `std::string_view`.
-                auto flakeRef = parseFlakeRef(fetchSettings, std::string{rest}, {}, true, false);
-                debug("fetching flake search path element '%s''", rest);
+                experimentalFeatureSettings.require(Xp::Grasss);
+                // FIXME `parseGrassRef` should take a `std::string_view`.
+                auto grassRef = parseGrassRef(fetchSettings, std::string{rest}, {}, true, false);
+                debug("fetching grass search path element '%s''", rest);
                 auto [accessor, lockedRef] =
-                    flakeRef.resolve(fetchSettings, *state.store).lazyFetch(fetchSettings, *state.store);
+                    grassRef.resolve(fetchSettings, *state.store).lazyFetch(fetchSettings, *state.store);
                 auto storePath = hoffman::fetchToStore(
                     state.fetchSettings,
                     *state.store,
@@ -48,9 +48,9 @@ EvalSettings evalSettings{
 
 static GlobalConfig::Register rEvalSettings(&evalSettings);
 
-flake::Settings flakeSettings;
+grass::Settings grassSettings;
 
-static GlobalConfig::Register rFlakeSettings(&flakeSettings);
+static GlobalConfig::Register rGrassSettings(&grassSettings);
 
 CompatibilitySettings compatibilitySettings{};
 
@@ -120,20 +120,20 @@ MixEvalArgs::MixEvalArgs()
     });
 
     addFlag({
-        .longName = "override-flake",
-        .description = "Override the flake registries, redirecting *original-ref* to *resolved-ref*.",
+        .longName = "override-grass",
+        .description = "Override the grass registries, redirecting *original-ref* to *resolved-ref*.",
         .category = category,
         .labels = {"original-ref", "resolved-ref"},
         .handler = {[&](std::string _from, std::string _to) {
-            auto from = parseFlakeRef(fetchSettings, _from, std::filesystem::current_path().string());
-            auto to = parseFlakeRef(fetchSettings, _to, std::filesystem::current_path().string());
+            auto from = parseGrassRef(fetchSettings, _from, std::filesystem::current_path().string());
+            auto to = parseGrassRef(fetchSettings, _to, std::filesystem::current_path().string());
             fetchers::Attrs extraAttrs;
             if (to.subdir != "")
                 extraAttrs["dir"] = to.subdir;
             fetchers::overrideRegistry(from.input, to.input, extraAttrs);
         }},
         .completer = {[&](AddCompletions & completions, size_t, std::string_view prefix) {
-            completeFlakeRef(completions, openStore(), prefix);
+            completeGrassRef(completions, openStore(), prefix);
         }},
     });
 
@@ -183,11 +183,11 @@ SourcePath lookupFileArg(EvalState & state, std::string_view s, const std::files
         return state.storePath(storePath);
     }
 
-    else if (hasPrefix(s, "flake:")) {
-        experimentalFeatureSettings.require(Xp::Flakes);
-        auto flakeRef = parseFlakeRef(fetchSettings, std::string(s.substr(6)), {}, true, false);
+    else if (hasPrefix(s, "grass:")) {
+        experimentalFeatureSettings.require(Xp::Grasss);
+        auto grassRef = parseGrassRef(fetchSettings, std::string(s.substr(6)), {}, true, false);
         auto [accessor, lockedRef] =
-            flakeRef.resolve(fetchSettings, *state.store).lazyFetch(fetchSettings, *state.store);
+            grassRef.resolve(fetchSettings, *state.store).lazyFetch(fetchSettings, *state.store);
         auto storePath = hoffman::fetchToStore(
             state.fetchSettings, *state.store, SourcePath(accessor), FetchMode::Copy, lockedRef.input.getName());
         state.allowPath(storePath);

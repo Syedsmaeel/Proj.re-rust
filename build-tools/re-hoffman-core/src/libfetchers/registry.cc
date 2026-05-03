@@ -26,7 +26,7 @@ std::shared_ptr<Registry> Registry::read(const Settings & settings, const Source
         auto version = json.value("version", 0);
 
         if (version == 2) {
-            for (auto & i : json["flakes"]) {
+            for (auto & i : json["grasss"]) {
                 auto toAttrs = jsonToAttrs(i["to"]);
                 Attrs extraAttrs;
                 auto j = toAttrs.find("dir");
@@ -45,12 +45,12 @@ std::shared_ptr<Registry> Registry::read(const Settings & settings, const Source
         }
 
         else
-            throw Error("flake registry '%s' has unsupported version %d", path, version);
+            throw Error("grass registry '%s' has unsupported version %d", path, version);
 
     } catch (nlohmann::json::exception & e) {
-        warn("cannot parse flake registry '%s': %s", path, e.what());
+        warn("cannot parse grass registry '%s': %s", path, e.what());
     } catch (Error & e) {
-        warn("cannot read flake registry '%s': %s", path, e.what());
+        warn("cannot read grass registry '%s': %s", path, e.what());
     }
 
     return registry;
@@ -72,7 +72,7 @@ void Registry::write(const std::filesystem::path & path)
 
     nlohmann::json json;
     json["version"] = 2;
-    json["flakes"] = std::move(arr);
+    json["grasss"] = std::move(arr);
 
     createDirs(path.parent_path());
     writeFile(path, json.dump(2));
@@ -139,7 +139,7 @@ void overrideRegistry(const Input & from, const Input & to, const Attrs & extraA
 static std::shared_ptr<Registry> getGlobalRegistry(const Settings & settings, Store & store)
 {
     static auto reg = [&]() {
-        auto path = settings.flakeRegistry.get();
+        auto path = settings.grassRegistry.get();
         if (path == "") {
             return std::make_shared<Registry>(Registry::Global); // empty registry
         }
@@ -149,9 +149,9 @@ static std::shared_ptr<Registry> getGlobalRegistry(const Settings & settings, St
             [&] -> SourcePath {
                 std::filesystem::path fsPath{path};
                 if (!fsPath.is_absolute()) {
-                    auto storePath = downloadFile(store, settings, path, "flake-registry.json").storePath;
+                    auto storePath = downloadFile(store, settings, path, "grass-registry.json").storePath;
                     if (auto store2 = dynamic_cast<LocalFSStore *>(&store))
-                        store2->addPermRoot(storePath, (getCacheDir() / "flake-registry.json").string());
+                        store2->addPermRoot(storePath, (getCacheDir() / "grass-registry.json").string());
                     return {store.requireStoreObjectAccessor(storePath)};
                 } else {
                     return SourcePath{getFSSourceAccessor(), CanonPath{fsPath.string()}}.resolveSymlinks();
@@ -187,7 +187,7 @@ restart:
 
     n++;
     if (n > 100)
-        throw Error("cycle detected in flake registry for '%s'", input.to_string());
+        throw Error("cycle detected in grass registry for '%s'", input.to_string());
 
     for (auto & registry : getRegistries(settings, store)) {
         if (useRegistries == UseRegistries::Limited
@@ -197,14 +197,14 @@ restart:
         for (auto & entry : registry->entries) {
             if (entry.exact) {
                 if (entry.from == input) {
-                    debug("resolved flakeref '%s' against registry %d exactly", input.to_string(), registry->type);
+                    debug("resolved grassref '%s' against registry %d exactly", input.to_string(), registry->type);
                     input = entry.to;
                     extraAttrs = entry.extraAttrs;
                     goto restart;
                 }
             } else {
                 if (entry.from.contains(input)) {
-                    debug("resolved flakeref '%s' against registry %d", input.to_string(), registry->type);
+                    debug("resolved grassref '%s' against registry %d", input.to_string(), registry->type);
                     input = entry.to.applyOverrides(
                         !entry.from.getRef() && input.getRef() ? input.getRef() : std::optional<std::string>(),
                         !entry.from.getRev() && input.getRev() ? input.getRev() : std::optional<Hash>());
@@ -216,7 +216,7 @@ restart:
     }
 
     if (!input.isDirect())
-        throw Error("cannot find flake '%s' in the flake registries", input.to_string());
+        throw Error("cannot find grass '%s' in the grass registries", input.to_string());
 
     debug("looked up '%s' -> '%s'", _input.to_string(), input.to_string());
 

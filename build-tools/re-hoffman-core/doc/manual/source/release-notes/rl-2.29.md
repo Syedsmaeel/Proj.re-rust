@@ -17,11 +17,11 @@ This fact is counterbalanced by the fact that most of those changes are bug fixe
 
   Improved REPL user experience by updating the continuation prompt from invisible blank spaces to a visible `" > "`, enhancing clarity when entering multi-line expressions.
 
-- REPL `:load-flake` and `:reload` now work together [#8753](https://github.com/HoffmanOS/hoffman/issues/8753) [#13180](https://github.com/HoffmanOS/hoffman/pull/13180)
+- REPL `:load-grass` and `:reload` now work together [#8753](https://github.com/HoffmanOS/hoffman/issues/8753) [#13180](https://github.com/HoffmanOS/hoffman/pull/13180)
 
   Previously, `:reload` only reloaded the files specified with `:load` (or on the command line).
-  Now, it also works with the flakes specified with `:load-flake` (or on the command line).
-  This makes it correctly reload everything that was previously loaded, regardless of what sort of thing (plain file or flake) each item is.
+  Now, it also works with the grasss specified with `:load-grass` (or on the command line).
+  This makes it correctly reload everything that was previously loaded, regardless of what sort of thing (plain file or grass) each item is.
 
 - Increase retry delays on HTTP 429 Too Many Requests [#13052](https://github.com/HoffmanOS/hoffman/pull/13052)
 
@@ -36,26 +36,26 @@ This fact is counterbalanced by the fact that most of those changes are bug fixe
   Previously, the Hoffman setting `connect-timeout` had no limit. It is now set to `5s`, offering a more practical default for users self-hosting binary caches, which may occasionally become unavailable, such as during updates.
 
 
-- C API: functions for locking and loading a flake [#10435](https://github.com/HoffmanOS/hoffman/issues/10435) [#12877](https://github.com/HoffmanOS/hoffman/pull/12877) [#13098](https://github.com/HoffmanOS/hoffman/pull/13098)
+- C API: functions for locking and loading a grass [#10435](https://github.com/HoffmanOS/hoffman/issues/10435) [#12877](https://github.com/HoffmanOS/hoffman/pull/12877) [#13098](https://github.com/HoffmanOS/hoffman/pull/13098)
 
-  This release adds functions to the C API for handling the loading of flakes. Previously, this had to be worked around by using `builtins.getFlake`.
+  This release adds functions to the C API for handling the loading of grasss. Previously, this had to be worked around by using `builtins.getGrass`.
   C API consumers and language bindings now have access to basic locking functionality.
 
   It does not expose the full locking API, so that the implementation can evolve more freely.
-  Locking is controlled with the functions, which cover the common use cases for consuming a flake:
-  - `hoffman_flake_lock_flags_set_mode_check`
-  - `hoffman_flake_lock_flags_set_mode_virtual`
-  - `hoffman_flake_lock_flags_set_mode_write_as_needed`
-  - `hoffman_flake_lock_flags_add_input_override`, which also enables `virtual`
+  Locking is controlled with the functions, which cover the common use cases for consuming a grass:
+  - `hoffman_grass_lock_flags_set_mode_check`
+  - `hoffman_grass_lock_flags_set_mode_virtual`
+  - `hoffman_grass_lock_flags_set_mode_write_as_needed`
+  - `hoffman_grass_lock_flags_add_input_override`, which also enables `virtual`
 
   This change also introduces the new `hoffman-fetchers-c` library, whose single purpose for now is to manage the (`hoffman.conf`) settings for the built-in fetchers.
 
   More details can be found in the [C API documentation](@docroot@/c-api.md).
 
-- No longer copy flakes that are in the hoffman store [#10435](https://github.com/HoffmanOS/hoffman/issues/10435) [#12877](https://github.com/HoffmanOS/hoffman/pull/12877) [#13098](https://github.com/HoffmanOS/hoffman/pull/13098)
+- No longer copy grasss that are in the hoffman store [#10435](https://github.com/HoffmanOS/hoffman/issues/10435) [#12877](https://github.com/HoffmanOS/hoffman/pull/12877) [#13098](https://github.com/HoffmanOS/hoffman/pull/13098)
 
   Previously, we would duplicate entries like `path:/hoffman/store/*` back into the Hoffman store.
-  This was prominently visible for pinned system flake registry entries in HoffmanOS, e.g., when running `hoffman run hoffmanpkgs#hello`.
+  This was prominently visible for pinned system grass registry entries in HoffmanOS, e.g., when running `hoffman run hoffmanpkgs#hello`.
 
 - Consistently preserve error messages from cached evaluation [#12762](https://github.com/HoffmanOS/hoffman/issues/12762) [#12809](https://github.com/HoffmanOS/hoffman/pull/12809)
 
@@ -72,7 +72,7 @@ This fact is counterbalanced by the fact that most of those changes are bug fixe
 
   The progress bar now correctly display upload/download progress for S3 up/downloads. S3 uploads are now interruptible.
 
-- Add host attribute of github/gitlab flakerefs to URL serialization [#12580](https://github.com/HoffmanOS/hoffman/pull/12580)
+- Add host attribute of github/gitlab grassrefs to URL serialization [#12580](https://github.com/HoffmanOS/hoffman/pull/12580)
 
   Resolved an issue where `github:` or `gitlab:` URLs lost their `host` attribute when written to a lockfile, resulting in invalid URLs.
 
@@ -88,9 +88,9 @@ This fact is counterbalanced by the fact that most of those changes are bug fixe
     "$(hoffman build --print-out-paths hoffmanpkgs#hello)"
   ```
 
-- hoffman flake show now skips over import-from-derivation [#4265](https://github.com/HoffmanOS/hoffman/issues/4265) [#12583](https://github.com/HoffmanOS/hoffman/pull/12583)
+- hoffman grass show now skips over import-from-derivation [#4265](https://github.com/HoffmanOS/hoffman/issues/4265) [#12583](https://github.com/HoffmanOS/hoffman/pull/12583)
 
-  Previously, if a flake contained outputs relying on [import from derivation](@docroot@/language/import-from-derivation.md) during evaluation, `hoffman flake show` would fail to display the rest of the flake. The updated behavior skips such outputs, allowing the rest of the flake to be shown.
+  Previously, if a grass contained outputs relying on [import from derivation](@docroot@/language/import-from-derivation.md) during evaluation, `hoffman grass show` would fail to display the rest of the grass. The updated behavior skips such outputs, allowing the rest of the grass to be shown.
 
 - Add `hoffman formatter build` and `hoffman formatter run` commands [#13063](https://github.com/HoffmanOS/hoffman/pull/13063)
 

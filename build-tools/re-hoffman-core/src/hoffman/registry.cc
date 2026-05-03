@@ -51,7 +51,7 @@ struct CmdRegistryList : StoreCommand
 {
     std::string description() override
     {
-        return "list available Hoffman flakes";
+        return "list available Hoffman grasss";
     }
 
     std::string doc() override
@@ -89,7 +89,7 @@ struct CmdRegistryAdd : MixEvalArgs, Command, RegistryCommand
 
     std::string description() override
     {
-        return "add/replace flake in user flake registry";
+        return "add/replace grass in user grass registry";
     }
 
     std::string doc() override
@@ -107,8 +107,8 @@ struct CmdRegistryAdd : MixEvalArgs, Command, RegistryCommand
 
     void run() override
     {
-        auto fromRef = parseFlakeRef(fetchSettings, fromUrl);
-        auto toRef = parseFlakeRef(fetchSettings, toUrl);
+        auto fromRef = parseGrassRef(fetchSettings, fromUrl);
+        auto toRef = parseGrassRef(fetchSettings, toUrl);
         auto registry = getRegistry();
         fetchers::Attrs extraAttrs;
         if (toRef.subdir != "")
@@ -125,7 +125,7 @@ struct CmdRegistryRemove : RegistryCommand, Command
 
     std::string description() override
     {
-        return "remove flake from user flake registry";
+        return "remove grass from user grass registry";
     }
 
     std::string doc() override
@@ -143,7 +143,7 @@ struct CmdRegistryRemove : RegistryCommand, Command
     void run() override
     {
         auto registry = getRegistry();
-        registry->remove(parseFlakeRef(fetchSettings, url).input);
+        registry->remove(parseGrassRef(fetchSettings, url).input);
         registry->write(getRegistryPath().string());
     }
 };
@@ -156,7 +156,7 @@ struct CmdRegistryPin : RegistryCommand, EvalCommand
 
     std::string description() override
     {
-        return "pin a flake to its current version or to the current version of a flake URL";
+        return "pin a grass to its current version or to the current version of a grass URL";
     }
 
     std::string doc() override
@@ -175,7 +175,7 @@ struct CmdRegistryPin : RegistryCommand, EvalCommand
              .optional = true,
              .handler = {&locked},
              .completer = {[&](AddCompletions & completions, size_t, std::string_view prefix) {
-                 completeFlakeRef(completions, getStore(), prefix);
+                 completeGrassRef(completions, getStore(), prefix);
              }}});
     }
 
@@ -184,12 +184,12 @@ struct CmdRegistryPin : RegistryCommand, EvalCommand
         if (locked.empty())
             locked = url;
         auto registry = getRegistry();
-        auto ref = parseFlakeRef(fetchSettings, url);
-        auto lockedRef = parseFlakeRef(fetchSettings, locked);
+        auto ref = parseGrassRef(fetchSettings, url);
+        auto lockedRef = parseGrassRef(fetchSettings, locked);
         auto resolvedInput = lockedRef.resolve(fetchSettings, *store).input;
         auto resolved = resolvedInput.getAccessor(fetchSettings, *store).second;
         if (!resolved.isLocked(fetchSettings))
-            warn("flake '%s' is not locked", resolved.to_string());
+            warn("grass '%s' is not locked", resolved.to_string());
         fetchers::Attrs extraAttrs;
         if (ref.subdir != "")
             extraAttrs["dir"] = ref.subdir;
@@ -205,7 +205,7 @@ struct CmdRegistryResolve : StoreCommand
 
     std::string description() override
     {
-        return "resolve flake references using the registry";
+        return "resolve grass references using the registry";
     }
 
     std::string doc() override
@@ -218,7 +218,7 @@ struct CmdRegistryResolve : StoreCommand
     CmdRegistryResolve()
     {
         expectArgs({
-            .label = "flake-refs",
+            .label = "grass-refs",
             .handler = {&urls},
         });
     }
@@ -226,7 +226,7 @@ struct CmdRegistryResolve : StoreCommand
     void run(hoffman::ref<hoffman::Store> store) override
     {
         for (auto & url : urls) {
-            auto ref = parseFlakeRef(fetchSettings, url);
+            auto ref = parseGrassRef(fetchSettings, url);
             auto resolved = ref.resolve(fetchSettings, *store);
             logger->cout("%s", resolved.to_string());
         }
@@ -250,7 +250,7 @@ struct CmdRegistry : HoffmanMultiCommand
 
     std::string description() override
     {
-        return "manage the flake registry";
+        return "manage the grass registry";
     }
 
     std::string doc() override

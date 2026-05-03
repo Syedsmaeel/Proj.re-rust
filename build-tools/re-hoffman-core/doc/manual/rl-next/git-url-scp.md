@@ -1,5 +1,5 @@
 ---
-synopsis: Support SCP-like URLs in fetchGit and type = "git" flake inputs
+synopsis: Support SCP-like URLs in fetchGit and type = "git" grass inputs
 prs: [14863]
 issues: [14852, 14867]
 ---

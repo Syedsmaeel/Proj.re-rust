@@ -44,7 +44,7 @@ struct CmdRepl : RawInstallablesCommand
 
     std::vector<std::string> files;
 
-    Strings getDefaultFlakeAttrPaths() override
+    Strings getDefaultGrassAttrPaths() override
     {
         return {""};
     }

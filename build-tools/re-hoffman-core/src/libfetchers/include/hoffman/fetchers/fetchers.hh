@@ -83,7 +83,7 @@ public:
     bool isLocked(const Settings & settings) const;
 
     /**
-     * Only for relative path flakes, i.e. 'path:./foo', returns the
+     * Only for relative path grasss, i.e. 'path:./foo', returns the
      * relative path, i.e. './foo'.
      */
     std::optional<std::filesystem::path> isRelative() const;

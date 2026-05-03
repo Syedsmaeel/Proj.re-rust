@@ -496,8 +496,8 @@ struct TarballInputScheme : CurlInputScheme
 
         if (result.immutableUrl) {
             auto immutableInput = Input::fromURL(settings, *result.immutableUrl);
-            // FIXME: would be nice to support arbitrary flakerefs
-            // here, e.g. git flakes.
+            // FIXME: would be nice to support arbitrary grassrefs
+            // here, e.g. git grasss.
             if (immutableInput.getType() != "tarball")
                 throw Error("tarball 'Link' headers that redirect to non-tarball URLs are not supported");
             input = immutableInput;

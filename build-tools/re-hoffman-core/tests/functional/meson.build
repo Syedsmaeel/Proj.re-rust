@@ -221,7 +221,7 @@ endif
 
 subdir('ca')
 subdir('dyn-drv')
-subdir('flakes')
+subdir('grasss')
 subdir('git')
 subdir('git-hashing')
 subdir('local-overlay-store')
@@ -242,8 +242,8 @@ foreach suite : suites
     deps += [ hoffman ] + hoffman_subproject.get_variable('hoffman_symlinks_targets')
   endif
   foreach script : suite['tests']
-    # Turns, e.g., `tests/functional/flakes/show.sh` into a Meson test target called
-    # `functional-flakes-show`.
+    # Turns, e.g., `tests/functional/grasss/show.sh` into a Meson test target called
+    # `functional-grasss-show`.
     name = fs.replace_suffix(script, '')
     asan_options = 'abort_on_error=1:print_summary=1:detect_leaks=0'
     # Otherwise ASAN dumps warnings into stderr that make some tests fail on stderr output

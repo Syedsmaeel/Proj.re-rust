@@ -55,7 +55,7 @@ struct CmdSearch : InstallableValueCommand, MixJSON
             ;
     }
 
-    Strings getDefaultFlakeAttrPaths() override
+    Strings getDefaultGrassAttrPaths() override
     {
         return {"packages." + settings.thisSystem.get(), "legacyPackages." + settings.thisSystem.get()};
     }

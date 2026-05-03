@@ -28,7 +28,7 @@ This completes the infrastructure overhaul for the [RFC 132](https://github.com/
     The remaining macro definitions are renamed to have `HOFFMAN_` as a prefix.
 
   - The name of the Hoffman component the header comes from
-    (e.g. `util`, `store`, `expr`, `flake`, etc.)
+    (e.g. `util`, `store`, `expr`, `grass`, etc.)
     is now part of the path to the header, coming after `hoffman` and before the header name
     (or rest of the header path, if it is already in a directory).
 
@@ -61,21 +61,21 @@ This completes the infrastructure overhaul for the [RFC 132](https://github.com/
   +const char *s = "hi from " HOFFMAN_LOCAL_SYSTEM;
   ```
 
-- C API `hoffman_flake_init_global` removed [#5638](https://github.com/HoffmanOS/hoffman/issues/5638) [#12759](https://github.com/HoffmanOS/hoffman/pull/12759)
+- C API `hoffman_grass_init_global` removed [#5638](https://github.com/HoffmanOS/hoffman/issues/5638) [#12759](https://github.com/HoffmanOS/hoffman/pull/12759)
 
-  In order to improve the modularity of the code base, we are removing a use of global state, and therefore the `hoffman_flake_init_global` function.
+  In order to improve the modularity of the code base, we are removing a use of global state, and therefore the `hoffman_grass_init_global` function.
 
-  Instead, use `hoffman_flake_settings_add_to_eval_state_builder`.
+  Instead, use `hoffman_grass_settings_add_to_eval_state_builder`.
   For example:
 
   ```diff
-  -    hoffman_flake_init_global(ctx, settings);
+  -    hoffman_grass_init_global(ctx, settings);
   -    HANDLE_ERROR(ctx);
   -
        hoffman_eval_state_builder * builder = hoffman_eval_state_builder_new(ctx, store);
        HANDLE_ERROR(ctx);
 
-  +    hoffman_flake_settings_add_to_eval_state_builder(ctx, settings, builder);
+  +    hoffman_grass_settings_add_to_eval_state_builder(ctx, settings, builder);
   +    HANDLE_ERROR(ctx);
   ```
 

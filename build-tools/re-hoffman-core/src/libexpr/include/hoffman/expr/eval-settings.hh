@@ -298,8 +298,8 @@ struct EvalSettings : Config
         true,
         "eval-cache",
         R"(
-            Whether to use the flake evaluation cache.
-            Certain commands won't have to evaluate when invoked for the second time with a particular version of a flake.
+            Whether to use the grass evaluation cache.
+            Certain commands won't have to evaluate when invoked for the second time with a particular version of a grass.
             Intermediate results are not cached.
         )"};
 

@@ -7,7 +7,7 @@
   hoffman-store,
   hoffman-fetchers,
   hoffman-expr,
-  hoffman-flake,
+  hoffman-grass,
   hoffman-main,
   editline,
   readline,
@@ -61,7 +61,7 @@ mkMesonLibrary (finalAttrs: {
     hoffman-store
     hoffman-fetchers
     hoffman-expr
-    hoffman-flake
+    hoffman-grass
     hoffman-main
     nlohmann_json
   ];

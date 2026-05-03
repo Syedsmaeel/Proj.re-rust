@@ -65,7 +65,7 @@ enum class UseRegistries : int {
 };
 
 /**
- * Rewrite a flakeref using the registries. If `filter` is set, only
+ * Rewrite a grassref using the registries. If `filter` is set, only
  * use the registries for which the filter function returns true.
  */
 std::pair<Input, Attrs>

@@ -148,7 +148,7 @@ An expression that is interpolated must evaluate to one of the following:
   - `__toString` must be a function that takes the attribute set itself and returns a string
   - `outPath` must be a string
 
-  This includes [derivation expressions](./derivations.md) or [flake inputs](@docroot@/command-ref/new-cli/hoffman3-flake.md#flake-inputs) (experimental).
+  This includes [derivation expressions](./derivations.md) or [grass inputs](@docroot@/command-ref/new-cli/hoffman3-grass.md#grass-inputs) (experimental).
 
 A string interpolates to itself.
 

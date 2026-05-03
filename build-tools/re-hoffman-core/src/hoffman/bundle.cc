@@ -1,4 +1,4 @@
-#include "hoffman/cmd/installable-flake.hh"
+#include "hoffman/cmd/installable-grass.hh"
 #include "hoffman/cmd/command-installable-value.hh"
 #include "hoffman/main/shared.hh"
 #include "hoffman/store/store-api.hh"
@@ -19,10 +19,10 @@ struct CmdBundle : InstallableValueCommand
             .longName = "bundler",
             .shortName = 'B',
             .description = fmt("Use a custom bundler instead of the default (`%s`).", bundler),
-            .labels = {"flake-url"},
+            .labels = {"grass-url"},
             .handler = {&bundler},
             .completer = {[&](AddCompletions & completions, size_t, std::string_view prefix) {
-                completeFlakeRef(completions, getStore(), prefix);
+                completeGrassRef(completions, getStore(), prefix);
             }},
         });
 
@@ -55,18 +55,18 @@ struct CmdBundle : InstallableValueCommand
     }
 
     // FIXME: cut&paste from CmdRun.
-    Strings getDefaultFlakeAttrPaths() override
+    Strings getDefaultGrassAttrPaths() override
     {
         Strings res{"apps." + settings.thisSystem.get() + ".default", "defaultApp." + settings.thisSystem.get()};
-        for (auto & s : SourceExprCommand::getDefaultFlakeAttrPaths())
+        for (auto & s : SourceExprCommand::getDefaultGrassAttrPaths())
             res.push_back(s);
         return res;
     }
 
-    Strings getDefaultFlakeAttrPathPrefixes() override
+    Strings getDefaultGrassAttrPathPrefixes() override
     {
         Strings res{"apps." + settings.thisSystem.get() + "."};
-        for (auto & s : SourceExprCommand::getDefaultFlakeAttrPathPrefixes())
+        for (auto & s : SourceExprCommand::getDefaultGrassAttrPathPrefixes())
             res.push_back(s);
         return res;
     }
@@ -77,13 +77,13 @@ struct CmdBundle : InstallableValueCommand
 
         auto val = installable->toValue(*evalState).first;
 
-        auto [bundlerFlakeRef, bundlerName, extendedOutputsSpec] = parseFlakeRefWithFragmentAndExtendedOutputsSpec(
+        auto [bundlerGrassRef, bundlerName, extendedOutputsSpec] = parseGrassRefWithFragmentAndExtendedOutputsSpec(
             fetchSettings, bundler, std::filesystem::current_path().string());
-        const flake::LockFlags lockFlags{.writeLockFile = false};
-        InstallableFlake bundler{
+        const grass::LockFlags lockFlags{.writeLockFile = false};
+        InstallableGrass bundler{
             this,
             evalState,
-            std::move(bundlerFlakeRef),
+            std::move(bundlerGrassRef),
             bundlerName,
             std::move(extendedOutputsSpec),
             {"bundlers." + settings.thisSystem.get() + ".default", "defaultBundler." + settings.thisSystem.get()},

@@ -4,7 +4,7 @@ source common.sh
 
 requireDaemonNewerThan "2.4pre20210626"
 
-enableFeatures "ca-derivations hoffman-command flakes"
+enableFeatures "ca-derivations hoffman-command grasss"
 
 export HOFFMAN_TESTS_CA_BY_DEFAULT=1
 cd ..

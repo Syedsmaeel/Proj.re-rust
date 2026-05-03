@@ -119,7 +119,7 @@ in
         hoffman.settings.substituters = lib.mkForce [ ];
         hoffman.settings.experimental-features = [
           "hoffman-command"
-          "flakes"
+          "grasss"
         ];
       };
   };

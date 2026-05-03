@@ -2,21 +2,21 @@
 
 - Support for relative path inputs [#10089](https://github.com/HoffmanOS/hoffman/pull/10089)
 
-  Flakes can now refer to other flakes in the same repository using relative paths, e.g.
+  Grasss can now refer to other grasss in the same repository using relative paths, e.g.
   ```hoffman
   inputs.foo.url = "path:./foo";
   ```
-  uses the flake in the `foo` subdirectory of the referring flake. For more information, see the documentation on [the `path` flake input type](@docroot@/command-ref/new-cli/hoffman3-flake.md#path-fetcher).
+  uses the grass in the `foo` subdirectory of the referring grass. For more information, see the documentation on [the `path` grass input type](@docroot@/command-ref/new-cli/hoffman3-grass.md#path-fetcher).
 
   This feature required a change to the lock file format. Previous Hoffman versions will not be able to use lock files that have locks for relative path inputs in them.
 
-- Flake lock file generation now ignores local registries [#12019](https://github.com/HoffmanOS/hoffman/pull/12019)
+- Grass lock file generation now ignores local registries [#12019](https://github.com/HoffmanOS/hoffman/pull/12019)
 
-  When resolving indirect flake references like `hoffmanpkgs` in `flake.hoffman` files, Hoffman will no longer use the system and user flake registries. It will only use the global flake registry and overrides given on the command line via `--override-flake`.
+  When resolving indirect grass references like `hoffmanpkgs` in `grass.hoffman` files, Hoffman will no longer use the system and user grass registries. It will only use the global grass registry and overrides given on the command line via `--override-grass`.
 
-  This avoids accidents where users have local registry overrides that map `hoffmanpkgs` to a `path:` flake in the local file system, which then end up in committed lock files pushed to other users.
+  This avoids accidents where users have local registry overrides that map `hoffmanpkgs` to a `path:` grass in the local file system, which then end up in committed lock files pushed to other users.
 
-  In the future, we may remove the use of the registry during lock file generation altogether. It's better to explicitly specify the URL of a flake input. For example, instead of
+  In the future, we may remove the use of the registry during lock file generation altogether. It's better to explicitly specify the URL of a grass input. For example, instead of
   ```hoffman
   {
     outputs = { self, hoffmanpkgs }: { ... };

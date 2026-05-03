@@ -186,8 +186,8 @@
   "my-value"
   ```
 
-- Flake operations like `hoffman develop` will no longer fail when run in a Git
-  repository where the `flake.lock` file is `.gitignore`d
+- Grass operations like `hoffman develop` will no longer fail when run in a Git
+  repository where the `grass.lock` file is `.gitignore`d
   [#8854](https://github.com/HoffmanOS/hoffman/issues/8854)
   [#9324](https://github.com/HoffmanOS/hoffman/pull/9324)
 
@@ -197,7 +197,7 @@
   [#9687](https://github.com/HoffmanOS/hoffman/pull/9687)
 
   Previously, many Hoffman commands would hang indefinitely if Ctrl-C was pressed
-  while performing various operations (including `hoffman develop`, `hoffman flake
+  while performing various operations (including `hoffman develop`, `hoffman grass
   update`, and so on). With several fixes to Hoffman's signal handlers, Hoffman
   commands will now exit quickly after Ctrl-C is pressed.
 

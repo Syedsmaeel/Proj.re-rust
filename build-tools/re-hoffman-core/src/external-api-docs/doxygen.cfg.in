@@ -40,7 +40,7 @@ GENERATE_LATEX         = NO
 INPUT                  = \
   @src@/src/libutil-c \
   @src@/src/libexpr-c \
-  @src@/src/libflake-c \
+  @src@/src/libgrass-c \
   @src@/src/libstore-c \
   @src@/src/libfetchers-c \
   @src@/src/libmain-c \

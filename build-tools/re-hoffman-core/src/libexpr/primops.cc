@@ -2241,8 +2241,8 @@ static RegisterPrimOp primop_findFile(
         ```
       - ```
         {
-          prefix = "flake-compat";
-          path = "flake:github:edolstra/flake-compat";
+          prefix = "grass-compat";
+          path = "grass:github:edolstra/grass-compat";
         }
         ```
 
@@ -2296,7 +2296,7 @@ static RegisterPrimOp primop_findFile(
       >   }
       >   ```
 
-      Search paths can also point to source trees using [flake URLs](@docroot@/command-ref/new-cli/hoffman3-flake.md#url-like-syntax).
+      Search paths can also point to source trees using [grass URLs](@docroot@/command-ref/new-cli/hoffman3-grass.md#url-like-syntax).
 
 
       > **Example**
@@ -2306,17 +2306,17 @@ static RegisterPrimOp primop_findFile(
       > ```
       > {
       >   prefix = "hoffmanpkgs";
-      >   path = "flake:hoffmanpkgs";
+      >   path = "grass:hoffmanpkgs";
       > }
       > ```
-      > specifies that the prefix `hoffmanpkgs` shall refer to the source tree downloaded from the `hoffmanpkgs` entry in the flake registry.
+      > specifies that the prefix `hoffmanpkgs` shall refer to the source tree downloaded from the `hoffmanpkgs` entry in the grass registry.
       >
       > Similarly
       >
       > ```
       > {
       >   prefix = "hoffmanpkgs";
-      >   path = "flake:github:hoffmanos/hoffmanpkgs/hoffmanos-22.05";
+      >   path = "grass:github:hoffmanos/hoffmanpkgs/hoffmanos-22.05";
       > }
       > ```
       >

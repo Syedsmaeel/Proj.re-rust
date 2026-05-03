@@ -423,7 +423,7 @@ std::set<ExperimentalFeature> BaseSetting<std::set<ExperimentalFeature>>::parse(
     for (auto & s : tokenizeString<StringSet>(str)) {
         if (auto thisXpFeature = parseExperimentalFeature(s); thisXpFeature) {
             res.insert(thisXpFeature.value());
-            if (thisXpFeature.value() == Xp::Flakes)
+            if (thisXpFeature.value() == Xp::Grasss)
                 res.insert(Xp::FetchTree);
         } else if (s == "no-url-literals")
             warn(

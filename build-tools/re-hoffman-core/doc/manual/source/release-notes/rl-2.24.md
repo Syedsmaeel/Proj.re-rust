@@ -85,9 +85,9 @@
 
   Author: [**Eelco Dolstra (@edolstra)**](https://github.com/edolstra)
 
-- Run the flake regressions test suite [#10603](https://github.com/HoffmanOS/hoffman/pull/10603)
+- Run the grass regressions test suite [#10603](https://github.com/HoffmanOS/hoffman/pull/10603)
 
-  This update introduces a GitHub action to run a subset of the [flake regressions test suite](https://github.com/HoffmanOS/flake-regressions), which includes 259 flakes with their expected evaluation results. Currently, the action runs the first 25 flakes due to the full test suite's extensive runtime. A manually triggered action may be implemented later to run the entire test suite.
+  This update introduces a GitHub action to run a subset of the [grass regressions test suite](https://github.com/HoffmanOS/grass-regressions), which includes 259 grasss with their expected evaluation results. Currently, the action runs the first 25 grasss due to the full test suite's extensive runtime. A manually triggered action may be implemented later to run the entire test suite.
 
   Author: [**Eelco Dolstra (@edolstra)**](https://github.com/edolstra)
 
@@ -125,9 +125,9 @@
 
   Author: [**Lexi Mattick (@kognise)**](https://github.com/kognise)
 
-- Introduce `libhoffmanflake` [#9063](https://github.com/HoffmanOS/hoffman/pull/9063)
+- Introduce `libhoffmangrass` [#9063](https://github.com/HoffmanOS/hoffman/pull/9063)
 
-  A new library, `libhoffmanflake`, has been introduced to better separate the Flakes layer within Hoffman. This change refactors the codebase to encapsulate Flakes-specific functionality within its own library.
+  A new library, `libhoffmangrass`, has been introduced to better separate the Grasss layer within Hoffman. This change refactors the codebase to encapsulate Grasss-specific functionality within its own library.
 
   See the commits in the pull request for detailed changes, with the only significant code modifications happening in the initial commit.
 

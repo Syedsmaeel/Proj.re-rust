@@ -2,13 +2,13 @@ R""(
 
 # Examples
 
-* Build the default package from the flake in the current directory:
+* Build the default package from the grass in the current directory:
 
   ```console
   # hoffman build
   ```
 
-* Build and run GNU Hello from the `hoffmanpkgs` flake:
+* Build and run GNU Hello from the `hoffmanpkgs` grass:
 
   ```console
   # hoffman build hoffmanpkgs#hello
@@ -52,14 +52,14 @@ R""(
   /hoffman/store/l3nlzki957anyy7yb25qvwk6cqrnvb67-openssl-3.0.13
   ```
 
-* Build attribute `build.x86_64-linux` from (non-flake) Hoffman expression
+* Build attribute `build.x86_64-linux` from (non-grass) Hoffman expression
   `release.hoffman`:
 
   ```console
   # hoffman build --file release.hoffman build.x86_64-linux
   ```
 
-* Build a HoffmanOS system configuration from a flake, and make a profile
+* Build a HoffmanOS system configuration from a grass, and make a profile
   point to the result:
 
   ```console

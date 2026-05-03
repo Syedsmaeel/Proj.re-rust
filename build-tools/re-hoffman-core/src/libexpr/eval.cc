@@ -1118,7 +1118,7 @@ struct ExprParseFile : Expr, gc
                           state, *e, state.baseEnv, e->getPos(), "while evaluating the file '%s':", path.to_string())
                     : nullptr;
 
-            // Enforce that 'flake.hoffman' is a direct attrset, not a
+            // Enforce that 'grass.hoffman' is a direct attrset, not a
             // computation.
             if (mustBeTrivial && !(dynamic_cast<ExprAttrs *>(e)))
                 state.error<EvalError>("file '%s' must be an attribute set", path).debugThrow();
