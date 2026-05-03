@@ -1,9 +1,0 @@
-{
-  "errorMsg": "no idea why",
-  "isNonDeterministic": false,
-  "startTime": 30,
-  "status": "OutputRejected",
-  "stopTime": 50,
-  "success": false,
-  "timesBuilt": 3
-}

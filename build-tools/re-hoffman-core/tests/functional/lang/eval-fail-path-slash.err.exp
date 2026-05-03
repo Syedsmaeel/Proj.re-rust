@@ -1,6 +1,0 @@
-error: path has a trailing slash
-       at /pwd/lang/eval-fail-path-slash.hoffman:6:12:
-            5| # and https://hoffmanos.org/hoffman-dev/2016-June/020829.html
-            6| /hoffman/store/
-             |            ^
-            7|

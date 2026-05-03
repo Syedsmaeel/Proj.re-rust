@@ -1,5 +1,0 @@
-with import ../config.hoffman;
-mkDerivation {
-  name = "simple-1.0";
-  buildCommand = "mkdir -p $out";
-}

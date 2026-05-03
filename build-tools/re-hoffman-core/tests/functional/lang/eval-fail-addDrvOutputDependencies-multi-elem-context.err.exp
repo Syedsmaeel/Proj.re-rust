@@ -1,9 +1,0 @@
-error:
-       … while calling the 'addDrvOutputDependencies' builtin
-         at /pwd/lang/eval-fail-addDrvOutputDependencies-multi-elem-context.hoffman:25:1:
-           24| in
-           25| builtins.addDrvOutputDependencies combo-path
-             | ^
-           26|
-
-       error: context of string '/hoffman/store/pg9yqs4yd85yhdm3f4i5dyaqp5jahrsz-fail.drv/hoffman/store/2dxd5frb715z451vbf7s8birlf3argbk-fail-2.drv' must have exactly one element, but has 2

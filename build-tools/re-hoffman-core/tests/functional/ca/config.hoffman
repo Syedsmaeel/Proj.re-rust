@@ -1,2 +1,0 @@
-# Shim to get generated file
-import "${builtins.getEnv "_HOFFMAN_TEST_BUILD_DIR"}/ca/config.hoffman"

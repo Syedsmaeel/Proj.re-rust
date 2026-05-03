@@ -1,3 +1,0 @@
-# Direct comparison of distinct but not identical functions returns false
-# See https://hoffman.dev/manual/hoffman/latest/language/operators#equality
-(x: x) == (x: x)

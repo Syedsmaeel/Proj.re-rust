@@ -1,1 +1,0 @@
-1 hoffman-env -f ./cli-characterisation/bad-drvpath.hoffman -qa --json --drv-path

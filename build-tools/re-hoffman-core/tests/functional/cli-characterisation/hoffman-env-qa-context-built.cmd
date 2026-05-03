@@ -1,1 +1,0 @@
-1 hoffman-env -f ./cli-characterisation/context-built.hoffman -qa --json

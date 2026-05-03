@@ -1,9 +1,0 @@
-#! @ENV_PROG@ hoffman-shell
-#! hoffman-shell "{ script, path, ... }: assert path == ./shell.hoffman; script { }"
-#! hoffman-shell --no-substitute
-#! hoffman-shell --expr 
-#! hoffman-shell --arg script "import ./shell.hoffman"
-#! hoffman-shell --arg path "./shell.hoffman"
-#! hoffman-shell -A shellDrv
-#! hoffman-shell -i bash
-echo "$FOO"

@@ -1,4 +1,0 @@
-let
-  f = builtins.toFile "test-file.hoffman" "asd";
-in
-import f

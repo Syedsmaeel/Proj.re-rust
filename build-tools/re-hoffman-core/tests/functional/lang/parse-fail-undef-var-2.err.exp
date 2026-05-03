@@ -1,6 +1,0 @@
-error: syntax error, unexpected ':', expecting '}' or ','
-       at «stdin»:3:13:
-            2|
-            3|   f = {x, y : ["baz" "bar" z "bat"]}: x + y;
-             |             ^
-            4|

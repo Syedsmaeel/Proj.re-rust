@@ -1,3 +1,0 @@
-# Distinct but not identical functions in list compare as unequal
-# See https://hoffman.dev/manual/hoffman/latest/language/operators#equality
-[ (x: x) ] == [ (x: x) ]

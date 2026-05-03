@@ -1,9 +1,0 @@
-# vim: filetype=meson
-
-option(
-  'benchmarks',
-  type : 'boolean',
-  value : false,
-  description : 'Build benchmarks (requires gbenchmark)',
-  yield : true,
-)

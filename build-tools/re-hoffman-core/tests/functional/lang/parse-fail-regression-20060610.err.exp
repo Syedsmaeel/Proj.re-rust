@@ -1,6 +1,0 @@
-error: undefined variable 'gcc'
-       at «stdin»:9:13:
-            8|   body = ({
-            9|     inherit gcc;
-             |             ^
-           10|   }).gcc;

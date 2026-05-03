@@ -1,9 +1,0 @@
-with import ./lib.hoffman;
-
-concat (
-  map (x: x + "bar") [
-    "foo"
-    "bla"
-    "xyzzy"
-  ]
-)

@@ -1,1 +1,0 @@
-0 hoffman-env -f ./cli-characterisation/meta-with-drv.hoffman -qa --json --meta

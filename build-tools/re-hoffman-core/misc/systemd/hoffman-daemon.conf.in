@@ -1,2 +1,0 @@
-d @localstatedir@/hoffman/daemon-socket 0755 root root -  -
-d @localstatedir@/hoffman/builds        0755 root root 7d -

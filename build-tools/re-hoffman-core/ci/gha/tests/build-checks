@@ -1,6 +1,0 @@
-#!/usr/bin/env bash
-set -euo pipefail
-system=$(hoffman eval --raw --impure --expr builtins.currentSystem)
-hoffman eval --json ".#checks.$system" --apply builtins.attrNames | \
-  jq -r '.[]' | \
-  xargs -P0 -I '{}' sh -c "hoffman build -L .#checks.$system.{} || { echo 'FAILED: \033[0;31mhoffman build -L .#checks.$system.{}\\033[0m'; kill 0; }"

@@ -1,8 +1,0 @@
-error:
-       … while calling the 'fromTOML' builtin
-         at /pwd/lang/eval-fail-fromTOML-timestamps.hoffman:1:1:
-            1| builtins.fromTOML ''
-             | ^
-            2|   key = "value"
-
-       error: while parsing TOML: Dates and times are not supported

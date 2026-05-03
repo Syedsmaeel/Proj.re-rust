@@ -1,1 +1,0 @@
-1 hoffman-env -f ./cli-characterisation/bad-output-specified-type.hoffman -i bad-output-specified-type

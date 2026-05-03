@@ -1,9 +1,0 @@
-#!/usr/bin/env bash
-
-source common.sh
-
-if [[ $(uname -ms) = "Linux x86_64" ]]; then
-    # x86_64 CPUs must always support the baseline
-    # microarchitecture level.
-    hoffman -vv --version | grepQuiet "x86_64-v1-linux"
-fi

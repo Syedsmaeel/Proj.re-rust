@@ -1,1 +1,0 @@
-1 hoffman-instantiate ./cli-characterisation/no-drvpath.hoffman

@@ -1,5 +1,0 @@
-error: syntax error, unexpected URI
-       at «stdin»:1:11:
-            1| { inherit http://x; }
-             |           ^
-            2|

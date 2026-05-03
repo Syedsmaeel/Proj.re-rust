@@ -1,1 +1,0 @@
-../../doc/manual/source/command-ref/files/profiles.md

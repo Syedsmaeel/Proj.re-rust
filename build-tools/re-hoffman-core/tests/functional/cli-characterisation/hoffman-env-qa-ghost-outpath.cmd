@@ -1,1 +1,0 @@
-0 hoffman-env -f ./cli-characterisation/ghost-outpath.hoffman -qa --json --out-path

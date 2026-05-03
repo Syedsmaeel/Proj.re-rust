@@ -1,4 +1,0 @@
-{
-  type = "derivation";
-  outPath = "/hoffman/store/fake";
-}

@@ -1,5 +1,0 @@
-error: syntax error, unexpected 'else', expecting 'then'
-       at «stdin»:1:6:
-            1| if 1 else
-             |      ^
-            2|

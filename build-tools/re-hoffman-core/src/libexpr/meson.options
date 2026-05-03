@@ -1,5 +1,0 @@
-option(
-  'gc',
-  type : 'feature',
-  description : 'enable garbage collection in the Hoffman expression evaluator (requires Boehm GC)',
-)

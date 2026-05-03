@@ -1,8 +1,0 @@
-Hoffman <hoffman version>
-Type :? for help.
-
-hoffman-repl> :doc import ./doc-comment-function.hoffman
-Function defined at /path/to/tests/functional/repl/doc-comment-function.hoffman:4:1
-
- 
-A doc comment for a file that only contains a function

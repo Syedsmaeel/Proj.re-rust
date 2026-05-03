@@ -1,1 +1,0 @@
-1 hoffman-env -f ./cli-characterisation/bad-outputs-to-install-type.hoffman -i bad-outputs-to-install-type
