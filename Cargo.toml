@@ -22,6 +22,7 @@
       "utilities/sushi",
       "utilities/sushi-macros",
       "utilities/re-blueprint",
+    "utilities/oxidiser",
       "kernel/tbm",
       "utilities/re-sim",
       "utilities/tmx-view",
