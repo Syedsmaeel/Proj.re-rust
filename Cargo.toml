@@ -1,52 +1,61 @@
 [workspace]
-resolver = "2"
-members = [
-    "kernel/timux",
-    "kernel/ring-neg1",
-    "core/re-core",
-    "runtimes/re-node",
-    "runtimes/re-docker",
-    "runtimes/re-npm",
-    "build-tools/re-make",
-    "build-tools/re-ci",
-    "build-tools/re-lint",
-    "build-tools/re-pack",
-    "ai-models/re-llm",
-    "ai-models/re-agent",
-    "utilities/re-scrape",
-    "utilities/re-crypt",
-    "utilities/crab-rs",
-    "utilities/qual-sea",
-    "utilities/re-run",
-    "utilities/sushi",
-    "utilities/sushi-macros", "kernel/tbm", "utilities/re-sim", "utilities/tmx-view", "build-tools/re-hoffman", "kernel/tmx-core", "utilities/tmx-cipher",
-]
+  resolver = "2"
+  members = [
+      "kernel/timux",
+      "kernel/ring-neg1",
+      "core/re-core",
+      "runtimes/re-node",
+      "runtimes/re-docker",
+      "runtimes/re-npm",
+      "runtimes/re-net",
+      "build-tools/re-make",
+      "build-tools/re-ci",
+      "build-tools/re-lint",
+      "build-tools/re-pack",
+      "ai-models/re-llm",
+      "ai-models/re-agent",
+      "utilities/re-scrape",
+      "utilities/re-crypt",
+      "utilities/crab-rs",
+      "utilities/qual-sea",
+      "utilities/re-run",
+      "utilities/sushi",
+      "utilities/sushi-macros",
+      "utilities/re-blueprint",
+      "kernel/tbm",
+      "utilities/re-sim",
+      "utilities/tmx-view",
+      "build-tools/re-hoffman",
+      "kernel/tmx-core",
+      "utilities/tmx-cipher",
+  ]
 
-[workspace.package]
-version = "0.1.0"
-edition = "2021"
-authors = ["Syed Ismaeel <lucknow@est2019>"]
-license = "AGPL-3.0"
-repository = "https://github.com/Syedsmaeel/Proj.re-rust"
-rust-version = "1.75"
+  [workspace.package]
+  version = "0.1.0"
+  edition = "2021"
+  authors = ["Syed Ismaeel <lucknow@est2019>"]
+  license = "AGPL-3.0"
+  repository = "https://github.com/Syedsmaeel/Proj.re-rust"
+  rust-version = "1.75"
 
-[workspace.dependencies]
-anyhow = "1"
-thiserror = "1"
-tracing = "0.1"
-tracing-subscriber = { version = "0.3", features = ["env-filter"] }
-serde = { version = "1", features = ["derive"] }
-serde_json = "1"
-toml = "0.8"
-dirs = "5"
-clap = { version = "4", features = ["derive"] }
-tokio = { version = "1", features = ["full"] }
-re-core = { path = "core/re-core" }
-# Candle ecosystem from Git for latest GGUF/Quant support
-candle-core = { git = "https://github.com/huggingface/candle.git" }
-candle-nn = { git = "https://github.com/huggingface/candle.git" }
-candle-transformers = { git = "https://github.com/huggingface/candle.git" }
-tokenizers = "0.21"
-hf-hub = "0.4"
-rayon = "1.10"
-byteorder = "1.5"
+  [workspace.dependencies]
+  anyhow = "1"
+  thiserror = "1"
+  tracing = "0.1"
+  tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+  serde = { version = "1", features = ["derive"] }
+  serde_json = "1"
+  toml = "0.8"
+  dirs = "5"
+  clap = { version = "4", features = ["derive"] }
+  tokio = { version = "1", features = ["full"] }
+  re-core = { path = "core/re-core" }
+  # Candle ecosystem from Git for latest GGUF/Quant support
+  candle-core = { git = "https://github.com/huggingface/candle.git" }
+  candle-nn = { git = "https://github.com/huggingface/candle.git" }
+  candle-transformers = { git = "https://github.com/huggingface/candle.git" }
+  tokenizers = "0.21"
+  hf-hub = "0.4"
+  rayon = "1.10"
+  byteorder = "1.5"
+  
