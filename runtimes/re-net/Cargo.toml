@@ -1,0 +1,17 @@
+[package]
+  name = "re-net"
+  description = "Capability-gated network stack sub-kernel for the Re-Rust ecosystem"
+  version.workspace  = true
+  edition.workspace  = true
+  authors.workspace  = true
+  license.workspace  = true
+  repository.workspace = true
+
+  [lib]
+  path = "src/lib.rs"
+
+  [dependencies]
+  re-core   = { path = "../../core/re-core" }
+  anyhow    = { workspace = true }
+  thiserror = { workspace = true }
+  
