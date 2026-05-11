@@ -5,7 +5,7 @@
   </p>
 
   <p align="center">
-    <img src="branding/thumbnail.png" alt="Re-Rust / Timux Banner" width="1080">
+    <img src="branding/thumbnail.png" alt="Re-Rust / Timux Banner" width="4000">
   </p>
 
   <p align="center">
