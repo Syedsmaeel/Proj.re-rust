@@ -83,6 +83,7 @@
   | Crate | Description |
   |---|---|
   | `utilities/re-blueprint` | Blueprint editor CLI — create, validate, encode .tmx boot blueprints |
+| `utilities/oxidiser`     | **Oxidiser** — generate a complete sovereign OS from a single script  |
   | `utilities/re-crypt` | Cryptographic primitives |
   | `utilities/re-scrape` | High-performance data ingestion |
   | `utilities/re-sim` | Kernel simulation harness |
