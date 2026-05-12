@@ -11,10 +11,10 @@ fn main() {
     
     // Wait for secret sequence (for simulation, we use 'unlock')
     print!("> ");
-    io::stdout().flush().unwrap();
+    let _ = io::stdout().flush();
     
     let mut input = String::new();
-    io::stdin().read_line(&mut input).unwrap();
+    io::stdin().read_line(&mut input).expect("failed to read stdin");
     
     if input.trim() == "unlock" {
         show_dashboard();
