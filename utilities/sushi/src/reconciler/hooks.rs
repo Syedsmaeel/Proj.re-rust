@@ -31,13 +31,13 @@ impl UpdateQueue {
         Arc::new(Self::default())
     }
     pub fn drain(&self) -> Vec<PendingUpdate> {
-        std::mem::take(&mut *self.pending.lock().unwrap())
+        std::mem::take(&mut *self.pending.lock().unwrap_or_else(|e| e.into_inner()))
     }
     pub fn drain_dirty(&self) -> Vec<FiberId> {
-        std::mem::take(&mut *self.dirty.lock().unwrap())
+        std::mem::take(&mut *self.dirty.lock().unwrap_or_else(|e| e.into_inner()))
     }
     pub fn has_work(&self) -> bool {
-        !self.pending.lock().unwrap().is_empty() || !self.dirty.lock().unwrap().is_empty()
+        !self.pending.lock().unwrap_or_else(|e| e.into_inner()).is_empty() || !self.dirty.lock().unwrap_or_else(|e| e.into_inner()).is_empty()
     }
 }
 
@@ -76,12 +76,12 @@ pub struct Setter<T: 'static + Send> {
 
 impl<T: 'static + Send> Setter<T> {
     pub fn set(&self, new_value: T) {
-        self.queue.pending.lock().unwrap().push(PendingUpdate {
+        self.queue.pending.lock().unwrap_or_else(|e| e.into_inner()).push(PendingUpdate {
             fiber_id: self.fiber_id,
             hook_index: self.hook_index,
             new_value: Box::new(new_value),
         });
-        let mut d = self.queue.dirty.lock().unwrap();
+        let mut d = self.queue.dirty.lock().unwrap_or_else(|e| e.into_inner());
         if !d.contains(&self.fiber_id) {
             d.push(self.fiber_id);
         }
