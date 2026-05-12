@@ -12,7 +12,7 @@ fn main() {
 
     let counter = r.create_function_fiber("Counter", move || {
         let (n, set_n) = use_state(0_i32);
-        *slot.lock().unwrap() = Some(set_n);
+        *slot.lock().unwrap_or_else(|e| e.into_inner()) = Some(set_n);
         vec![
             ChildSpec::Host {
                 tag: "label".into(),
@@ -33,7 +33,7 @@ fn main() {
     println!("After initial render:\n{}\n", host.render_text());
 
     for i in 1..=5 {
-        if let Some(s) = setter_slot.lock().unwrap().as_ref() {
+        if let Some(s) = setter_slot.lock().unwrap_or_else(|e| e.into_inner()).as_ref() {
             s.set(i);
         }
         r.pump(&mut host, Duration::from_millis(16));
