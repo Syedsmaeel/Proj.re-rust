@@ -21,8 +21,6 @@
   //! ```
   //!
   //! All steps require PROCESS_SPAWN capability.
-
-  #![allow(dead_code)]
   extern crate alloc;
 
   use alloc::vec::Vec;
