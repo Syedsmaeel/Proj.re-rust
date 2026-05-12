@@ -74,7 +74,9 @@ impl Lexer {
 
     fn read_num(&mut self, first: char) -> i64 {
         let mut s = String::new(); s.push(first);
-        while matches!(self.peek(), Some(c) if c.is_ascii_digit()) { s.push(self.advance().unwrap()); }
+        while matches!(self.peek(), Some(c) if c.is_ascii_digit()) {
+            if let Some(d) = self.advance() { s.push(d); }
+        }
         s.parse().unwrap_or(0)
     }
 
