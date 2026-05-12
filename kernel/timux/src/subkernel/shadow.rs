@@ -22,8 +22,6 @@
   //! When `promote_shadow()` is called the shadow instance becomes the new
   //! primary and the old primary is dropped.  The caller receives the shadow's
   //! SubKernelId so it can repoint all capability references.
-
-  #![allow(dead_code)]
   extern crate alloc;
 
   use alloc::vec::Vec;
