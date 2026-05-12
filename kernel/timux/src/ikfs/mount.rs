@@ -1,5 +1,4 @@
 //! IKFS MountTable — per-sub-kernel mount point registry
-  #![allow(dead_code)]
   extern crate alloc;
 
   use alloc::vec::Vec;
