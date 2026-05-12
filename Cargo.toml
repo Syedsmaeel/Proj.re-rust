@@ -52,9 +52,9 @@
   tokio = { version = "1", features = ["full"] }
   re-core = { path = "core/re-core" }
   # Candle ecosystem from Git for latest GGUF/Quant support
-  candle-core = { git = "https://github.com/huggingface/candle.git" }
-  candle-nn = { git = "https://github.com/huggingface/candle.git" }
-  candle-transformers = { git = "https://github.com/huggingface/candle.git" }
+  candle-core = { git = "https://github.com/huggingface/candle.git", rev = "5447a8779871654e542e65693e7d26f1e33b215f" }
+  candle-nn = { git = "https://github.com/huggingface/candle.git", rev = "5447a8779871654e542e65693e7d26f1e33b215f" }
+  candle-transformers = { git = "https://github.com/huggingface/candle.git", rev = "5447a8779871654e542e65693e7d26f1e33b215f" }
   tokenizers = "0.21"
   hf-hub = "0.4"
   rayon = "1.10"
