@@ -117,9 +117,9 @@
       /// Decode from binary wire format.
       pub fn decode(data: &[u8]) -> anyhow::Result<Self> {
           anyhow::ensure!(data.len() >= 8, "too short: {} bytes", data.len());
-          let magic = u32::from_le_bytes(data[0..4].try_into().unwrap());
+          let magic = u32::from_le_bytes([data[0],data[1],data[2],data[3]]);
           anyhow::ensure!(magic == MAGIC, "bad magic 0x{:08X}", magic);
-          let count = u32::from_le_bytes(data[4..8].try_into().unwrap()) as usize;
+          let count = u32::from_le_bytes([data[4],data[5],data[6],data[7]]) as usize;
           anyhow::ensure!(count <= MAX_ENTRIES, "entry_count {count} > max {MAX_ENTRIES}");
           anyhow::ensure!(data.len() >= 8 + count * ENTRY_SIZE, "truncated data");
           let mut entries = Vec::with_capacity(count);
@@ -128,7 +128,7 @@
               let b = &data[o..o + ENTRY_SIZE];
               let profile  = Profile::from_id(b[0]);
               let priority = b[1];
-              let quota_us = u64::from_le_bytes(b[2..10].try_into().unwrap());
+              let quota_us = u64::from_le_bytes([b[2],b[3],b[4],b[5],b[6],b[7],b[8],b[9]]);
               let nr = &b[14..30];
               let nend = nr.iter().position(|&x| x == 0).unwrap_or(16);
               let name = std::str::from_utf8(&nr[..nend])?.to_owned();
