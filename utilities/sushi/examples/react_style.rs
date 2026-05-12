@@ -15,7 +15,7 @@ fn main() -> Result<(), String> {
 
     let counter = r.create_function_fiber("Counter", move || {
         let (n, set_n) = use_state(0_i32);
-        *slot.lock().unwrap() = Some(set_n);
+        *slot.lock().unwrap_or_else(|e| e.into_inner()) = Some(set_n);
         vec![ChildSpec::Text(format!("count = {n}"))]
     });
     r.append_child(root, counter);
@@ -28,19 +28,19 @@ fn main() -> Result<(), String> {
     r.finish_commit(&mut host)?;
 
     println!("\n--- [PHASE 2: STATE UPDATE via setter ] ---");
-    if let Some(s) = setter_slot.lock().unwrap().as_ref() {
+    if let Some(s) = setter_slot.lock().unwrap_or_else(|e| e.into_inner()).as_ref() {
         s.set(42);
     }
     r.pump(&mut host, Duration::from_secs(1));
 
     println!("\n--- [PHASE 3: SECOND UPDATE — only diff is committed ] ---");
-    if let Some(s) = setter_slot.lock().unwrap().as_ref() {
+    if let Some(s) = setter_slot.lock().unwrap_or_else(|e| e.into_inner()).as_ref() {
         s.set(43);
     }
     r.pump(&mut host, Duration::from_secs(1));
 
     println!("\n--- [PHASE 4: NO-OP UPDATE — same value, no commit ] ---");
-    if let Some(s) = setter_slot.lock().unwrap().as_ref() {
+    if let Some(s) = setter_slot.lock().unwrap_or_else(|e| e.into_inner()).as_ref() {
         s.set(43);
     }
     let log_len_before = host.log.len();
