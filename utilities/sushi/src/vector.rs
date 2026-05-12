@@ -6,7 +6,7 @@ pub struct Canvas {
 
 impl Canvas {
     pub fn new(width: u32, height: u32) -> Self {
-        Self { pixmap: Pixmap::new(width, height).unwrap() }
+        Self { pixmap: Pixmap::new(width, height).expect("canvas dimensions must be non-zero") }
     }
 
     pub fn draw(&mut self, shape: &crate::Shape) {
