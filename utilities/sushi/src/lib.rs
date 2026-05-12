@@ -21,6 +21,6 @@ impl SovereignTerminal {
         // Send raw RGB bytes directly to the terminal's display buffer
         use std::io::Write;
         let mut master = &self.master;
-        write!(master, "\x1b[48;2;{};{};{}m ", r, g, b).unwrap();
+        let _ = write!(master, "\x1b[48;2;{};{};{}m ", r, g, b);
     }
 }
