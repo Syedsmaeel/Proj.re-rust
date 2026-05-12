@@ -7,8 +7,6 @@
   //!  - Per-object access counters and last-access timestamps
   //!  - Pinned objects immune to eviction
   //!  - Aggregate statistics
-
-  #![allow(dead_code)]
   extern crate alloc;
 
   use alloc::collections::BTreeMap;
