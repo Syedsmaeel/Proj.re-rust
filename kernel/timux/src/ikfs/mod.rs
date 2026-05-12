@@ -26,7 +26,6 @@
   //! └────────────────────────────────────────────────────┘
   //! ```
 
-  #![allow(dead_code)]
   extern crate alloc;
 
   pub mod vnode;
