@@ -59,7 +59,7 @@ fn main() -> Result<()> {
                 let is_weight = name.contains("weight") && tensor.rank() >= 2;
                 if is_weight {
                     if let Ok(q) = QuantizedTensor::quantize(&tensor, ggml_method) {
-                        quantized_tensors.lock().unwrap().insert(name, q);
+                        quantized_tensors.lock().unwrap_or_else(|e| e.into_inner()).insert(name, q);
                     }
                 }
             });
