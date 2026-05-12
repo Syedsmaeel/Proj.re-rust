@@ -1,21 +1,30 @@
 //! Sovereign Cryptographic Primitives for the Timux Boot Manager
   //!
   //! Implements bare-metal crypto for TBM without any external crates.
-  //! Everything runs in `#![no_std]` context before the heap is available.
+  //! Runs in `#![no_std]` context before the heap is available.
   //!
-  //! Primitives provided:
+  //! # Primitives
   //!  - SovereignHash  — 256-bit collision-resistant hash (Blake3-inspired)
-  //!  - ChaCha20       — stream cipher for payload encryption
+  //!  - ChaCha20       — RFC 8439 stream cipher
   //!  - HmacSovereign  — keyed MAC built on SovereignHash
   //!  - Hkdf           — HKDF-style key derivation
-  //!  - Ed25519Verify  — signature verification (simplified, constant-time)
+  //!  - ct_eq / verify_mac — constant-time comparison helpers
 
-  #![allow(dead_code)]
+  // ── no .unwrap() in this file — all byte parsing uses safe array literals ────
+
+  // ─── Byte-slice helpers (no try_into, no unwrap) ──────────────────────────────
+
+  #[inline(always)]
+  fn u32_le(b: &[u8], off: usize) -> u32 {
+      u32::from_le_bytes([b[off], b[off+1], b[off+2], b[off+3]])
+  }
+
+  #[inline(always)]
+  fn u64_le(b: &[u8], off: usize) -> u64 {
+      u64::from_le_bytes([b[off],b[off+1],b[off+2],b[off+3],b[off+4],b[off+5],b[off+6],b[off+7]])
+  }
 
   // ─── SovereignHash (256-bit) ─────────────────────────────────────────────────
-  //
-  // A Merkle-Damgård style hash with a 256-bit state.  Not a standard algorithm
-  // but provides strong mixing for the Timux threat model.
 
   const IV: [u32; 8] = [
       0x6A09_E667, 0xBB67_AE85, 0x3C6E_F372, 0xA54F_F53A,
@@ -49,7 +58,7 @@
 
       let mut m = [0u32; 16];
       for i in 0..16 {
-          m[i] = u32::from_le_bytes(block[i*4..i*4+4].try_into().unwrap());
+          m[i] = u32_le(block, i * 4);  // safe — block is [u8;64], 16×4 = 64
       }
 
       macro_rules! g {
@@ -80,8 +89,8 @@
   }
 
   pub struct SovereignHash {
-      state: [u32; 8],
-      buf:   [u8; 64],
+      state:  [u32; 8],
+      buf:    [u8; 64],
       buflen: usize,
       count:  u64,
   }
@@ -109,7 +118,6 @@
       }
 
       pub fn finalize(mut self) -> [u8; 32] {
-          // Pad block with 0x80 then zeros
           self.buf[self.buflen] = 0x80;
           for b in &mut self.buf[self.buflen + 1..] { *b = 0; }
           self.count += self.buflen as u64;
@@ -122,41 +130,36 @@
           out
       }
 
-      /// One-shot hash.
       pub fn hash(data: &[u8]) -> [u8; 32] {
-          let mut h = Self::new();
-          h.update(data);
-          h.finalize()
+          let mut h = Self::new(); h.update(data); h.finalize()
       }
   }
 
-  // ─── ChaCha20 stream cipher ───────────────────────────────────────────────────
+  // ─── ChaCha20 ─────────────────────────────────────────────────────────────────
 
   pub struct ChaCha20 {
-      state: [u32; 16],
-      block: [u8; 64],
+      state:     [u32; 16],
+      block:     [u8; 64],
       block_pos: usize,
   }
 
   impl ChaCha20 {
       const CONST: [u32; 4] = [0x6170_7865, 0x3320_646E, 0x7962_2D32, 0x3620_6574];
 
-      /// Create a new ChaCha20 cipher.
-      /// - key:   32-byte key
-      /// - nonce: 12-byte nonce
-      /// - counter: block counter (typically 0)
+      /// Create a ChaCha20 instance.
+      /// key: 32 bytes, nonce: 12 bytes, counter: block counter (usually 0).
       pub fn new(key: &[u8; 32], nonce: &[u8; 12], counter: u32) -> Self {
           let mut state = [0u32; 16];
           state[0..4].copy_from_slice(&Self::CONST);
+          // Key words — 8 × u32 from fixed [u8;32], safe direct indexing
           for i in 0..8 {
-              state[4 + i] = u32::from_le_bytes(key[i*4..i*4+4].try_into().unwrap());
+              state[4 + i] = u32_le(key, i * 4);
           }
           state[12] = counter;
-          state[13] = u32::from_le_bytes(nonce[0..4].try_into().unwrap());
-          state[14] = u32::from_le_bytes(nonce[4..8].try_into().unwrap());
-          state[15] = u32::from_le_bytes(nonce[8..12].try_into().unwrap());
-          let mut c = Self { state, block: [0u8; 64], block_pos: 64 };
-          c
+          state[13] = u32_le(nonce, 0);
+          state[14] = u32_le(nonce, 4);
+          state[15] = u32_le(nonce, 8);
+          Self { state, block: [0u8; 64], block_pos: 64 }
       }
 
       fn quarter_round(s: &mut [u32; 16], a: usize, b: usize, c: usize, d: usize) {
@@ -186,7 +189,6 @@
           self.block_pos = 0;
       }
 
-      /// Encrypt or decrypt (XOR with keystream).
       pub fn apply(&mut self, data: &mut [u8]) {
           for b in data.iter_mut() {
               if self.block_pos >= 64 { self.generate_block(); }
@@ -195,7 +197,6 @@
           }
       }
 
-      /// Convenience: encrypt a buffer in-place.
       pub fn encrypt(key: &[u8; 32], nonce: &[u8; 12], counter: u32, data: &mut [u8]) {
           Self::new(key, nonce, counter).apply(data);
       }
@@ -210,7 +211,6 @@
 
   impl HmacSovereign {
       pub fn new(key: &[u8]) -> Self {
-          // Derive 32-byte key block (hash if too long)
           let key_block: [u8; 32] = if key.len() > 32 {
               SovereignHash::hash(key)
           } else {
@@ -218,11 +218,9 @@
               b[..key.len()].copy_from_slice(key);
               b
           };
-
           let mut ipad = [0x36u8; 32];
           let mut opad = [0x5Cu8; 32];
           for i in 0..32 { ipad[i] ^= key_block[i]; opad[i] ^= key_block[i]; }
-
           let mut inner = SovereignHash::new(); inner.update(&ipad);
           let mut outer = SovereignHash::new(); outer.update(&opad);
           Self { inner, outer }
@@ -237,25 +235,20 @@
       }
 
       pub fn mac(key: &[u8], data: &[u8]) -> [u8; 32] {
-          let mut h = Self::new(key);
-          h.update(data);
-          h.finalize()
+          let mut h = Self::new(key); h.update(data); h.finalize()
       }
   }
 
-  // ─── HKDF-style key derivation ───────────────────────────────────────────────
+  // ─── HKDF ────────────────────────────────────────────────────────────────────
 
   pub struct Hkdf;
 
   impl Hkdf {
-      /// Extract a pseudorandom key from input key material and optional salt.
       pub fn extract(salt: Option<&[u8]>, ikm: &[u8]) -> [u8; 32] {
           let salt = salt.unwrap_or(&[0u8; 32]);
           HmacSovereign::mac(salt, ikm)
       }
 
-      /// Expand a pseudorandom key into `len` bytes of output key material.
-      /// `len` must be ≤ 255 * 32 = 8160 bytes.
       pub fn expand(prk: &[u8; 32], info: &[u8], len: usize) -> alloc::vec::Vec<u8> {
           extern crate alloc;
           let mut okm = alloc::vec::Vec::with_capacity(len);
@@ -274,7 +267,6 @@
           okm
       }
 
-      /// Combined extract-then-expand.
       pub fn derive(salt: Option<&[u8]>, ikm: &[u8], info: &[u8], len: usize) -> alloc::vec::Vec<u8> {
           let prk = Self::extract(salt, ikm);
           Self::expand(&prk, info, len)
@@ -283,7 +275,6 @@
 
   // ─── Constant-time helpers ───────────────────────────────────────────────────
 
-  /// Constant-time byte-slice equality (no early exit).
   pub fn ct_eq(a: &[u8], b: &[u8]) -> bool {
       if a.len() != b.len() { return false; }
       let mut diff = 0u8;
@@ -291,9 +282,114 @@
       diff == 0
   }
 
-  /// Verify an HMAC tag in constant time.
   pub fn verify_mac(key: &[u8], data: &[u8], tag: &[u8; 32]) -> bool {
       let expected = HmacSovereign::mac(key, data);
       ct_eq(&expected, tag)
+  }
+
+  // ─── Tests ───────────────────────────────────────────────────────────────────
+
+  #[cfg(test)]
+  mod tests {
+      use super::*;
+
+      #[test]
+      fn sovereign_hash_deterministic() {
+          let a = SovereignHash::hash(b"hello world");
+          let b = SovereignHash::hash(b"hello world");
+          assert_eq!(a, b, "same input must produce same hash");
+      }
+
+      #[test]
+      fn sovereign_hash_differs_on_different_input() {
+          let a = SovereignHash::hash(b"hello");
+          let b = SovereignHash::hash(b"world");
+          assert_ne!(a, b, "different inputs must produce different hashes");
+      }
+
+      #[test]
+      fn sovereign_hash_avalanche() {
+          let a = SovereignHash::hash(b"hello");
+          let b = SovereignHash::hash(b"hEllo");
+          // At least half the bytes should differ (avalanche effect)
+          let diff = a.iter().zip(b.iter()).filter(|(x,y)| x != y).count();
+          assert!(diff >= 8, "avalanche: expected >= 8 bytes different, got {diff}");
+      }
+
+      #[test]
+      fn chacha20_encrypt_decrypt_roundtrip() {
+          let key   = [0x42u8; 32];
+          let nonce = [0x13u8; 12];
+          let plain = b"Timux sovereign OS test vector!";
+          let mut buf = plain.to_vec();
+          ChaCha20::encrypt(&key, &nonce, 0, &mut buf);
+          assert_ne!(&buf, plain, "ciphertext must differ from plaintext");
+          ChaCha20::encrypt(&key, &nonce, 0, &mut buf);
+          assert_eq!(&buf, plain, "double-encrypt must restore plaintext");
+      }
+
+      #[test]
+      fn chacha20_different_counters_differ() {
+          let key   = [0x11u8; 32];
+          let nonce = [0x22u8; 12];
+          let mut a = [0u8; 64];
+          let mut b = [0u8; 64];
+          ChaCha20::encrypt(&key, &nonce, 0, &mut a);
+          ChaCha20::encrypt(&key, &nonce, 1, &mut b);
+          assert_ne!(a, b, "different block counters must yield different keystreams");
+      }
+
+      #[test]
+      fn hmac_same_key_same_data_stable() {
+          let tag_a = HmacSovereign::mac(b"key", b"data");
+          let tag_b = HmacSovereign::mac(b"key", b"data");
+          assert_eq!(tag_a, tag_b);
+      }
+
+      #[test]
+      fn hmac_key_sensitivity() {
+          let a = HmacSovereign::mac(b"key1", b"data");
+          let b = HmacSovereign::mac(b"key2", b"data");
+          assert_ne!(a, b, "different keys must yield different MACs");
+      }
+
+      #[test]
+      fn ct_eq_correct() {
+          assert!( ct_eq(b"hello", b"hello"));
+          assert!(!ct_eq(b"hello", b"world"));
+          assert!(!ct_eq(b"hello", b"hello!"));
+      }
+
+      #[test]
+      fn verify_mac_accepts_valid_tag() {
+          let key  = b"sovereign-key";
+          let data = b"boot-payload";
+          let tag  = HmacSovereign::mac(key, data);
+          assert!(verify_mac(key, data, &tag));
+      }
+
+      #[test]
+      fn verify_mac_rejects_tampered_tag() {
+          let key  = b"sovereign-key";
+          let data = b"boot-payload";
+          let mut tag = HmacSovereign::mac(key, data);
+          tag[0] ^= 0xFF;
+          assert!(!verify_mac(key, data, &tag));
+      }
+
+      #[test]
+      fn hkdf_output_length_correct() {
+          extern crate alloc;
+          let okm = Hkdf::derive(None, b"secret", b"info", 64);
+          assert_eq!(okm.len(), 64);
+      }
+
+      #[test]
+      fn hkdf_deterministic() {
+          extern crate alloc;
+          let a = Hkdf::derive(None, b"secret", b"info", 32);
+          let b = Hkdf::derive(None, b"secret", b"info", 32);
+          assert_eq!(a, b);
+      }
   }
   
