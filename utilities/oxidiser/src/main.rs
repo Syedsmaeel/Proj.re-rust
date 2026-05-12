@@ -341,7 +341,7 @@
 
   fn prompt(msg: &str) {
       print!("{msg}");
-      io::stdout().flush().unwrap();
+      let _ = io::stdout().flush();
   }
 
   fn print_banner() {
