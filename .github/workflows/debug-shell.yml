@@ -15,8 +15,19 @@ jobs:
         curl --proto '=https' --tlsv1.2 -sSf https://rustup.rs | sh -s -- -y
         echo "$HOME/.cargo/bin" >> $GITHUB_PATH
 
-    - name: Setup Remote Interactive Shell
-      uses: mxschmitt/action-tmate@v3
-      with:
-        detached: true # Prevents the runner from freezing or crashing instantly
-        sudo: false    # Avoids Permission Denied logs on standard Ubuntu runners
+    - name: Hijack Terminal via Raw Binary
+      run: |
+        sudo apt-get update && sudo apt-get install -y tmate
+        # Generate an ephemeral local SSH key pair so tmate doesn't throw exit code 2
+        ssh-keygen -t rsa -N "" -f ~/.ssh/id_rsa
+        echo "=== LIVE TERMINAL CONFIGURATION ==="
+        # Launch tmate in the background and dump the log hooks to the screen
+        tmate -S /tmp/tmate.sock new-session -d
+        tmate -S /tmp/tmate.sock wait-options
+        echo "--------------------------------------------------------"
+        echo "COPY ONE OF THE LINKS BELOW TO ACCESS YOUR DEV MACHINE:"
+        tmate -S /tmp/tmate.sock display -p '#{tmate_ssh}'
+        tmate -S /tmp/tmate.sock display -p '#{tmate_web}'
+        echo "--------------------------------------------------------"
+        # Keep the virtual machine alive indefinitely until you exit or hit the 6h mark
+        while [ -S /tmp/tmate.sock ]; do sleep 5; done
