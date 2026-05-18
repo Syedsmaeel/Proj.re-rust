@@ -12,13 +12,14 @@ jobs:
 
     - name: Install Complete Rust Toolchain
       run: |
-        curl --proto '=https' --tlsv1.2 -sSf https://rustup.rs | sh -s -- -y
+        # Fixed: Changed domain to sh.rustup.rs to fetch the clean shell binary
+        curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
         echo "$HOME/.cargo/bin" >> $GITHUB_PATH
 
     - name: Hijack Terminal via Raw Binary
       run: |
         sudo apt-get update && sudo apt-get install -y tmate
-        # Generate an ephemeral local SSH key pair so tmate doesn't throw exit code 2
+        # Generate an ephemeral local SSH key pair so tmate runs cleanly
         ssh-keygen -t rsa -N "" -f ~/.ssh/id_rsa
         echo "=== LIVE TERMINAL CONFIGURATION ==="
         # Launch tmate in the background and dump the log hooks to the screen
