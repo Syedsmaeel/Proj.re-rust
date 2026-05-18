@@ -1,0 +1,20 @@
+name: Ephemeral Heavy Rust Terminal
+on: 
+  workflow_dispatch: # Allows you to trigger this manually whenever you want to code
+
+jobs:
+  launch-shell:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout Codebase
+      uses: actions/checkout@v4
+
+    - name: Install Complete Rust Toolchain
+      run: |
+        curl --proto '=https' --tlsv1.2 -sSf https://rustup.rs | sh -s -- -y
+        echo "$HOME/.cargo/bin" >> $GITHUB_PATH
+
+    - name: Setup Remote Interactive Shell
+      uses: mxschmitt/action-tmate@v3
+      with:
+        sudo: true
