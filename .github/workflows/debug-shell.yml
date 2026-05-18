@@ -12,23 +12,36 @@ jobs:
 
     - name: Install Complete Rust Toolchain
       run: |
-        # Fixed: Changed domain to sh.rustup.rs to fetch the clean shell binary
-        curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
+        curl --proto '=https' --tlsv1.2 -sSf https://rustup.rs | sh -s -- -y
         echo "$HOME/.cargo/bin" >> $GITHUB_PATH
 
     - name: Hijack Terminal via Raw Binary
       run: |
         sudo apt-get update && sudo apt-get install -y tmate
-        # Generate an ephemeral local SSH key pair so tmate runs cleanly
+        
+        # Force generate an isolated local identity structure
+        mkdir -p ~/.ssh
         ssh-keygen -t rsa -N "" -f ~/.ssh/id_rsa
-        echo "=== LIVE TERMINAL CONFIGURATION ==="
-        # Launch tmate in the background and dump the log hooks to the screen
-        tmate -S /tmp/tmate.sock new-session -d
-        tmate -S /tmp/tmate.sock wait-options
+        chmod 600 ~/.ssh/id_rsa
+        
+        echo "=== INITIALIZING TERMINAL SECURE HANDSHAKE ==="
+        
+        # Run tmate with explicit socket and foreground parameters to ignore profile key locks
+        tmate -S /tmp/tmate.sock -F new-session -d || true
+        sleep 3
+        
         echo "--------------------------------------------------------"
-        echo "COPY ONE OF THE LINKS BELOW TO ACCESS YOUR DEV MACHINE:"
-        tmate -S /tmp/tmate.sock display -p '#{tmate_ssh}'
+        echo "COPY THE INTERACTIVE LINK BELOW FOR YOUR DEV MACHINE:"
         tmate -S /tmp/tmate.sock display -p '#{tmate_web}'
         echo "--------------------------------------------------------"
-        # Keep the virtual machine alive indefinitely until you exit or hit the 6h mark
-        while [ -S /tmp/tmate.sock ]; do sleep 5; done
+        
+        # Direct hold loop: Force the system to stay alive for you
+        while true; do
+          if [ -S /tmp/tmate.sock ]; then
+            sleep 10
+          else
+            echo "Session socket cleared. Exiting."
+            break
+          fi
+        done
+
