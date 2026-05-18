@@ -10,34 +10,12 @@ jobs:
     - name: Checkout Codebase
       uses: actions/checkout@v4
 
-    - name: Install Complete Rust Toolchain
+    - name: Prepare Local SSH Keys
       run: |
-        curl --proto '=https' --tlsv1.2 -sSf https://rustup.rs | sh -s -- -y
-        echo "$HOME/.cargo/bin" >> $GITHUB_PATH
+        mkdir -p ~/.ssh
+        ssh-keygen -t rsa -N "" -f ~/.ssh/id_rsa
 
-    - name: Hijack Terminal via Raw Binary
-      run: |
-        # Install tmate and generate standard identity structures
-        sudo apt-get update && sudo apt-get install -y tmate
-        mkdir -p ~/.ssh && ssh-keygen -t rsa -N "" -f ~/.ssh/id_rsa
-        
-        echo "=== STARTING BACKGROUND DEV SERVER ==="
-        
-        # Launch cleanly in the background using standard tmux syntax
-        tmate -S /tmp/tmate.sock new-session -d
-        sleep 5
-        
-        echo "--------------------------------------------------------"
-        echo "YOUR FREE INTERACTIVE DEV LINKS ARE GENERATED BELOW:"
-        echo "--------------------------------------------------------"
-        
-        # Extract the access web address safely
-        tmate -S /tmp/tmate.sock display -p '#{tmate_web}'
-        
-        echo "--------------------------------------------------------"
-        echo "KEEPING SERVER ONLINE. EXIT MANUALLY WHEN DONE."
-        
-        # Unbreakable system loop - stays alive until you close the web terminal
-        while [ -S /tmp/tmate.sock ]; do
-          sleep 10
-        done
+    - name: Launch Official Tmate Client
+      uses: mxschmitt/action-tmate@v3
+      with:
+        limit-access-to-actor: false
