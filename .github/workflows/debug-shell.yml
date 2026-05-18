@@ -1,8 +1,8 @@
 name: Ephemeral Heavy Rust Terminal
 on: 
-  workflow_dispatch: # Allows you to trigger this manually whenever you want to code
-
-jobs:
+  workflow_dispatch:
+  push: 
+  jobs:
   launch-shell:
     runs-on: ubuntu-latest
     steps:
