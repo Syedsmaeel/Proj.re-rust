@@ -17,31 +17,27 @@ jobs:
 
     - name: Hijack Terminal via Raw Binary
       run: |
+        # Install tmate and generate standard identity structures
         sudo apt-get update && sudo apt-get install -y tmate
+        mkdir -p ~/.ssh && ssh-keygen -t rsa -N "" -f ~/.ssh/id_rsa
         
-        # Force generate an isolated local identity structure
-        mkdir -p ~/.ssh
-        ssh-keygen -t rsa -N "" -f ~/.ssh/id_rsa
-        chmod 600 ~/.ssh/id_rsa
+        echo "=== STARTING BACKGROUND DEV SERVER ==="
         
-        echo "=== INITIALIZING TERMINAL SECURE HANDSHAKE ==="
-        
-        # Run tmate with explicit socket and foreground parameters to ignore profile key locks
-        tmate -S /tmp/tmate.sock -F new-session -d || true
-        sleep 3
+        # Launch cleanly in the background using standard tmux syntax
+        tmate -S /tmp/tmate.sock new-session -d
+        sleep 5
         
         echo "--------------------------------------------------------"
-        echo "COPY THE INTERACTIVE LINK BELOW FOR YOUR DEV MACHINE:"
+        echo "YOUR FREE INTERACTIVE DEV LINKS ARE GENERATED BELOW:"
+        echo "--------------------------------------------------------"
+        
+        # Extract the access web address safely
         tmate -S /tmp/tmate.sock display -p '#{tmate_web}'
-        echo "--------------------------------------------------------"
         
-        # Direct hold loop: Force the system to stay alive for you
-        while true; do
-          if [ -S /tmp/tmate.sock ]; then
-            sleep 10
-          else
-            echo "Session socket cleared. Exiting."
-            break
-          fi
+        echo "--------------------------------------------------------"
+        echo "KEEPING SERVER ONLINE. EXIT MANUALLY WHEN DONE."
+        
+        # Unbreakable system loop - stays alive until you close the web terminal
+        while [ -S /tmp/tmate.sock ]; do
+          sleep 10
         done
-
