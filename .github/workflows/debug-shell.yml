@@ -1,8 +1,9 @@
 name: Ephemeral Heavy Rust Terminal
 on: 
   workflow_dispatch:
-  push: 
-  jobs:
+  push:
+
+jobs:
   launch-shell:
     runs-on: ubuntu-latest
     steps:
@@ -17,4 +18,5 @@ on:
     - name: Setup Remote Interactive Shell
       uses: mxschmitt/action-tmate@v3
       with:
-        sudo: true
+        detached: true # Prevents the runner from freezing or crashing instantly
+        sudo: false    # Avoids Permission Denied logs on standard Ubuntu runners
