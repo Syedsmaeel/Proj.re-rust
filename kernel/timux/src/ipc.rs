@@ -12,6 +12,8 @@
 
   extern crate alloc;
 
+  pub mod signal;
+
   use alloc::vec::Vec;
   use alloc::collections::VecDeque;
   use crate::priv_model::{CapRight, CapabilityToken, PrivError};

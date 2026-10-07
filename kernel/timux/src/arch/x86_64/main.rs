@@ -1,12 +1,11 @@
 #![no_std]
 #![no_main]
 
-use timux::boot::{BootInfo, KernelState, ALLOCATOR};
+use timux::boot::{BootInfo, KernelAlloc, KernelState};
 
-// Register Timux's linked-list allocator as the global heap allocator
+// Route the global heap to the allocator that KernelState::init() sets up
 #[global_allocator]
-static GLOBAL_ALLOC: LinkedListAllocator = LinkedListAllocator::new();
-use timux::mm::LinkedListAllocator;
+static GLOBAL_ALLOC: KernelAlloc = KernelAlloc;
 
 #[no_mangle]
 pub extern "C" fn _start() -> ! {

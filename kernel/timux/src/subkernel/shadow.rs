@@ -24,6 +24,7 @@
   //! SubKernelId so it can repoint all capability references.
   extern crate alloc;
 
+  use alloc::boxed::Box;
   use alloc::vec::Vec;
   use crate::subkernel::instance::{SubKernel, SubKernelId, MemoryRange, SubKernelState};
 
@@ -85,7 +86,15 @@
           let primary_range = self.primary.memory_range();
           let shadow_range  = self.shadow.memory_range_mut();
 
-          if primary_range.size == 0 || primary_range.size != shadow_range.size {
+          let overlaps = primary_range.start < shadow_range.end()
+              && shadow_range.start < primary_range.end();
+          if primary_range.size == 0
+              || primary_range.size != shadow_range.size
+              || primary_range.start == 0
+              || shadow_range.start == 0
+              || overlaps
+          {
+              // Null, mismatched or overlapping ranges: copying would be UB.
               self.stats.syncs_skipped += 1;
               return;
           }

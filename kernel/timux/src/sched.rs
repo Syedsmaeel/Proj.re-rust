@@ -1,5 +1,7 @@
 //! Timux Scheduler — ring-aware preemptive task scheduler
 
+pub mod fractal;
+
 use crate::priv_model::{CapabilityTable, RingLevel};
 
 /// Task state machine

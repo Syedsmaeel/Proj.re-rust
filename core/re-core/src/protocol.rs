@@ -65,6 +65,30 @@ pub struct BootInfo {
     pub entropy_seed: [u8; 32],
 }
 
+impl BootInfo {
+    /// Expected value of `magic` ('TIMUX-1!').
+    pub const MAGIC: u64 = 0x54494d55582d3121;
+    /// Current boot protocol version.
+    pub const VERSION: u32 = 1;
+
+    /// Minimal boot info for early bring-up: only the heap start is known.
+    /// `heap_size == 0` tells the kernel to use its default heap size.
+    pub const fn minimal(heap_start: usize) -> Self {
+        Self {
+            magic: Self::MAGIC,
+            version: Self::VERSION,
+            heap_start,
+            heap_size: 0,
+            framebuffer: FramebufferInfo { addr: 0, size: 0, width: 0, height: 0, pitch: 0 },
+            mmap_addr: 0,
+            mmap_len: 0,
+            blueprint_addr: 0,
+            blueprint_len: 0,
+            entropy_seed: [0u8; 32],
+        }
+    }
+}
+
 #[derive(Debug, Clone, Copy)]
 #[repr(C)]
 pub struct FramebufferInfo {

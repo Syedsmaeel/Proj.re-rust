@@ -1,5 +1,7 @@
 #![no_std]
 
+extern crate alloc;
+
 pub mod protocol;
 pub mod graphics;
 pub mod composer;

@@ -1,11 +1,10 @@
 #![no_std]
 #![no_main]
 
-use timux::boot::{BootInfo, KernelState, ALLOCATOR};
-use timux::mm::LinkedListAllocator;
+use timux::boot::{BootInfo, KernelAlloc, KernelState};
 
 #[global_allocator]
-static GLOBAL_ALLOC: LinkedListAllocator = LinkedListAllocator::new();
+static GLOBAL_ALLOC: KernelAlloc = KernelAlloc;
 
 #[no_mangle]
 pub extern "C" fn _start() -> ! {

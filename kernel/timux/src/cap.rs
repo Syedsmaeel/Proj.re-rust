@@ -40,7 +40,8 @@
 
   impl AuditLog {
       pub const fn new() -> Self {
-          Self { buf: [const { None }; 64], head: 0, count: 0, seq: 0 }
+          const NONE: Option<AuditEvent> = None;
+          Self { buf: [NONE; 64], head: 0, count: 0, seq: 0 }
       }
 
       pub fn push(&mut self, kind: AuditKind, ring: RingLevel, rights: CapRight) {

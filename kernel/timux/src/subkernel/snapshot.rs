@@ -34,7 +34,7 @@
 
   // ─── CapEntry ────────────────────────────────────────────────────────────────
 
-  #[derive(Debug, Clone, Copy, Default)]
+  #[derive(Debug, Clone, Copy, Default, PartialEq, Eq)]
   #[repr(C)]
   pub struct CapEntry {
       pub id:     u64,
@@ -59,7 +59,7 @@
 
   /// Serialised, optionally encrypted snapshot of a sub-kernel.
   /// Uses heap-allocated Vec<u8> — no static 1 MiB BSS waste.
-  #[derive(Debug)]
+  #[derive(Debug, PartialEq, Eq)]
   pub struct MigrationBlob {
       pub magic:       u64,
       pub version:     u32,
@@ -77,8 +77,10 @@
       pub fn serialize(sk: &SubKernel) -> Self {
           let name  = String::from(sk.config.name);
           let range = sk.memory_range();
-          let caps: Vec<CapEntry> = sk.cap_table.entries()
-              .map(|e| CapEntry { id: e.id, rights: e.rights.bits(), expiry: e.expiry, _pad: 0 })
+          // Capability tokens carry no expiry, so they are exported as
+          // non-expiring (u64::MAX).
+          let caps: Vec<CapEntry> = sk.caps.entries()
+              .map(|t| CapEntry { id: t.id(), rights: t.rights().bits(), expiry: u64::MAX, _pad: 0 })
               .collect();
           let mut payload = Vec::new();
           payload.extend_from_slice(&range.start.to_le_bytes());
@@ -128,9 +130,14 @@
           /// Advance cursor by N bytes; return slice or Truncated.
           macro_rules! take {
               ($n:expr) => {{
-                  if cur + $n > raw.len() { return Err(BlobError::Truncated); }
-                  let s = &raw[cur..cur + $n];
-                  cur += $n;
+                  // checked_add: lengths come from untrusted input and must not
+                  // be able to wrap around the bounds check.
+                  let end = match cur.checked_add($n) {
+                      Some(e) if e <= raw.len() => e,
+                      _ => return Err(BlobError::Truncated),
+                  };
+                  let s = &raw[cur..end];
+                  cur = end;
                   s
               }};
           }
@@ -151,7 +158,9 @@
           let memory_size = le_u64(take!(8));
           let cap_count   = le_u32(take!(4)) as usize;
 
-          let mut caps = Vec::with_capacity(cap_count);
+          // Each entry is 32 bytes on the wire; never pre-allocate more than
+          // the input could possibly contain.
+          let mut caps = Vec::with_capacity(cap_count.min(raw.len() / 32));
           for _ in 0..cap_count {
               let id     = le_u64(take!(8));
               let rights = le_u64(take!(8));
@@ -221,6 +230,7 @@
   #[cfg(test)]
   mod tests {
       use super::*;
+      use alloc::vec;
 
       fn make_blob(name: &str, payload: Vec<u8>) -> MigrationBlob {
           MigrationBlob {
@@ -294,6 +304,22 @@
           // re-encode would differ from signed body
           blob.tag[0] ^= 0xFF;       // also tamper tag directly
           assert!(!blob.verify(b"key"));
+      }
+
+      #[test]
+      fn decode_huge_lengths_do_not_overflow_or_allocate() {
+          let blob = make_blob("x", vec![1, 2, 3]);
+          let mut raw = blob.encode();
+          // payload_len sits right after: 8+4+4+4 + name(1) + 8 + 4 (cap_count=0)
+          let off = 8 + 4 + 4 + 4 + 1 + 8 + 4;
+          raw[off..off + 8].copy_from_slice(&u64::MAX.to_le_bytes());
+          assert_eq!(MigrationBlob::decode(&raw), Err(BlobError::Truncated));
+
+          // absurd cap_count must fail cleanly, not try to reserve gigabytes
+          let mut raw2 = make_blob("x", Vec::new()).encode();
+          let cc = 8 + 4 + 4 + 4 + 1 + 8;
+          raw2[cc..cc + 4].copy_from_slice(&u32::MAX.to_le_bytes());
+          assert_eq!(MigrationBlob::decode(&raw2), Err(BlobError::Truncated));
       }
   }
   

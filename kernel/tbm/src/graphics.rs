@@ -52,6 +52,18 @@ impl<'a> Renderer<'a> {
         }
     }
 
+    /// Draws a rectangular outline of `thickness` pixels inside the given box.
+    pub fn draw_border(&mut self, x: u32, y: u32, width: u32, height: u32, thickness: u32, color: Color) {
+        let t = core::cmp::min(thickness, core::cmp::min(width, height) / 2);
+        if t == 0 {
+            return;
+        }
+        self.draw_rect(x, y, width, t, color); // top
+        self.draw_rect(x, y + height - t, width, t, color); // bottom
+        self.draw_rect(x, y + t, t, height - 2 * t, color); // left
+        self.draw_rect(x + width - t, y + t, t, height - 2 * t, color); // right
+    }
+
     pub fn draw_glow_circle(&mut self, x: u32, y: u32, r: u32, color: Color) {
         // Draw a basic circle using pixel-by-pixel logic
         for i in 0..r * 2 {

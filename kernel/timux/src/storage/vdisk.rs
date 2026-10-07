@@ -287,9 +287,11 @@
   #[cfg(test)]
   mod tests {
       use super::*;
-      use crate::priv_model::{CapabilityToken, CapRight};
+      use crate::priv_model::{CapabilityToken, CapRight, RingLevel};
 
-      fn root_cap() -> CapabilityToken { CapabilityToken::root() }
+      fn root_cap() -> CapabilityToken {
+          CapabilityToken::mint(CapRight::all(), RingLevel::KernelCore)
+      }
 
       #[test]
       fn format_creates_volume() {
@@ -356,7 +358,7 @@
           let id  = mgr.format(&cap, 2, 0, true).unwrap();
           mgr.unmount(&cap, id).unwrap();
           assert_eq!(mgr.count(), 0);
-          assert_eq!(mgr.get(id).unwrap_err(), VdiskError::NotMounted);
+          assert!(matches!(mgr.get(id), Err(VdiskError::NotMounted)));
       }
   }
   

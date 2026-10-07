@@ -50,12 +50,11 @@
   pub struct SubKernelManager {
       table:   Vec<SkRecord>,
       shadows: ShadowManager,
-      next_id: SubKernelId,
   }
 
   impl SubKernelManager {
       pub fn new() -> Self {
-          Self { table: Vec::new(), shadows: ShadowManager::new(), next_id: 1 }
+          Self { table: Vec::new(), shadows: ShadowManager::new() }
       }
 
       // ── Spawn ─────────────────────────────────────────────────────────────────
@@ -78,10 +77,12 @@
               if self.find(pid).is_none() { return Err(ManagerError::NotFound); }
           }
 
-          let id = self.next_id;
-          self.next_id += 1;
-
-          let sk = SubKernel::new(id, config);
+          // The sub-kernel allocates its own globally-unique id; the manager
+          // must use that id (a separate manager counter would never match
+          // `sk.id`, so find()/terminate() could not locate the record).
+          let mut sk = SubKernel::spawn(config, parent);
+          sk.boot();
+          let id = sk.id;
           self.table.push(SkRecord { sk, parent });
 
           Ok(id)
@@ -99,6 +100,8 @@
       ) -> Result<(), ManagerError> {
           if !cap.is_valid()                       { return Err(ManagerError::InvalidCapability); }
           if !cap.permits(CapRight::PROCESS_SPAWN) { return Err(ManagerError::InsufficientRights); }
+
+          if self.find(id).is_none() { return Err(ManagerError::NotFound); }
 
           // Collect children (shallow — one level; deep termination via recursion left to caller)
           let children: Vec<SubKernelId> = self.table.iter()
@@ -123,8 +126,7 @@
           if !cap.is_valid()                       { return Err(ManagerError::InvalidCapability); }
           if !cap.permits(CapRight::PROCESS_SPAWN) { return Err(ManagerError::InsufficientRights); }
           let rec = self.find_mut(id).ok_or(ManagerError::NotFound)?;
-          if rec.sk.state != SubKernelState::Running { return Err(ManagerError::InvalidState); }
-          rec.sk.state = SubKernelState::Suspended;
+          rec.sk.pause().map_err(|_| ManagerError::InvalidState)?;
           Ok(())
       }
 
@@ -132,8 +134,7 @@
           if !cap.is_valid()                       { return Err(ManagerError::InvalidCapability); }
           if !cap.permits(CapRight::PROCESS_SPAWN) { return Err(ManagerError::InsufficientRights); }
           let rec = self.find_mut(id).ok_or(ManagerError::NotFound)?;
-          if rec.sk.state != SubKernelState::Suspended { return Err(ManagerError::InvalidState); }
-          rec.sk.state = SubKernelState::Running;
+          rec.sk.resume().map_err(|_| ManagerError::InvalidState)?;
           Ok(())
       }
 
@@ -171,3 +172,57 @@
       }
   }
   
+
+  #[cfg(test)]
+  mod tests {
+      use super::*;
+      use crate::subkernel::instance::SubKernelProfile;
+      use crate::priv_model::RingLevel;
+
+      fn spawn_cap() -> CapabilityToken {
+          CapabilityToken::mint(CapRight::PROCESS_SPAWN, RingLevel::KernelCore)
+      }
+
+      fn cfg() -> SubKernelConfig {
+          SubKernelConfig::new("test-sk", SubKernelProfile::GeneralPurpose)
+      }
+
+      #[test]
+      fn spawned_id_is_findable_and_running() {
+          let mut m = SubKernelManager::new();
+          let cap = spawn_cap();
+          let id = m.spawn(&cap, cfg(), None).unwrap();
+          let sk = m.get(id).expect("returned id must resolve to a record");
+          assert_eq!(sk.state, SubKernelState::Running);
+      }
+
+      #[test]
+      fn suspend_resume_cycle_and_invalid_transitions() {
+          let mut m = SubKernelManager::new();
+          let cap = spawn_cap();
+          let id = m.spawn(&cap, cfg(), None).unwrap();
+          assert_eq!(m.resume(&cap, id), Err(ManagerError::InvalidState)); // not paused
+          m.suspend(&cap, id).unwrap();
+          assert_eq!(m.suspend(&cap, id), Err(ManagerError::InvalidState)); // already paused
+          m.resume(&cap, id).unwrap();
+      }
+
+      #[test]
+      fn terminate_removes_children_and_rejects_unknown_ids() {
+          let mut m = SubKernelManager::new();
+          let cap = spawn_cap();
+          let parent = m.spawn(&cap, cfg(), None).unwrap();
+          let _child = m.spawn(&cap, cfg(), Some(parent)).unwrap();
+          assert_eq!(m.count(), 2);
+          m.terminate(&cap, parent).unwrap();
+          assert_eq!(m.count(), 0);
+          assert_eq!(m.terminate(&cap, 9_999_999), Err(ManagerError::NotFound));
+      }
+
+      #[test]
+      fn missing_right_is_denied() {
+          let mut m = SubKernelManager::new();
+          let weak = CapabilityToken::mint(CapRight::READ, RingLevel::User);
+          assert_eq!(m.spawn(&weak, cfg(), None), Err(ManagerError::InsufficientRights));
+      }
+  }

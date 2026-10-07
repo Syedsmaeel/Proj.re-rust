@@ -45,7 +45,7 @@ impl Bridge {
     pub fn deactivate(&mut self) { self.active = false; }
 
     pub fn teleport(blob: &MigrationBlob, target_node: [u8; 4]) -> Result<(), &'static str> {
-        let name = core::str::from_utf8(blob.subkernel_name.as_bytes()).unwrap_or("unknown");
+        let name = blob.name();
         info!("󰚚 Teleporting sub-kernel '{}' to node {:?}", name, target_node);
         Ok(())
     }

@@ -75,6 +75,28 @@
 
       fn next_tick(&mut self) -> u64 { self.tick += 1; self.tick }
 
+      /// Update stats for an entry that has just left the registry.
+      fn account_removed(&mut self, e: &CortexEntry) {
+          self.stats.total_bytes = self.stats.total_bytes.saturating_sub(e.size_bytes);
+          if e.pinned   { self.stats.pinned_count   = self.stats.pinned_count.saturating_sub(1); }
+          if e.volatile { self.stats.volatile_count = self.stats.volatile_count.saturating_sub(1); }
+      }
+
+      /// Insert an entry, first retiring any entry already stored under the
+      /// same handle so byte/pin/volatile accounting does not leak.
+      fn insert_entry(&mut self, handle: ObjectHandle, e: CortexEntry) {
+          if let Some(old) = self.registry.remove(&handle) {
+              self.account_removed(&old);
+          } else {
+              self.ensure_capacity();
+          }
+          self.stats.total_bytes += e.size_bytes;
+          if e.pinned   { self.stats.pinned_count   += 1; }
+          if e.volatile { self.stats.volatile_count += 1; }
+          self.registry.insert(handle, e);
+          self.stats.inserts += 1;
+      }
+
       // ── Volatile GC ───────────────────────────────────────────────────────────
 
       fn gc_volatile(&mut self) -> usize {
@@ -85,7 +107,7 @@
           let count = victims.len();
           for h in victims {
               if let Some(e) = self.registry.remove(&h) {
-                  self.stats.total_bytes  = self.stats.total_bytes.saturating_sub(e.size_bytes);
+                  self.account_removed(&e);
                   self.stats.evictions_gc += 1;
               }
           }
@@ -101,7 +123,7 @@
               .map(|(h, _)| *h);
           if let Some(h) = victim {
               if let Some(e) = self.registry.remove(&h) {
-                  self.stats.total_bytes    = self.stats.total_bytes.saturating_sub(e.size_bytes);
+                  self.account_removed(&e);
                   self.stats.evictions_lru += 1;
                   return true;
               }
@@ -143,12 +165,10 @@
       /// Register a handle with a context and physical address.
       pub fn map(&self, handle: ObjectHandle, ctx: MemoryContext, addr: u64) {
           let mut g = self.inner.lock();
-          g.ensure_capacity();
           let tick = g.next_tick();
           let mut e = CortexEntry::new(ctx, addr);
           e.last_access = tick;
-          g.registry.insert(handle, e);
-          g.stats.inserts += 1;
+          g.insert_entry(handle, e);
       }
 
       /// Register with full metadata.
@@ -157,24 +177,22 @@
           size_bytes: u64, volatile: bool, pinned: bool,
       ) {
           let mut g = self.inner.lock();
-          g.ensure_capacity();
           let tick = g.next_tick();
-          g.stats.total_bytes   += size_bytes;
-          if pinned   { g.stats.pinned_count   += 1; }
-          if volatile { g.stats.volatile_count += 1; }
-          g.registry.insert(handle, CortexEntry {
+          g.insert_entry(handle, CortexEntry {
               ctx, phys_addr: addr,
               volatile, pinned,
               access_count: 0, last_access: tick, size_bytes,
           });
-          g.stats.inserts += 1;
       }
 
       // ── Resolve ───────────────────────────────────────────────────────────────
 
       /// Look up a handle and return (ctx, phys_addr), bumping access stats.
       pub fn resolve(&self, handle: ObjectHandle) -> Option<(MemoryContext, u64)> {
-          let mut g = self.inner.lock();
+          let mut guard = self.inner.lock();
+          // Reborrow through the guard once so the borrow checker can see
+          // that `registry`, `tick` and `stats` are disjoint fields.
+          let g = &mut *guard;
           g.stats.lookups += 1;
           if let Some(e) = g.registry.get_mut(&handle) {
               g.tick += 1;
@@ -192,7 +210,7 @@
       pub fn unmap(&self, handle: ObjectHandle) -> bool {
           let mut g = self.inner.lock();
           if let Some(e) = g.registry.remove(&handle) {
-              g.stats.total_bytes = g.stats.total_bytes.saturating_sub(e.size_bytes);
+              g.account_removed(&e);
               true
           } else { false }
       }
@@ -200,18 +218,30 @@
       // ── Pin / unpin ───────────────────────────────────────────────────────────
 
       pub fn pin(&self, handle: ObjectHandle) -> bool {
-          let mut g = self.inner.lock();
-          if let Some(e) = g.registry.get_mut(&handle) { e.pinned = true;  true } else { false }
+          let mut guard = self.inner.lock();
+          let g = &mut *guard;
+          if let Some(e) = g.registry.get_mut(&handle) {
+              if !e.pinned { e.pinned = true; g.stats.pinned_count += 1; }
+              true
+          } else { false }
       }
 
       pub fn unpin(&self, handle: ObjectHandle) -> bool {
-          let mut g = self.inner.lock();
-          if let Some(e) = g.registry.get_mut(&handle) { e.pinned = false; true } else { false }
+          let mut guard = self.inner.lock();
+          let g = &mut *guard;
+          if let Some(e) = g.registry.get_mut(&handle) {
+              if e.pinned { e.pinned = false; g.stats.pinned_count = g.stats.pinned_count.saturating_sub(1); }
+              true
+          } else { false }
       }
 
       pub fn mark_volatile(&self, handle: ObjectHandle) -> bool {
-          let mut g = self.inner.lock();
-          if let Some(e) = g.registry.get_mut(&handle) { e.volatile = true; true } else { false }
+          let mut guard = self.inner.lock();
+          let g = &mut *guard;
+          if let Some(e) = g.registry.get_mut(&handle) {
+              if !e.volatile { e.volatile = true; g.stats.volatile_count += 1; }
+              true
+          } else { false }
       }
 
       // ── Pressure relief ───────────────────────────────────────────────────────
@@ -230,3 +260,41 @@
       pub fn capacity(&self) -> usize       { self.inner.lock().capacity }
   }
   
+
+  #[cfg(test)]
+  mod tests {
+      use super::*;
+
+      fn ctx() -> MemoryContext { MemoryContext::new(1, "test", crate::mm::cortex::Volatility::Persistent) }
+
+      #[test]
+      fn stats_stay_consistent_across_pin_unmap_and_remap() {
+          let m = CortexMap::with_capacity(8);
+          m.map_opts(1, ctx(), 0x1000, 100, true, true);
+          assert_eq!(m.stats().pinned_count, 1);
+          assert_eq!(m.stats().volatile_count, 1);
+          assert_eq!(m.stats().total_bytes, 100);
+
+          // re-mapping the same handle replaces it without double counting
+          m.map_opts(1, ctx(), 0x2000, 40, false, false);
+          assert_eq!(m.stats().pinned_count, 0);
+          assert_eq!(m.stats().volatile_count, 0);
+          assert_eq!(m.stats().total_bytes, 40);
+
+          assert!(m.pin(1));
+          assert!(m.pin(1)); // idempotent
+          assert_eq!(m.stats().pinned_count, 1);
+          assert!(m.unmap(1));
+          assert_eq!(m.stats().pinned_count, 0);
+          assert_eq!(m.stats().total_bytes, 0);
+      }
+
+      #[test]
+      fn resolve_updates_access_and_misses() {
+          let m = CortexMap::with_capacity(4);
+          m.map(7, ctx(), 0xABCD);
+          assert_eq!(m.resolve(7).map(|(_, a)| a), Some(0xABCD));
+          assert!(m.resolve(8).is_none());
+          assert_eq!(m.stats().misses, 1);
+      }
+  }

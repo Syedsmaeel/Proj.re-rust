@@ -246,6 +246,11 @@ impl CapabilityTable {
     }
 
     pub fn count(&self) -> usize { self.count }
+
+    /// Iterate over all valid capabilities currently held in the table.
+    pub fn entries(&self) -> impl Iterator<Item = &CapabilityToken> {
+        self.slots.iter().filter_map(|s| s.as_ref()).filter(|c| c.is_valid())
+    }
 }
 
 impl Default for CapabilityTable {

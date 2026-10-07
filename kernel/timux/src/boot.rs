@@ -41,6 +41,24 @@
 
   pub static ALLOCATOR: LinkedListAllocator = LinkedListAllocator::new();
 
+  /// Global-allocator front for [`ALLOCATOR`].
+  ///
+  /// `KernelState::init` initialises `ALLOCATOR`; the arch entry points must
+  /// register *this* type as `#[global_allocator]`. Declaring a second,
+  /// separate `LinkedListAllocator` static there (as the entry points used
+  /// to) leaves the real global allocator empty, so the first heap
+  /// allocation would fail.
+  pub struct KernelAlloc;
+
+  unsafe impl core::alloc::GlobalAlloc for KernelAlloc {
+      unsafe fn alloc(&self, layout: core::alloc::Layout) -> *mut u8 {
+          ALLOCATOR.alloc(layout)
+      }
+      unsafe fn dealloc(&self, ptr: *mut u8, layout: core::alloc::Layout) {
+          ALLOCATOR.dealloc(ptr, layout)
+      }
+  }
+
   // ─── Entropy pool ─────────────────────────────────────────────────────────────
 
   /// Sovereign entropy state — XorShift64 seeded at boot.
@@ -165,7 +183,11 @@
 
           // ── Step 2: Entropy pool ──────────────────────────────────────────────
           // Mix in hardware-provided seed from BootInfo
-          mix_entropy(info.entropy_seed);
+          for chunk in info.entropy_seed.chunks_exact(8) {
+              let mut w = [0u8; 8];
+              w.copy_from_slice(chunk);
+              mix_entropy(u64::from_le_bytes(w));
+          }
           // Extra mix from heap address (ASLR-like diversity if memory layout varies)
           mix_entropy(info.heap_start as u64);
           let entropy = draw_entropy();
@@ -192,7 +214,7 @@
           let mut state = KernelState { authority, scheduler, fractal_sched, sk_manager, root_cap, morph_engine };
 
           // ── Step 7: Parse Sovereign Blueprint and spawn initial sub-kernels ───
-          let blueprint = SovereignBlueprint::parse(info.blueprint_addr, info.blueprint_size);
+          let blueprint = SovereignBlueprint::parse(info.blueprint_addr, info.blueprint_len);
           for entry in &blueprint.entries {
               state.spawn_sk_from_blueprint(entry);
           }

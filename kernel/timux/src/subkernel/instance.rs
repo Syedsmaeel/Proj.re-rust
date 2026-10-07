@@ -333,6 +333,13 @@ impl SubKernel {
         self.tick
     }
 
+    /// Liveness counter observed by the shadow manager. It advances every
+    /// time the scheduler calls `tick()`; a counter that stops advancing
+    /// means the sub-kernel has stopped making progress.
+    pub fn heartbeat(&self) -> u64 {
+        self.tick
+    }
+
 
     /// Return the memory range of this sub-kernel (for shadow mirroring)
     pub fn memory_range(&self) -> MemoryRange {
