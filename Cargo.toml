@@ -59,3 +59,14 @@
   rayon = "1.10"
   byteorder = "1.5"
   
+
+# Profiles are only honoured at the workspace root (member-crate profiles are
+# ignored). Size-optimise just the kernel crates. Bare-metal targets already
+# abort on panic, so panic = "abort" is not forced on the host tools/tests.
+[profile.release.package.timux]
+opt-level = "s"
+codegen-units = 1
+
+[profile.release.package.ring-neg1]
+opt-level = "s"
+codegen-units = 1

@@ -9,6 +9,8 @@
   //! ```
 
   extern crate alloc;
+  use hmac::{Hmac, Mac};
+  use sha2::Sha256;
   use alloc::vec::Vec;
   use alloc::string::String;
   use crate::subkernel::instance::{SubKernel, SubKernelId};
@@ -207,22 +209,22 @@
 
   // ─── HMAC helpers ────────────────────────────────────────────────────────────
 
+  type HmacSha256 = Hmac<Sha256>;
+
+  /// HMAC-SHA256 over `data` (RFC 2104). Keys of any length are accepted.
   pub fn hmac_sign(key: &[u8], data: &[u8]) -> [u8; TAG_SIZE] {
-      let mut h = [0u8; 32];
-      let klen = key.len().min(32);
-      h[..klen].copy_from_slice(&key[..klen]);
-      for (i, b) in data.iter().enumerate() {
-          h[i % 32] ^= b.wrapping_add(i as u8);
-          h[(i + 1) % 32] = h[(i+1)%32].rotate_left(3);
-      }
-      h
+      let mut mac = HmacSha256::new_from_slice(key)
+          .expect("HMAC accepts keys of any length");
+      mac.update(data);
+      mac.finalize().into_bytes().into()
   }
 
+  /// Constant-time verification of an HMAC-SHA256 tag.
   pub fn hmac_verify(key: &[u8], data: &[u8], tag: &[u8; TAG_SIZE]) -> bool {
-      let expected = hmac_sign(key, data);
-      let mut diff = 0u8;
-      for (a, b) in expected.iter().zip(tag.iter()) { diff |= a ^ b; }
-      diff == 0
+      let mut mac = HmacSha256::new_from_slice(key)
+          .expect("HMAC accepts keys of any length");
+      mac.update(data);
+      mac.verify_slice(tag).is_ok()
   }
 
   // ─── Tests ───────────────────────────────────────────────────────────────────
@@ -320,6 +322,36 @@
           let cc = 8 + 4 + 4 + 4 + 1 + 8;
           raw2[cc..cc + 4].copy_from_slice(&u32::MAX.to_le_bytes());
           assert_eq!(MigrationBlob::decode(&raw2), Err(BlobError::Truncated));
+      }
+
+      fn hex(b: &[u8]) -> String {
+          let mut s = String::new();
+          for x in b { s.push_str(&alloc::format!("{:02x}", x)); }
+          s
+      }
+
+      #[test]
+      fn hmac_matches_rfc4231_vectors() {
+          // RFC 4231 test case 1
+          let t1 = hmac_sign(&[0x0b; 20], b"Hi There");
+          assert_eq!(hex(&t1), "b0344c61d8db38535ca8afceaf0bf12b881dc200c9833da726e9376c2e32cff7");
+          // RFC 4231 test case 2
+          let t2 = hmac_sign(b"Jefe", b"what do ya want for nothing?");
+          assert_eq!(hex(&t2), "5bdcc146bf60754e6a042426089575c75a003f089d2739839dec58b964ec3843");
+      }
+
+      #[test]
+      fn hmac_uses_the_whole_key_and_rejects_forgeries() {
+          let mut k1 = [7u8; 64];
+          let mut k2 = [7u8; 64];
+          k2[63] = 8; // differs only after byte 32 (the old code ignored it)
+          assert_ne!(hmac_sign(&k1, b"data"), hmac_sign(&k2, b"data"));
+
+          let tag = hmac_sign(&k1, b"data");
+          assert!(hmac_verify(&k1, b"data", &tag));
+          assert!(!hmac_verify(&k1, b"datb", &tag));
+          k1[0] ^= 1;
+          assert!(!hmac_verify(&k1, b"data", &tag));
       }
   }
   

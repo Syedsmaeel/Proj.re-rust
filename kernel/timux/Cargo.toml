@@ -28,12 +28,5 @@ spin = "0.9"
 log = "0.4"
 bitflags = "2"
 static_assertions = "1"
-
-[profile.release]
-panic = "abort"
-lto = true
-opt-level = "s"
-codegen-units = 1
-
-[profile.dev]
-panic = "abort"
+hmac = { version = "0.12", default-features = false }
+sha2 = { version = "0.10", default-features = false }

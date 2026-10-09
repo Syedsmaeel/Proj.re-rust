@@ -12,12 +12,3 @@ path = "src/lib.rs"
 
 [dependencies]
 bitflags = "2"
-
-[profile.release]
-panic = "abort"
-opt-level = "s"
-lto = true
-codegen-units = 1
-
-[profile.dev]
-panic = "abort"
