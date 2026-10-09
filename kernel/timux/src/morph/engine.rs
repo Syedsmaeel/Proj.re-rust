@@ -109,9 +109,11 @@
 
       /// Re-assign offsets by rotating each by a random delta.
       pub fn randomise(&mut self, rng: &mut XorShift64) {
+          if self.region_size == 0 { return; } // avoid `% 0` panic
+          let size = self.region_size as u64;
           for off in self.offsets.iter_mut() {
-              let delta = (rng.next() % self.region_size as u64) as u32;
-              *off = (*off + delta) % self.region_size;
+              let delta = rng.next() % size;
+              *off = ((*off as u64 + delta) % size) as u32;
           }
       }
 
@@ -206,3 +208,22 @@
       }
   }
   
+
+#[cfg(test)]
+mod gate_tests {
+    use super::*;
+
+    #[test]
+    fn randomise_with_empty_region_does_not_panic() {
+        let mut m = CapGateMap::new(4, 0);
+        m.randomise(&mut XorShift64::new(1));
+        assert_eq!(m.offset_of(0), Some(0));
+    }
+
+    #[test]
+    fn randomise_stays_inside_region_even_for_huge_regions() {
+        let mut m = CapGateMap::new(8, u32::MAX);
+        m.randomise(&mut XorShift64::new(42));
+        for i in 0..8 { assert!(m.offset_of(i).unwrap() < u32::MAX); }
+    }
+}

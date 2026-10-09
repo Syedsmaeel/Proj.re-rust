@@ -97,7 +97,8 @@
   /// RAII guard that disables interrupts on construction and restores the
   /// previous state on drop.
   pub struct IrqGuard {
-      was_enabled: bool,
+      /// Re-enables interrupts on drop; `None` if they were already off.
+      restore: Option<unsafe fn()>,
   }
 
   impl IrqGuard {
@@ -109,9 +110,16 @@
       pub unsafe fn new<A: Arch>() -> Self {
           let was_enabled = A::interrupts_enabled();
           if was_enabled { unsafe { A::interrupts_disable() }; }
-          Self { was_enabled }
+          Self { restore: if was_enabled { Some(A::interrupts_enable as unsafe fn()) } else { None } }
       }
   }
-  // NOTE: Drop impl omitted because restoring interrupts requires knowing
-  // the architecture type; callers re-enable manually after the guard drops.
+
+  impl Drop for IrqGuard {
+      fn drop(&mut self) {
+          // Without this the guard disabled interrupts and never restored them.
+          if let Some(enable) = self.restore {
+              unsafe { enable() };
+          }
+      }
+  }
   

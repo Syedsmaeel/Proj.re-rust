@@ -148,6 +148,10 @@
           self.primary.state  = SubKernelState::Running;
           self.is_healthy     = true;
           self.stale_count    = 0;
+          // Re-baseline: the promoted kernel has its own heartbeat counter.
+          // Keeping the old primary's value would make a perfectly healthy
+          // new primary look stale until it overtook the dead one.
+          self.last_heartbeat = self.primary.heartbeat();
           self.stats.failovers += 1;
           self.primary.id
       }
@@ -222,3 +226,26 @@
       }
   }
   
+
+#[cfg(test)]
+mod failover_tests {
+    use super::*;
+    use crate::subkernel::instance::{SubKernelConfig, SubKernelProfile};
+
+    fn sk(name: &'static str) -> SubKernel {
+        SubKernel::spawn(SubKernelConfig::new(name, SubKernelProfile::GeneralPurpose), None)
+    }
+
+    #[test]
+    fn promoted_shadow_is_judged_by_its_own_heartbeat() {
+        let mut inst = ShadowInstance::new(sk("p"), sk("s"));
+        for _ in 0..5 { inst.primary.tick(); }
+        assert!(inst.tick(0));              // baseline = 5
+        for _ in 0..3 { inst.shadow.tick(); }
+
+        inst.promote_shadow();              // new primary heartbeat = 3
+        inst.primary.tick();                // -> 4, which is progress
+        assert!(inst.tick(0));
+        assert_eq!(inst.stale_count, 0, "healthy new primary must not look stale");
+    }
+}
